@@ -1,1 +1,0 @@
-# VitLog-Android
