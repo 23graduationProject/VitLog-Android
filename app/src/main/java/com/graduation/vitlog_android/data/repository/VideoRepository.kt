@@ -4,6 +4,8 @@ import com.graduation.vitlog_android.data.api.VideoApi
 import com.graduation.vitlog_android.model.response.ResponseGetPresignedUrlDto
 import com.graduation.vitlog_android.model.response.ResponsePostVideoDto
 import okhttp3.MultipartBody
+import okhttp3.RequestBody
+import okhttp3.ResponseBody
 import javax.inject.Inject
 
 
@@ -22,4 +24,12 @@ class VideoRepository @Inject constructor(
     ): Result<ResponseGetPresignedUrlDto> = runCatching {
         api.getPresignedUrl(uid = uid)
     }
+
+    suspend fun putVideoToPresignedUrl(
+        url: String,
+        file: RequestBody
+    ): Result<ResponseBody> = runCatching {
+        api.putVideoToPresignedUrl(url = url, file = file)
+    }
 }
+

@@ -29,6 +29,7 @@ import com.graduation.vitlog_android.util.view.UiState
 import dagger.hilt.android.AndroidEntryPoint
 import kotlinx.coroutines.flow.launchIn
 import kotlinx.coroutines.flow.onEach
+import kotlinx.coroutines.launch
 import java.io.IOException
 import java.security.InvalidParameterException
 
@@ -70,8 +71,9 @@ class EditFragment : Fragment(), TextureView.SurfaceTextureListener,
         }
         getUri?.let {
             setupMediaRetrieverAndSeekBar(it)
-            createAndSetVideoRequestBody(getUri!!)
-            setPostVideoStateObserver()
+            //createAndSetVideoRequestBody(getUri!!)
+            //setPostVideoStateObserver()
+            setPutVideoToPresignedUrlStateObserver()
             setGetPresignedUrlStateObserver()
         }
         return binding.root
@@ -124,14 +126,41 @@ class EditFragment : Fragment(), TextureView.SurfaceTextureListener,
             }.launchIn(viewLifecycleOwner.lifecycleScope)
     }
 
+    private fun uriToRequestBody() {
+        viewLifecycleOwner.lifecycleScope.launch {
+            getUri?.let { editViewModel.uriToRequestBody(requireContext(), it) }
+        }
+    }
+
+
     private fun setGetPresignedUrlStateObserver() {
         editViewModel.getPresignedUrlState.flowWithLifecycle(viewLifecycleOwner.lifecycle)
             .onEach { state ->
                 when (state) {
                     is UiState.Success -> {
                         Log.d("Success", state.data.data.url)
+                        uriToRequestBody()
+                        editViewModel.setPresignedUrl(state.data.data.url)
                     }
 
+                    is UiState.Failure -> {
+                        Log.d("Failure", state.msg)
+                    }
+
+                    is UiState.Empty -> Unit
+                    is UiState.Loading -> Unit
+                    else -> {}
+                }
+            }.launchIn(viewLifecycleOwner.lifecycleScope)
+    }
+
+    private fun setPutVideoToPresignedUrlStateObserver() {
+        editViewModel.putVideoToPresignedUrlState.flowWithLifecycle(viewLifecycleOwner.lifecycle)
+            .onEach { state ->
+                when (state) {
+                    is UiState.Success -> {
+                        Log.d("Success", state.data.toString())
+                    }
                     is UiState.Failure -> {
                         Log.d("Failure", state.msg)
                     }

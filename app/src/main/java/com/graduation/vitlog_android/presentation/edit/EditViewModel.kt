@@ -13,13 +13,19 @@ import com.graduation.vitlog_android.model.response.ResponsePostVideoDto
 import com.graduation.vitlog_android.util.multipart.ContentUriRequestBody
 import com.graduation.vitlog_android.util.view.UiState
 import dagger.hilt.android.lifecycle.HiltViewModel
+import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.launch
+import kotlinx.coroutines.withContext
 import okhttp3.MultipartBody
+import okhttp3.RequestBody
+import okhttp3.RequestBody.Companion.toRequestBody
+import okhttp3.ResponseBody
 import retrofit2.HttpException
 import timber.log.Timber
+import java.io.IOException
 import javax.inject.Inject
 
 @HiltViewModel
@@ -31,6 +37,12 @@ class EditViewModel @Inject constructor(
     private val _postVideoState = MutableStateFlow<UiState<ResponsePostVideoDto>>(UiState.Loading)
     val postVideoState: StateFlow<UiState<ResponsePostVideoDto>> = _postVideoState.asStateFlow()
 
+    private val _getDownloadVideoState = MutableStateFlow<UiState<ResponseBody>>(UiState.Loading)
+    val getDownloadVideoState: StateFlow<UiState<ResponseBody>> = _getDownloadVideoState.asStateFlow()
+
+
+    private val _putVideoToPresignedUrlState = MutableStateFlow<UiState<ResponseBody>>(UiState.Loading)
+    val putVideoToPresignedUrlState: StateFlow<UiState<ResponseBody>> = _putVideoToPresignedUrlState.asStateFlow()
 
     private val _getPresignedUrlState =
         MutableStateFlow<UiState<ResponseGetPresignedUrlDto>>(UiState.Loading)
@@ -103,6 +115,45 @@ class EditViewModel @Inject constructor(
                 }
         }
     }
+
+    suspend fun uriToRequestBody(context: Context, uri: Uri) {
+        val requestBody = withContext(Dispatchers.IO) {
+            val inputStream = context.contentResolver.openInputStream(uri)
+            val byteArray = inputStream?.readBytes()
+            inputStream?.close()
+            byteArray?.toRequestBody()
+                ?: throw IOException("Cannot create RequestBody from the provided Uri.")
+        }
+        putVideoToPresignedUrl(url = presignedUrl.value, requestBody = requestBody)
+    }
+
+    val presignedUrl: StateFlow<String> get() = _presignedUrl
+    private val _presignedUrl = MutableStateFlow("")
+
+    fun setPresignedUrl(url : String){
+        _presignedUrl.value = url
+    }
+
+    private fun putVideoToPresignedUrl(
+        url: String,
+        requestBody : RequestBody
+    ) {
+        viewModelScope.launch {
+            _putVideoToPresignedUrlState.value = UiState.Loading
+            videoRepository.putVideoToPresignedUrl(url, requestBody)
+                .onSuccess { response ->
+                    _putVideoToPresignedUrlState.value = UiState.Success(response)
+                    Timber.e("성공 $response")
+                }.onFailure { t ->
+                    if (t is HttpException) {
+                        val errorResponse = t.response()?.errorBody()?.string()
+                        Timber.e("HTTP 실패: $errorResponse")
+                    }
+                    _putVideoToPresignedUrlState.value = UiState.Failure("${t.message}")
+                }
+        }
+    }
+
 
     private var videoRequestBody: ContentUriRequestBody? = null
 
