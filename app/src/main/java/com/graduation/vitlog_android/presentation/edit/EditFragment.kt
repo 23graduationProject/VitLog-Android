@@ -1,63 +1,61 @@
 package com.graduation.vitlog_android.presentation.edit
 
-import android.annotation.SuppressLint
-import android.content.Context
 import android.content.Intent
-import android.graphics.Bitmap
 import android.graphics.SurfaceTexture
-import android.media.MediaCodec
 import android.media.MediaExtractor
 import android.media.MediaFormat
 import android.media.MediaMetadataRetriever
-import android.media.MediaMuxer
 import android.media.MediaPlayer
 import android.net.Uri
+import android.os.Build
 import android.os.Bundle
-import android.os.Environment
+import android.util.Log
 import android.view.LayoutInflater
 import android.view.Surface
 import android.view.TextureView
 import android.view.View
 import android.view.ViewGroup
 import android.widget.SeekBar
-import android.widget.VideoView
+import androidx.annotation.RequiresApi
 import androidx.core.net.toUri
 import androidx.fragment.app.Fragment
+import androidx.fragment.app.viewModels
+import androidx.lifecycle.flowWithLifecycle
+import androidx.lifecycle.lifecycleScope
 import com.graduation.vitlog_android.databinding.FragmentEditBinding
 import com.graduation.vitlog_android.presentation.MainActivity
-import java.io.File
+import com.graduation.vitlog_android.util.multipart.ContentUriRequestBody
+import com.graduation.vitlog_android.util.view.UiState
+import dagger.hilt.android.AndroidEntryPoint
+import kotlinx.coroutines.flow.launchIn
+import kotlinx.coroutines.flow.onEach
 import java.io.IOException
 import java.security.InvalidParameterException
 
 
+@AndroidEntryPoint
 class EditFragment : Fragment(), TextureView.SurfaceTextureListener,
     MediaPlayer.OnPreparedListener {
+
+
     private var _binding: FragmentEditBinding? = null
     private val binding get() = _binding!!
     private var getUri: Uri? = null
+    private val editViewModel by viewModels<EditViewModel>()
     private lateinit var mediaPlayer: MediaPlayer
-    private lateinit var decoder: MediaCodec
-    private lateinit var encoder: MediaCodec
-    private lateinit var muxer: MediaMuxer
-    private lateinit var videoView: VideoView
-    private val extractor = MediaExtractor()
-    private var width = 0
-    private var height = 0
-    private var surface: Surface? = null
-    private val outputDir: File =
-        Environment.getExternalStoragePublicDirectory(Environment.DIRECTORY_DCIM)
-    private val outputPath = "${outputDir.absolutePath}/processed.mp4"
+    private lateinit var frameSeekBar: SeekBar
 
-
-    @SuppressLint("ShowToast")
+    @RequiresApi(Build.VERSION_CODES.Q)
     override fun onCreateView(
         inflater: LayoutInflater,
         container: ViewGroup?,
         savedInstanceState: Bundle?
     ): View {
         _binding = FragmentEditBinding.inflate(layoutInflater, container, false)
+        frameSeekBar = binding.editTimelineSv
 
         getUri = arguments?.getString("videoUri")?.toUri()
+
         activity?.runOnUiThread {
             binding.editProgressbar.visibility = View.INVISIBLE
         }
@@ -67,8 +65,15 @@ class EditFragment : Fragment(), TextureView.SurfaceTextureListener,
             mediaPlayer.release()
             startActivity(Intent(requireContext(), MainActivity::class.java))
         }
-        getUri?.let { setupMediaRetrieverAndSeekBar(it) }
-
+        binding.editSaveBtn.setOnClickListener {
+            editViewModel.getPresignedUrl()
+        }
+        getUri?.let {
+            setupMediaRetrieverAndSeekBar(it)
+            createAndSetVideoRequestBody(getUri!!)
+            setPostVideoStateObserver()
+            setGetPresignedUrlStateObserver()
+        }
         return binding.root
     }
 
@@ -80,14 +85,14 @@ class EditFragment : Fragment(), TextureView.SurfaceTextureListener,
             mediaMetadataRetriever.extractMetadata(MediaMetadataRetriever.METADATA_KEY_DURATION)
                 ?.toLong()
         if (videoLength != null) {
-            binding.editTimelineSv.max = videoLength.toInt()
+            frameSeekBar.max = videoLength.toInt()
         }
 
-        binding.editTimelineSv.setOnSeekBarChangeListener(object : SeekBar.OnSeekBarChangeListener {
+        // SeekBar의 드래그 이벤트 처리
+        frameSeekBar.setOnSeekBarChangeListener(object : SeekBar.OnSeekBarChangeListener {
             override fun onProgressChanged(seekBar: SeekBar?, progress: Int, fromUser: Boolean) {
                 if (fromUser) {
                     mediaPlayer.seekTo(progress)
-                    val bitmap = getVideoFrame(requireContext(), uri, progress.toLong())
                 }
             }
 
@@ -96,43 +101,51 @@ class EditFragment : Fragment(), TextureView.SurfaceTextureListener,
             override fun onStopTrackingTouch(seekBar: SeekBar?) {}
         })
 
-        binding.video.surfaceTextureListener = object : TextureView.SurfaceTextureListener {
-            override fun onSurfaceTextureAvailable(
-                surface: SurfaceTexture,
-                width: Int,
-                height: Int
-            ) {
-                mediaPlayer.setSurface(Surface(surface))
-                mediaPlayer.setDataSource(requireContext(), getUri!!)
-                mediaPlayer.prepareAsync()
-            }
+        getUri?.let { editViewModel.loadFrames(requireContext(), it, videoLength!!) }
 
-            override fun onSurfaceTextureSizeChanged(
-                surface: SurfaceTexture,
-                width: Int,
-                height: Int
-            ) {
-            }
-
-            override fun onSurfaceTextureDestroyed(surface: SurfaceTexture): Boolean {
-                mediaPlayer.stop()
-                mediaPlayer.release()
-                return true
-            }
-
-            override fun onSurfaceTextureUpdated(surface: SurfaceTexture) {}
-        }
-
-        mediaPlayer.setOnPreparedListener {
-            mediaPlayer.start()
-            binding.editTimelineSv.max = mediaPlayer.duration
-        }
     }
 
-    private fun getVideoFrame(context: Context, uri: Uri, time: Long): Bitmap? {
-        val mediaMetadataRetriever = MediaMetadataRetriever()
-        mediaMetadataRetriever.setDataSource(context, uri)
-        return mediaMetadataRetriever.getFrameAtTime(time, MediaMetadataRetriever.OPTION_CLOSEST)
+    private fun setPostVideoStateObserver() {
+        editViewModel.postVideoState.flowWithLifecycle(viewLifecycleOwner.lifecycle)
+            .onEach { state ->
+                when (state) {
+                    is UiState.Success -> {
+                        Log.d("Success", "POST 완료")
+                    }
+
+                    is UiState.Failure -> {
+                        Log.d("Failure", state.msg)
+                    }
+
+                    is UiState.Empty -> Unit
+                    is UiState.Loading -> Unit
+                    else -> {}
+                }
+            }.launchIn(viewLifecycleOwner.lifecycleScope)
+    }
+
+    private fun setGetPresignedUrlStateObserver() {
+        editViewModel.getPresignedUrlState.flowWithLifecycle(viewLifecycleOwner.lifecycle)
+            .onEach { state ->
+                when (state) {
+                    is UiState.Success -> {
+                        Log.d("Success", state.data.data.url)
+                    }
+
+                    is UiState.Failure -> {
+                        Log.d("Failure", state.msg)
+                    }
+
+                    is UiState.Empty -> Unit
+                    is UiState.Loading -> Unit
+                    else -> {}
+                }
+            }.launchIn(viewLifecycleOwner.lifecycleScope)
+    }
+
+    private fun createAndSetVideoRequestBody(uri: Uri) {
+        val videoRequestBody = ContentUriRequestBody(requireContext(), uri)
+        editViewModel.setVideoRequestBody(videoRequestBody)
     }
 
     // 선택한 영상의 트랙 추출
