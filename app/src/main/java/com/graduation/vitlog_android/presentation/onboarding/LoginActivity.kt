@@ -3,9 +3,11 @@ package com.graduation.vitlog_android.presentation.onboarding
 import android.content.Intent
 import android.os.Bundle
 import androidx.appcompat.app.AppCompatActivity
-import com.graduation.vitlog_android.presentation.MainActivity
 import com.graduation.vitlog_android.databinding.ActivityLoginBinding
+import com.graduation.vitlog_android.presentation.MainActivity
+import dagger.hilt.android.AndroidEntryPoint
 
+@AndroidEntryPoint
 class LoginActivity : AppCompatActivity() {
 
     private lateinit var binding: ActivityLoginBinding

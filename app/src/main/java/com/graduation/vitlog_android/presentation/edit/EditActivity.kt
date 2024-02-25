@@ -3,7 +3,9 @@ package com.graduation.vitlog_android.presentation.edit
 import android.os.Bundle
 import androidx.appcompat.app.AppCompatActivity
 import com.graduation.vitlog_android.databinding.ActivityEditBinding
+import dagger.hilt.android.AndroidEntryPoint
 
+@AndroidEntryPoint
 class EditActivity : AppCompatActivity() {
 
     private lateinit var binding: ActivityEditBinding

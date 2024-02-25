@@ -3,7 +3,9 @@ package com.graduation.vitlog_android.presentation.onboarding
 import android.os.Bundle
 import androidx.appcompat.app.AppCompatActivity
 import com.graduation.vitlog_android.databinding.ActivitySignUpBinding
+import dagger.hilt.android.AndroidEntryPoint
 
+@AndroidEntryPoint
 class SignUpActivity : AppCompatActivity() {
 
     private lateinit var binding: ActivitySignUpBinding
