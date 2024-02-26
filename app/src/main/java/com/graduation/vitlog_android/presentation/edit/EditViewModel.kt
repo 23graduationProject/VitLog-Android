@@ -102,7 +102,7 @@ class EditViewModel @Inject constructor(
     fun getPresignedUrl() {
         viewModelScope.launch {
             _getPresignedUrlState.value = UiState.Loading
-            videoRepository.getPresignedUrl(1)
+            videoRepository.getPresignedUrl(1, "")
                 .onSuccess { response ->
                     _getPresignedUrlState.value = UiState.Success(response)
                     Timber.e("성공 $response")
