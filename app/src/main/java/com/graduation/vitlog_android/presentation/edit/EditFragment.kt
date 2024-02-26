@@ -11,17 +11,20 @@ import android.os.Build
 import android.os.Bundle
 import android.util.Log
 import android.view.LayoutInflater
+import android.view.MotionEvent
 import android.view.Surface
 import android.view.TextureView
 import android.view.View
 import android.view.ViewGroup
 import android.widget.SeekBar
 import androidx.annotation.RequiresApi
+import androidx.constraintlayout.widget.ConstraintSet
 import androidx.core.net.toUri
 import androidx.fragment.app.Fragment
 import androidx.fragment.app.viewModels
 import androidx.lifecycle.flowWithLifecycle
 import androidx.lifecycle.lifecycleScope
+import com.graduation.vitlog_android.R
 import com.graduation.vitlog_android.databinding.FragmentEditBinding
 import com.graduation.vitlog_android.presentation.MainActivity
 import com.graduation.vitlog_android.util.multipart.ContentUriRequestBody
@@ -77,7 +80,20 @@ class EditFragment : Fragment(), TextureView.SurfaceTextureListener,
             setGetPresignedUrlStateObserver()
             setGetMosaicedVideoStateObserver()
         }
+
+        buttonActions()
+
         return binding.root
+    }
+
+    private fun buttonActions() {
+        // 수동 블러 버튼 클릭
+        binding.editBlurSelfBtn.setOnClickListener {
+            binding.blurSelfLayout.visibility = View.VISIBLE
+        }
+
+        // 수동 블러 rectangle 드래그
+        dragBlurRectangle()
     }
 
     private fun setupMediaRetrieverAndSeekBar(uri: Uri) {
@@ -244,6 +260,77 @@ class EditFragment : Fragment(), TextureView.SurfaceTextureListener,
             binding.videoPlayBtn.visibility = View.VISIBLE
             binding.videoPauseBtn.visibility = View.GONE
         }
+    }
+
+    // 수동 블러 rectangle 드래그
+    private fun dragBlurRectangle() {
+        var dX: Float = 0F
+        var dY: Float = 0F
+        binding.blurSelfLayout.setOnTouchListener { view, event ->
+            when (event.action) {
+                MotionEvent.ACTION_DOWN -> {
+                    // 터치 시작 위치 저장
+                    dX = view.x - event.rawX
+                    dY = view.y - event.rawY
+                }
+                MotionEvent.ACTION_MOVE -> {
+                    // ImageView 위치 업데이트
+                    binding.blurSelfLayout.animate()
+                        .x(event.rawX + dX)
+                        .y(event.rawY + dY)
+                        .setDuration(0)
+                        .start()
+                }
+                MotionEvent.ACTION_UP -> {
+                    // 사용자가 뷰를 눌렀다가 뗐을 때 performClick() 메서드 호출
+                    view.performClick()
+                    getCoordinates()
+                }
+                else -> return@setOnTouchListener false
+            }
+            return@setOnTouchListener true
+        }
+
+        binding.blurSelfLayout.setOnClickListener {
+            // 클릭 시
+        }
+
+        binding.blurRectangleX.setOnClickListener {
+            binding.blurSelfLayout.visibility = View.GONE
+        }
+
+//        var nX: Float = 0F
+//        var nY: Float = 0F
+//        val constraintSet = ConstraintSet()
+//        binding.blurRectangleResize.setOnTouchListener { view, event ->
+//            when (event.action) {
+//                MotionEvent.ACTION_DOWN -> {
+//                    // 터치 시작 위치 저장
+//                    nX = view.x - event.rawX
+//                    nY = view.y - event.rawY
+//                }
+//                MotionEvent.ACTION_MOVE -> {
+//                    // blur_self_rectangle의 너비 제약조건을 변경합니다.
+//                    constraintSet.clone(binding.blurSelfLayout)
+//                    constraintSet.constrainWidth(R.id.blur_self_rectangle, (event.rawX - binding.blurSelfRectangle.x).toInt())
+//                    constraintSet.constrainHeight(R.id.blur_self_rectangle, (event.rawY - binding.blurSelfRectangle.y).toInt())
+//                    constraintSet.applyTo(binding.blurSelfLayout)
+//                }
+//            }
+//            true
+//        }
+    }
+
+    private var rectangleX = 0F
+    private var rectangleY = 0F
+    // 블러 rectangle 좌측상단 좌표 저장
+    private fun getCoordinates() {
+        val density = resources.displayMetrics.density
+        val paddingInPx = 10 * density
+        rectangleX = binding.blurSelfLayout.x + paddingInPx
+        rectangleY = binding.blurSelfLayout.y + paddingInPx
+        Log.d("blur rectangle width", binding.blurSelfRectangle.width.toString())
+        Log.d("blur rectangle height", binding.blurSelfRectangle.height.toString())
     }
 
     override fun onSurfaceTextureSizeChanged(surface: SurfaceTexture, width: Int, height: Int) {
