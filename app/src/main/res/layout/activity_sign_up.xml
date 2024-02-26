@@ -1,173 +1,192 @@
 <?xml version="1.0" encoding="utf-8"?>
-<androidx.constraintlayout.widget.ConstraintLayout xmlns:android="http://schemas.android.com/apk/res/android"
+<layout xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:app="http://schemas.android.com/apk/res-auto"
-    xmlns:tools="http://schemas.android.com/tools"
-    android:layout_width="match_parent"
-    android:layout_height="match_parent"
-    tools:context=".presentation.onboarding.SignUpActivity"
-    android:background="@color/main_black">
-    <ImageView
-        android:id="@+id/sign_up_back_btn"
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:src="@drawable/ic_mypage_back"
-        android:layout_marginStart="10dp"
-        android:layout_marginTop="20dp"
-        app:layout_constraintStart_toStartOf="parent"
-        app:layout_constraintTop_toTopOf="parent"/>
+    xmlns:tools="http://schemas.android.com/tools">
 
-    <TextView
-        android:id="@+id/id_textview"
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:text="ID"
-        android:textColor="@color/white"
-        android:textSize="13dp"
-        android:layout_marginTop="20dp"
-        android:layout_marginStart="40dp"
-        app:layout_constraintStart_toStartOf="parent"
-        app:layout_constraintTop_toBottomOf="@id/sign_up_back_btn"/>
-    <EditText
-        android:id="@+id/id_et"
+    <data>
+
+    </data>
+
+    <androidx.constraintlayout.widget.ConstraintLayout
         android:layout_width="match_parent"
-        android:layout_height="wrap_content"
-        android:hint="ID를 입력해주세요"
-        android:textSize="12dp"
-        android:textColor="@color/white"
-        android:textColorHint="@color/white_opacity_80"
-        android:backgroundTint="@color/white"
-        android:inputType="text"
-        android:layout_marginStart="35dp"
-        android:layout_marginEnd="35dp"
-        app:layout_constraintStart_toStartOf="parent"
-        app:layout_constraintEnd_toEndOf="parent"
-        app:layout_constraintTop_toBottomOf="@id/id_textview"/>
-    <TextView
-        android:id="@+id/pw_textview"
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:text="PW"
-        android:textColor="@color/white"
-        android:textSize="13dp"
-        android:layout_marginTop="20dp"
-        android:layout_marginStart="40dp"
-        app:layout_constraintStart_toStartOf="parent"
-        app:layout_constraintTop_toBottomOf="@id/id_et"/>
-    <EditText
-        android:id="@+id/pw_et"
-        android:layout_width="match_parent"
-        android:layout_height="wrap_content"
-        android:hint="비밀번호를 입력해주세요"
-        android:textSize="12dp"
-        android:textColor="@color/white"
-        android:textColorHint="@color/white_opacity_80"
-        android:backgroundTint="@color/white"
-        android:inputType="textPassword"
-        android:drawableEnd="@drawable/ic_eye_white"
-        android:layout_marginStart="35dp"
-        android:layout_marginEnd="35dp"
-        app:layout_constraintStart_toStartOf="parent"
-        app:layout_constraintEnd_toEndOf="parent"
-        app:layout_constraintTop_toBottomOf="@id/pw_textview"/>
-    <TextView
-        android:id="@+id/pw_check_textview"
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:text="PW 확인"
-        android:textColor="@color/white"
-        android:textSize="13dp"
-        android:layout_marginTop="20dp"
-        android:layout_marginStart="40dp"
-        app:layout_constraintStart_toStartOf="parent"
-        app:layout_constraintTop_toBottomOf="@id/pw_et"/>
-    <EditText
-        android:id="@+id/pw_check_et"
-        android:layout_width="match_parent"
-        android:layout_height="wrap_content"
-        android:hint="비밀번호를 한 번 더 입력해주세요"
-        android:textSize="12dp"
-        android:textColor="@color/white"
-        android:textColorHint="@color/white_opacity_80"
-        android:backgroundTint="@color/white"
-        android:inputType="textPassword"
-        android:drawableEnd="@drawable/ic_eye_white"
-        android:layout_marginStart="35dp"
-        android:layout_marginEnd="35dp"
-        app:layout_constraintStart_toStartOf="parent"
-        app:layout_constraintEnd_toEndOf="parent"
-        app:layout_constraintTop_toBottomOf="@id/pw_check_textview"/>
-    <TextView
-        android:id="@+id/gender_textview"
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:text="성별(선택)"
-        android:textColor="@color/white"
-        android:textSize="13dp"
-        android:layout_marginTop="20dp"
-        android:layout_marginStart="40dp"
-        app:layout_constraintStart_toStartOf="parent"
-        app:layout_constraintTop_toBottomOf="@id/pw_check_et"/>
-    <RadioGroup
-        android:id="@+id/gender_radio_group"
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:layout_marginStart="40dp"
-        android:orientation="horizontal"
-        android:layout_marginTop="10dp"
-        app:layout_constraintStart_toStartOf="parent"
-        app:layout_constraintTop_toBottomOf="@id/gender_textview">
-        <RadioButton
-            android:layout_width="80dp"
-            android:layout_height="30dp"
-            android:text="남"
+        android:layout_height="match_parent"
+        tools:context=".presentation.onboarding.SignUpActivity"
+        android:background="@color/main_black">
+
+        <ImageView
+            android:id="@+id/sign_up_back_btn"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:src="@drawable/ic_mypage_back"
+            android:layout_marginStart="10dp"
+            android:layout_marginTop="20dp"
+            app:layout_constraintStart_toStartOf="parent"
+            app:layout_constraintTop_toTopOf="parent" />
+
+        <TextView
+            android:id="@+id/id_textview"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="ID"
+            android:textColor="@color/white"
+            android:textSize="13dp"
+            android:layout_marginTop="20dp"
+            android:layout_marginStart="40dp"
+            app:layout_constraintStart_toStartOf="parent"
+            app:layout_constraintTop_toBottomOf="@id/sign_up_back_btn" />
+
+        <EditText
+            android:id="@+id/id_et"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:hint="ID를 입력해주세요"
             android:textSize="12dp"
+            android:textColor="@color/white"
+            android:textColorHint="@color/white_opacity_80"
+            android:backgroundTint="@color/white"
+            android:inputType="text"
+            android:layout_marginStart="35dp"
+            android:layout_marginEnd="35dp"
+            app:layout_constraintStart_toStartOf="parent"
+            app:layout_constraintEnd_toEndOf="parent"
+            app:layout_constraintTop_toBottomOf="@id/id_textview" />
+
+        <TextView
+            android:id="@+id/pw_textview"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="PW"
+            android:textColor="@color/white"
+            android:textSize="13dp"
+            android:layout_marginTop="20dp"
+            android:layout_marginStart="40dp"
+            app:layout_constraintStart_toStartOf="parent"
+            app:layout_constraintTop_toBottomOf="@id/id_et" />
+
+        <EditText
+            android:id="@+id/pw_et"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:hint="비밀번호를 입력해주세요"
+            android:textSize="12dp"
+            android:textColor="@color/white"
+            android:textColorHint="@color/white_opacity_80"
+            android:backgroundTint="@color/white"
+            android:inputType="textPassword"
+            android:drawableEnd="@drawable/ic_eye_white"
+            android:layout_marginStart="35dp"
+            android:layout_marginEnd="35dp"
+            app:layout_constraintStart_toStartOf="parent"
+            app:layout_constraintEnd_toEndOf="parent"
+            app:layout_constraintTop_toBottomOf="@id/pw_textview" />
+
+        <TextView
+            android:id="@+id/pw_check_textview"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="PW 확인"
+            android:textColor="@color/white"
+            android:textSize="13dp"
+            android:layout_marginTop="20dp"
+            android:layout_marginStart="40dp"
+            app:layout_constraintStart_toStartOf="parent"
+            app:layout_constraintTop_toBottomOf="@id/pw_et" />
+
+        <EditText
+            android:id="@+id/pw_check_et"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:hint="비밀번호를 한 번 더 입력해주세요"
+            android:textSize="12dp"
+            android:textColor="@color/white"
+            android:textColorHint="@color/white_opacity_80"
+            android:backgroundTint="@color/white"
+            android:inputType="textPassword"
+            android:drawableEnd="@drawable/ic_eye_white"
+            android:layout_marginStart="35dp"
+            android:layout_marginEnd="35dp"
+            app:layout_constraintStart_toStartOf="parent"
+            app:layout_constraintEnd_toEndOf="parent"
+            app:layout_constraintTop_toBottomOf="@id/pw_check_textview" />
+
+        <TextView
+            android:id="@+id/gender_textview"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="성별(선택)"
+            android:textColor="@color/white"
+            android:textSize="13dp"
+            android:layout_marginTop="20dp"
+            android:layout_marginStart="40dp"
+            app:layout_constraintStart_toStartOf="parent"
+            app:layout_constraintTop_toBottomOf="@id/pw_check_et" />
+
+        <RadioGroup
+            android:id="@+id/gender_radio_group"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_marginStart="40dp"
+            android:orientation="horizontal"
+            android:layout_marginTop="10dp"
+            app:layout_constraintStart_toStartOf="parent"
+            app:layout_constraintTop_toBottomOf="@id/gender_textview">
+
+            <RadioButton
+                android:layout_width="80dp"
+                android:layout_height="30dp"
+                android:text="남"
+                android:textSize="12dp"
+                android:fontFamily="@font/pretendard_semibold"
+                android:textColor="@color/main_black"
+                android:textAlignment="center"
+                android:background="@drawable/selector_gender_radio_button"
+                android:button="@null" />
+
+            <RadioButton
+                android:layout_width="80dp"
+                android:layout_height="30dp"
+                android:text="여"
+                android:textSize="12dp"
+                android:fontFamily="@font/pretendard_semibold"
+                android:textColor="@color/main_black"
+                android:textAlignment="center"
+                android:background="@drawable/selector_gender_radio_button"
+                android:button="@null" />
+        </RadioGroup>
+
+        <TextView
+            android:id="@+id/photo_textview"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="사진(선택)"
+            android:textColor="@color/white"
+            android:textSize="13dp"
+            android:layout_marginTop="20dp"
+            android:layout_marginStart="40dp"
+            app:layout_constraintStart_toStartOf="parent"
+            app:layout_constraintTop_toBottomOf="@id/gender_radio_group" />
+
+        <ImageView
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:src="@drawable/ic_signup_photo_pick"
+            android:layout_marginTop="10dp"
+            android:layout_marginStart="40dp"
+            app:layout_constraintStart_toStartOf="parent"
+            app:layout_constraintTop_toBottomOf="@id/photo_textview" />
+
+        <androidx.appcompat.widget.AppCompatButton
+            android:id="@+id/sign_up_btn"
+            android:layout_width="300dp"
+            android:layout_height="40dp"
+            android:text="회원가입"
+            android:background="@drawable/background_pink_radius_5"
             android:fontFamily="@font/pretendard_semibold"
             android:textColor="@color/main_black"
-            android:textAlignment="center"
-            android:background="@drawable/selector_gender_radio_button"
-            android:button="@null"/>
-        <RadioButton
-            android:layout_width="80dp"
-            android:layout_height="30dp"
-            android:text="여"
-            android:textSize="12dp"
-            android:fontFamily="@font/pretendard_semibold"
-            android:textColor="@color/main_black"
-            android:textAlignment="center"
-            android:background="@drawable/selector_gender_radio_button"
-            android:button="@null"/>
-    </RadioGroup>
-    <TextView
-        android:id="@+id/photo_textview"
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:text="사진(선택)"
-        android:textColor="@color/white"
-        android:textSize="13dp"
-        android:layout_marginTop="20dp"
-        android:layout_marginStart="40dp"
-        app:layout_constraintStart_toStartOf="parent"
-        app:layout_constraintTop_toBottomOf="@id/gender_radio_group"/>
+            android:layout_marginBottom="25dp"
+            app:layout_constraintStart_toStartOf="parent"
+            app:layout_constraintEnd_toEndOf="parent"
+            app:layout_constraintBottom_toBottomOf="parent" />
 
-    <ImageView
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:src="@drawable/ic_signup_photo_pick"
-        android:layout_marginTop="10dp"
-        android:layout_marginStart="40dp"
-        app:layout_constraintStart_toStartOf="parent"
-        app:layout_constraintTop_toBottomOf="@id/photo_textview"/>
-    <androidx.appcompat.widget.AppCompatButton
-        android:id="@+id/sign_up_btn"
-        android:layout_width="300dp"
-        android:layout_height="40dp"
-        android:text="회원가입"
-        android:background="@drawable/background_pink_radius_5"
-        android:fontFamily="@font/pretendard_semibold"
-        android:textColor="@color/main_black"
-        android:layout_marginBottom="25dp"
-        app:layout_constraintStart_toStartOf="parent"
-        app:layout_constraintEnd_toEndOf="parent"
-        app:layout_constraintBottom_toBottomOf="parent"/>
-
-</androidx.constraintlayout.widget.ConstraintLayout>
+    </androidx.constraintlayout.widget.ConstraintLayout>
+</layout>
