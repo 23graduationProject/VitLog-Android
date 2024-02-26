@@ -86,7 +86,7 @@ class EditFragment : Fragment(), TextureView.SurfaceTextureListener,
     private fun buttonActions() {
         // 수동 블러 버튼 클릭
         binding.editBlurSelfBtn.setOnClickListener {
-            binding.videoBlurRectangle.visibility = View.VISIBLE
+            binding.blurSelfRectangle.visibility = View.VISIBLE
         }
 
         // 수동 블러 rectangle 드래그
@@ -242,7 +242,7 @@ class EditFragment : Fragment(), TextureView.SurfaceTextureListener,
     private fun dragBlurRectangle() {
         var dX: Float = 0F
         var dY: Float = 0F
-        binding.videoBlurRectangle.setOnTouchListener { view, event ->
+        binding.blurSelfFramelayout.setOnTouchListener { view, event ->
             when (event.action) {
                 MotionEvent.ACTION_DOWN -> {
                     // 터치 시작 위치 저장
@@ -251,7 +251,7 @@ class EditFragment : Fragment(), TextureView.SurfaceTextureListener,
                 }
                 MotionEvent.ACTION_MOVE -> {
                     // ImageView 위치 업데이트
-                    binding.videoBlurRectangle.animate()
+                    binding.blurSelfFramelayout.animate()
                         .x(event.rawX + dX)
                         .y(event.rawY + dY)
                         .setDuration(0)
@@ -266,7 +266,7 @@ class EditFragment : Fragment(), TextureView.SurfaceTextureListener,
             return@setOnTouchListener true
         }
 
-        binding.videoBlurRectangle.setOnClickListener {
+        binding.blurSelfFramelayout.setOnClickListener {
             // 클릭 시
         }
     }
