@@ -39,7 +39,7 @@ class LoginActivity : BindingActivity<ActivityLoginBinding>(R.layout.activity_lo
     }
 
     private fun addObserver() {
-        setPostSignUpStateObserver()
+        setPostLoginStateObserver()
 
     }
 
@@ -86,7 +86,7 @@ class LoginActivity : BindingActivity<ActivityLoginBinding>(R.layout.activity_lo
     }
 
 
-    private fun setPostSignUpStateObserver() {
+    private fun setPostLoginStateObserver() {
         loginViewModel.postLoginState.flowWithLifecycle(lifecycle)
             .onEach { state ->
                 when (state) {
