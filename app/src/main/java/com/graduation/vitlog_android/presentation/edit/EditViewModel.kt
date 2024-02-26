@@ -3,7 +3,9 @@ package com.graduation.vitlog_android.presentation.edit
 import android.content.Context
 import android.graphics.Bitmap
 import android.media.MediaMetadataRetriever
+import android.media.MediaScannerConnection
 import android.net.Uri
+import android.os.Environment
 import androidx.lifecycle.MutableLiveData
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
@@ -25,7 +27,11 @@ import okhttp3.RequestBody.Companion.toRequestBody
 import okhttp3.ResponseBody
 import retrofit2.HttpException
 import timber.log.Timber
+import java.io.File
+import java.io.FileOutputStream
 import java.io.IOException
+import java.io.InputStream
+import java.io.OutputStream
 import javax.inject.Inject
 
 @HiltViewModel
@@ -49,6 +55,8 @@ class EditViewModel @Inject constructor(
     val getPresignedUrlState: StateFlow<UiState<ResponseGetPresignedUrlDto>> =
         _getPresignedUrlState.asStateFlow()
 
+    private val _getMosaicedVideoState = MutableStateFlow<UiState<ResponseBody>>(UiState.Loading)
+    val getMosaicedVideoState: StateFlow<UiState<ResponseBody>> = _getMosaicedVideoState.asStateFlow()
 
     fun loadFrames(context: Context, uri: Uri, videoLength: Long) {
         val metaDataSource = MediaMetadataRetriever()
@@ -102,7 +110,7 @@ class EditViewModel @Inject constructor(
     fun getPresignedUrl() {
         viewModelScope.launch {
             _getPresignedUrlState.value = UiState.Loading
-            videoRepository.getPresignedUrl(1)
+            videoRepository.getPresignedUrl(1, "hi")
                 .onSuccess { response ->
                     _getPresignedUrlState.value = UiState.Success(response)
                     Timber.e("성공 $response")
@@ -154,6 +162,26 @@ class EditViewModel @Inject constructor(
         }
     }
 
+    fun getMosaicedVideo(
+        uid : Int,
+        fileName : String
+    ) {
+        viewModelScope.launch {
+            _getMosaicedVideoState.value = UiState.Loading
+            videoRepository.getMosaicedVideo(uid, fileName)
+                .onSuccess { response ->
+                    _getMosaicedVideoState.value = UiState.Success(response)
+                    Timber.e("성공 $response")
+                }.onFailure { t ->
+                    if (t is HttpException) {
+                        val errorResponse = t.response()?.errorBody()?.string()
+                        Timber.e("HTTP 실패: $errorResponse")
+                    }
+                    _getMosaicedVideoState.value = UiState.Failure("${t.message}")
+                }
+        }
+    }
+
 
     private var videoRequestBody: ContentUriRequestBody? = null
 
@@ -166,4 +194,84 @@ class EditViewModel @Inject constructor(
     }
 
 
+    fun saveFile(context: Context, body: ResponseBody?) {
+        var inputStream: InputStream? = null
+        var outputStream: OutputStream? = null
+
+        try {
+            val fileReader = ByteArray(4096)
+            val fileSize = body?.contentLength()
+            var fileSizeDownloaded: Long = 0
+            inputStream = body?.byteStream()
+            outputStream = FileOutputStream(File("path/to/your/file"))
+
+            while (true) {
+                val read = inputStream?.read(fileReader)
+                if (read == -1) {
+                    break
+                }
+                outputStream.write(fileReader, 0, read!!)
+                fileSizeDownloaded += read.toLong()
+            }
+
+            outputStream.flush()
+
+        } catch (e: IOException) {
+        } finally {
+            inputStream?.close()
+            outputStream?.close()
+        }
+        writeResponseBodyToDisk(context,body)
+    }
+}
+
+
+private fun writeResponseBodyToDisk(context: Context, body: ResponseBody?): Boolean {
+    return try {
+        // 저장할 파일의 경로 지정
+        val filePath = Environment.getExternalStoragePublicDirectory(Environment.DIRECTORY_DOWNLOADS).toString() + "/your_video_name.mp4"
+        val videoFile = File(filePath)
+
+        var inputStream: InputStream? = null
+        var outputStream: OutputStream? = null
+
+        try {
+            val fileReader = ByteArray(4096)
+            val fileSize = body?.contentLength()
+            var fileSizeDownloaded: Long = 0
+            inputStream = body?.byteStream()
+            outputStream = FileOutputStream(videoFile)
+
+            while (true) {
+                val read = inputStream?.read(fileReader) ?: -1
+
+                if (read == -1) {
+                    break
+                }
+
+                outputStream.write(fileReader, 0, read)
+                fileSizeDownloaded += read.toLong()
+            }
+
+            outputStream.flush()
+
+            // 미디어 스캔 진행
+            MediaScannerConnection.scanFile(
+                context,
+                arrayOf(videoFile.absolutePath),
+                arrayOf("video/mp4")
+            ) { path, uri ->
+                Timber.e("갤러리 저장 성공")
+            }
+
+            true
+        } catch (e: IOException) {
+            false
+        } finally {
+            inputStream?.close()
+            outputStream?.close()
+        }
+    } catch (e: IOException) {
+        false
+    }
 }

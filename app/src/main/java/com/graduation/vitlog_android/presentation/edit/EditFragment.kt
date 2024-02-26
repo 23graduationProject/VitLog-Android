@@ -75,6 +75,7 @@ class EditFragment : Fragment(), TextureView.SurfaceTextureListener,
             //setPostVideoStateObserver()
             setPutVideoToPresignedUrlStateObserver()
             setGetPresignedUrlStateObserver()
+            setGetMosaicedVideoStateObserver()
         }
         return binding.root
     }
@@ -159,6 +160,27 @@ class EditFragment : Fragment(), TextureView.SurfaceTextureListener,
             .onEach { state ->
                 when (state) {
                     is UiState.Success -> {
+                        Log.d("Success", state.data.toString())
+                        editViewModel.getMosaicedVideo(1,"hi")
+                    }
+                    is UiState.Failure -> {
+                        Log.d("Failure", state.msg)
+                    }
+
+                    is UiState.Empty -> Unit
+                    is UiState.Loading -> Unit
+                    else -> {}
+                }
+            }.launchIn(viewLifecycleOwner.lifecycleScope)
+    }
+
+
+    private fun setGetMosaicedVideoStateObserver() {
+        editViewModel.getMosaicedVideoState.flowWithLifecycle(viewLifecycleOwner.lifecycle)
+            .onEach { state ->
+                when (state) {
+                    is UiState.Success -> {
+                        editViewModel.saveFile(requireContext(),state.data)
                         Log.d("Success", state.data.toString())
                     }
                     is UiState.Failure -> {

@@ -12,6 +12,7 @@ import retrofit2.http.POST
 import retrofit2.http.PUT
 import retrofit2.http.Part
 import retrofit2.http.Path
+import retrofit2.http.Query
 import retrofit2.http.Url
 
 interface VideoApi {
@@ -24,13 +25,20 @@ interface VideoApi {
 
     @GET("api/getPreSignedUrl/{uid}")
     suspend fun getPresignedUrl(
-        @Path("uid") uid: Int
+        @Path("uid") uid: Int,
+        @Query("fileName") fileName: String
     ): ResponseGetPresignedUrlDto
 
     @PUT
     suspend fun putVideoToPresignedUrl(
         @Url url: String,
         @Body file: RequestBody
+    ): ResponseBody
+
+    @GET("api/getMosaicedVideo/{uid}/{fileName}")
+    suspend fun getMosaicedVideo(
+        @Path("uid") uid: Int,
+        @Path("fileName") fileName: String
     ): ResponseBody
 
 }
