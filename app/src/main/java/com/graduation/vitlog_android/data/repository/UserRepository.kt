@@ -3,6 +3,7 @@ package com.graduation.vitlog_android.data.repository
 import com.graduation.vitlog_android.data.api.UserApi
 import com.graduation.vitlog_android.model.request.RequestLoginDto
 import com.graduation.vitlog_android.model.request.RequestSignUpDto
+import com.graduation.vitlog_android.model.response.ResponseLoginDto
 import javax.inject.Inject
 
 class UserRepository @Inject constructor(
@@ -16,7 +17,7 @@ class UserRepository @Inject constructor(
 
     suspend fun postLogin(
         requestLoginDto: RequestLoginDto
-    ): Result<String> = runCatching {
+    ): Result<ResponseLoginDto> = runCatching {
         api.postLogin(requestLoginDto)
     }
 }
