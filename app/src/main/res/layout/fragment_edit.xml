@@ -62,7 +62,7 @@
             android:layout_height="200dp" />
 
         <androidx.constraintlayout.widget.ConstraintLayout
-            android:id="@+id/blur_self_framelayout"
+            android:id="@+id/blur_self_layout"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
             android:layout_gravity="center"
