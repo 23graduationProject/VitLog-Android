@@ -32,5 +32,12 @@ class VideoRepository @Inject constructor(
     ): Result<ResponseBody> = runCatching {
         api.putVideoToPresignedUrl(url = url, file = file)
     }
+
+    suspend fun getMosaicedVideo(
+        uid: Int,
+        fileName: String
+    ): Result<ResponseBody> = runCatching {
+        api.getMosaicedVideo(uid = uid, fileName = fileName)
+    }
 }
 

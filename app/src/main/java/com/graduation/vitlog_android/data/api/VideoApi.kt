@@ -39,6 +39,6 @@ interface VideoApi {
     suspend fun getMosaicedVideo(
         @Path("uid") uid: Int,
         @Path("fileName") fileName: String
-    ): ResponseGetPresignedUrlDto
+    ): ResponseBody
 
 }
