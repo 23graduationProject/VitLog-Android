@@ -78,6 +78,12 @@
                 android:layout_height="20dp"
                 android:src="@drawable/ic_x_circle"
                 android:layout_gravity="top|start"/>
+            <ImageView
+                android:id="@+id/blur_rectangle_resize"
+                android:layout_width="20dp"
+                android:layout_height="20dp"
+                android:src="@drawable/ic_resize"
+                android:layout_gravity="bottom|end"/>
         </FrameLayout>
     </FrameLayout>
 
