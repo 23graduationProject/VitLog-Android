@@ -86,7 +86,7 @@ class EditFragment : Fragment(), TextureView.SurfaceTextureListener,
     private fun buttonActions() {
         // 수동 블러 버튼 클릭
         binding.editBlurSelfBtn.setOnClickListener {
-            binding.blurSelfRectangle.visibility = View.VISIBLE
+            binding.blurSelfFramelayout.visibility = View.VISIBLE
         }
 
         // 수동 블러 rectangle 드래그
@@ -268,6 +268,10 @@ class EditFragment : Fragment(), TextureView.SurfaceTextureListener,
 
         binding.blurSelfFramelayout.setOnClickListener {
             // 클릭 시
+        }
+
+        binding.blurRectangleX.setOnClickListener {
+            binding.blurSelfFramelayout.visibility = View.GONE
         }
     }
 
