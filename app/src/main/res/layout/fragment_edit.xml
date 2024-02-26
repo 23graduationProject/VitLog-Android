@@ -61,6 +61,7 @@
             android:layout_width="match_parent"
             android:layout_height="200dp" />
         <ImageView
+            android:id="@+id/video_blur_rectangle"
             android:layout_width="70dp"
             android:layout_height="70dp"
             android:src="@drawable/rectangle_blur_self"

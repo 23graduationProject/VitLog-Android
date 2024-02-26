@@ -11,6 +11,7 @@ import android.os.Build
 import android.os.Bundle
 import android.util.Log
 import android.view.LayoutInflater
+import android.view.MotionEvent
 import android.view.Surface
 import android.view.TextureView
 import android.view.View
@@ -76,7 +77,20 @@ class EditFragment : Fragment(), TextureView.SurfaceTextureListener,
             setPutVideoToPresignedUrlStateObserver()
             setGetPresignedUrlStateObserver()
         }
+
+        buttonActions()
+
         return binding.root
+    }
+
+    private fun buttonActions() {
+        // 수동 블러 버튼 클릭
+        binding.editBlurSelfBtn.setOnClickListener {
+            binding.videoBlurRectangle.visibility = View.VISIBLE
+        }
+
+        // 수동 블러 rectangle 드래그
+        dragBlurRectangle()
     }
 
     private fun setupMediaRetrieverAndSeekBar(uri: Uri) {
@@ -221,6 +235,39 @@ class EditFragment : Fragment(), TextureView.SurfaceTextureListener,
             mp!!.pause()
             binding.videoPlayBtn.visibility = View.VISIBLE
             binding.videoPauseBtn.visibility = View.GONE
+        }
+    }
+
+    // 수동 블러 rectangle 드래그
+    private fun dragBlurRectangle() {
+        var dX: Float = 0F
+        var dY: Float = 0F
+        binding.videoBlurRectangle.setOnTouchListener { view, event ->
+            when (event.action) {
+                MotionEvent.ACTION_DOWN -> {
+                    // 터치 시작 위치 저장
+                    dX = view.x - event.rawX
+                    dY = view.y - event.rawY
+                }
+                MotionEvent.ACTION_MOVE -> {
+                    // ImageView 위치 업데이트
+                    binding.videoBlurRectangle.animate()
+                        .x(event.rawX + dX)
+                        .y(event.rawY + dY)
+                        .setDuration(0)
+                        .start()
+                }
+                MotionEvent.ACTION_UP -> {
+                    // 사용자가 뷰를 눌렀다가 뗐을 때 performClick() 메서드 호출
+                    view.performClick()
+                }
+                else -> return@setOnTouchListener false
+            }
+            return@setOnTouchListener true
+        }
+
+        binding.videoBlurRectangle.setOnClickListener {
+            // 클릭 시
         }
     }
 
