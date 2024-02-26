@@ -4,17 +4,17 @@
     xmlns:tools="http://schemas.android.com/tools"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
-    tools:context=".presentation.MainActivity">
+    tools:context=".presentation.edit.EditActivity">
 
     <androidx.fragment.app.FragmentContainerView
-        android:id="@+id/home_fragment_view"
-        android:name="com.graduation.vitlog_android.HomeFragment"
+        android:id="@+id/edit_fragment_view"
+        android:name="com.graduation.vitlog_android.presentation.edit.EditFragment"
         android:layout_width="match_parent"
         android:layout_height="match_parent"
         app:layout_constraintBottom_toBottomOf="parent"
         app:layout_constraintEnd_toEndOf="parent"
         app:layout_constraintStart_toStartOf="parent"
         app:layout_constraintTop_toTopOf="parent"
-        tools:layout="@layout/fragment_home" />
+        tools:layout="@layout/fragment_edit" />
 
 </androidx.constraintlayout.widget.ConstraintLayout>
