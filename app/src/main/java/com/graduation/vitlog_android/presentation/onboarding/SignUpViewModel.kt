@@ -19,13 +19,13 @@ class SignUpViewModel @Inject constructor(
     private val userRepository: UserRepository
 ) : ViewModel() {
 
-    private val _postSignUpState = MutableStateFlow<UiState<Unit>>(UiState.Loading)
-    val postSignUpState: StateFlow<UiState<Unit>> = _postSignUpState.asStateFlow()
+    private val _postSignUpState = MutableStateFlow<UiState<String>>(UiState.Loading)
+    val postSignUpState: StateFlow<UiState<String>> = _postSignUpState.asStateFlow()
 
-    private val id: MutableStateFlow<String> get() = _id
+     val id: MutableStateFlow<String> get() = _id
     private var _id = MutableStateFlow<String>("")
 
-    private val password: MutableStateFlow<String> get() = _password
+     val password: MutableStateFlow<String> get() = _password
     private var _password = MutableStateFlow<String>("")
 
     private val isPasswordSame: MutableStateFlow<Boolean> get() = _isPasswordSame

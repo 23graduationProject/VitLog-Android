@@ -10,13 +10,13 @@ class UserRepository @Inject constructor(
 ) {
     suspend fun postSignUp(
         requestSignUpDto: RequestSignUpDto
-    ): Result<Unit> = runCatching {
+    ): Result<String> = runCatching {
         api.postSignUp(requestSignUpDto)
     }
 
     suspend fun postLogin(
         requestLoginDto: RequestLoginDto
-    ): Result<Unit> = runCatching {
+    ): Result<String> = runCatching {
         api.postLogin(requestLoginDto)
     }
 }

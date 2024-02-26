@@ -9,10 +9,10 @@ interface UserApi {
     @POST("api/user/signup")
     suspend fun postSignUp(
         @Body requestSignUpDto : RequestSignUpDto
-    ): Unit
+    ): String
 
     @POST("api/user/login")
     suspend fun postLogin(
         @Body requestLoginDto : RequestLoginDto
-    ): Unit
+    ): String
 }
