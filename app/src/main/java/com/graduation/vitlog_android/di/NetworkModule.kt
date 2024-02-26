@@ -1,6 +1,7 @@
 package com.graduation.vitlog_android.di
 
 import com.airbnb.lottie.BuildConfig
+import com.graduation.vitlog_android.data.api.UserApi
 import com.graduation.vitlog_android.data.api.VideoApi
 import com.jakewharton.retrofit2.converter.kotlinx.serialization.asConverterFactory
 import dagger.Module
@@ -69,5 +70,9 @@ object NetworkModule {
 
     @Provides
     @Singleton
-    fun providePhotoApi(retrofit: Retrofit): VideoApi = retrofit.create()
+    fun provideVideoApi(retrofit: Retrofit): VideoApi = retrofit.create()
+
+    @Provides
+    @Singleton
+    fun provideUserApi(retrofit: Retrofit): UserApi = retrofit.create()
 }

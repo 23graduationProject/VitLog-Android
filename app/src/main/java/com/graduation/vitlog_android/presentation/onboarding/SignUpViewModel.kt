@@ -22,7 +22,43 @@ class SignUpViewModel @Inject constructor(
     private val _postSignUpState = MutableStateFlow<UiState<Unit>>(UiState.Loading)
     val postSignUpState: StateFlow<UiState<Unit>> = _postSignUpState.asStateFlow()
 
-    fun postSingUp(
+    private val id: MutableStateFlow<String> get() = _id
+    private var _id = MutableStateFlow<String>("")
+
+    private val password: MutableStateFlow<String> get() = _password
+    private var _password = MutableStateFlow<String>("")
+
+    private val isPasswordSame: MutableStateFlow<Boolean> get() = _isPasswordSame
+    private var _isPasswordSame = MutableStateFlow<Boolean>(false)
+
+    val isInputValid: MutableStateFlow<Boolean> get() = _isInputValid
+    private var _isInputValid = MutableStateFlow<Boolean>(false)
+    fun updateUserId(
+        id: String
+    ){
+        _id.value = id
+        isInputValid()
+    }
+
+    fun updateUserPassword(
+        pw: String
+    ){
+        _password.value = pw
+        isInputValid()
+    }
+
+    fun isPasswordSame(
+        recheckPw : String
+    ){
+        _isPasswordSame.value =  (recheckPw == _password.value)
+        isInputValid()
+    }
+
+    private fun isInputValid(){
+        _isInputValid.value = _id.value.length <= 8 && _password.value.length <=8 && _isPasswordSame.value
+    }
+
+    fun postSignUp(
         id: String,
         password: String
     ) {
