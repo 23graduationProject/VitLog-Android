@@ -1,0 +1,76 @@
+<?xml version="1.0" encoding="utf-8"?>
+<androidx.constraintlayout.widget.ConstraintLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    xmlns:tools="http://schemas.android.com/tools"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    tools:context=".presentation.onboarding.LoginActivity"
+    android:background="@color/main_black">
+
+    <ImageView
+        android:id="@+id/logo_iv"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_marginTop="150dp"
+        android:src="@drawable/app_logo_pink"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintTop_toTopOf="parent" />
+
+    <EditText
+        android:id="@+id/id_et"
+        android:layout_width="300dp"
+        android:layout_height="wrap_content"
+        android:layout_marginTop="65dp"
+        android:backgroundTint="@color/white"
+        android:inputType="text"
+        android:hint="ID"
+        android:textColorHint="@color/white"
+        android:textSize="15dp"
+        android:textColor="@color/white"
+        android:fontFamily="@font/pretendard_regular"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintTop_toBottomOf="@id/logo_iv"/>
+    <EditText
+        android:id="@+id/pw_et"
+        android:layout_width="300dp"
+        android:layout_height="wrap_content"
+        android:layout_marginTop="20dp"
+        android:backgroundTint="@color/white"
+        android:inputType="textPassword"
+        android:hint="PW"
+        android:textColorHint="@color/white"
+        android:textSize="15dp"
+        android:textColor="@color/white"
+        android:fontFamily="@font/pretendard_regular"
+        android:drawableEnd="@drawable/ic_eye_white"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintTop_toBottomOf="@id/id_et"/>
+
+    <androidx.appcompat.widget.AppCompatButton
+        android:id="@+id/login_btn"
+        android:layout_width="300dp"
+        android:layout_height="40dp"
+        android:text="로그인"
+        android:background="@drawable/background_pink_radius_5"
+        android:fontFamily="@font/pretendard_semibold"
+        android:textColor="@color/main_black"
+        android:layout_marginTop="25dp"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintTop_toBottomOf="@id/pw_et"/>
+
+    <Button
+        android:id="@+id/signup_btn"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:text="회원가입"
+        android:background="@color/transparent"
+        android:textColor="@color/white"
+        android:fontFamily="@font/pretendard_semibold"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintBottom_toBottomOf="parent"/>
+</androidx.constraintlayout.widget.ConstraintLayout>
