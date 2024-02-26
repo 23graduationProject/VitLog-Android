@@ -2,29 +2,113 @@ package com.graduation.vitlog_android.presentation.onboarding
 
 import android.content.Intent
 import android.os.Bundle
-import androidx.appcompat.app.AppCompatActivity
+import android.util.Log
+import androidx.activity.viewModels
+import androidx.core.widget.doAfterTextChanged
+import androidx.lifecycle.flowWithLifecycle
+import androidx.lifecycle.lifecycleScope
+import com.graduation.vitlog_android.R
 import com.graduation.vitlog_android.databinding.ActivityLoginBinding
 import com.graduation.vitlog_android.presentation.MainActivity
+import com.graduation.vitlog_android.util.binding.BindingActivity
+import com.graduation.vitlog_android.util.view.UiState
 import dagger.hilt.android.AndroidEntryPoint
+import kotlinx.coroutines.flow.collectLatest
+import kotlinx.coroutines.flow.launchIn
+import kotlinx.coroutines.flow.onEach
+import kotlinx.coroutines.launch
 
 @AndroidEntryPoint
-class LoginActivity : AppCompatActivity() {
+class LoginActivity : BindingActivity<ActivityLoginBinding>(R.layout.activity_login) {
 
-    private lateinit var binding: ActivityLoginBinding
-
+    private val loginViewModel by viewModels<LoginViewModel>()
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         binding = ActivityLoginBinding.inflate(layoutInflater)
         setContentView(binding.root)
+        addListener()
+        addObserver()
+    }
 
-        binding.loginBtn.setOnClickListener {
-            val intent = Intent(this, MainActivity::class.java)
-            startActivity(intent)
+
+    private fun addListener() {
+        checkIsInputValid()
+        updateRegisterButtonState()
+        setLoginButtonClickListener()
+        setSignUpButtonClickListener()
+    }
+
+    private fun addObserver() {
+        setPostSignUpStateObserver()
+
+    }
+
+    private fun checkIsInputValid() {
+        binding.etLoginId.doAfterTextChanged { text ->
+            loginViewModel.updateIdInput(text.toString())
+            loginViewModel.isInputValid()
         }
+        binding.etLoginPw.doAfterTextChanged { text ->
+            loginViewModel.updatePasswordInput(text.toString())
+            loginViewModel.isInputValid()
+        }
+    }
 
+    private fun updateRegisterButtonState() {
+        lifecycleScope.launch {
+            loginViewModel.isInputValid.collectLatest {
+                if (it) {
+                    binding.loginBtn.background = getDrawable(R.drawable.background_pink_radius_5)
+                    binding.loginBtn.isEnabled = true
+                } else {
+                    binding.loginBtn.background = getDrawable(R.drawable.background_gray_radius_5)
+                    binding.loginBtn.isEnabled = false
+                }
+            }
+        }
+    }
+
+    private fun setLoginButtonClickListener() {
+        binding.loginBtn.setOnClickListener {
+            loginViewModel.postLogin(
+                loginViewModel.id.value,
+                loginViewModel.password.value
+            )
+        }
+    }
+
+
+    private fun setSignUpButtonClickListener() {
         binding.signupBtn.setOnClickListener {
             val intent = Intent(this, SignUpActivity::class.java)
             startActivity(intent)
         }
+    }
+
+
+    private fun setPostSignUpStateObserver() {
+        loginViewModel.postLoginState.flowWithLifecycle(lifecycle)
+            .onEach { state ->
+                when (state) {
+                    is UiState.Success -> {
+                        Log.d("Success", state.data.toString())
+                        navigateToMain()
+                        finish()
+                    }
+
+                    is UiState.Failure -> {
+                        Log.d("Failure", state.msg)
+                    }
+
+                    is UiState.Empty -> Unit
+                    is UiState.Loading -> Unit
+                    else -> {}
+                }
+            }.launchIn(lifecycleScope)
+    }
+
+    private fun navigateToMain() {
+        val intent = Intent(this, MainActivity::class.java)
+        startActivity(intent)
     }
 }
