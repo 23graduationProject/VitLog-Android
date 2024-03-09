@@ -11,6 +11,7 @@ import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.graduation.vitlog_android.data.repository.VideoRepository
 import com.graduation.vitlog_android.model.response.ResponseGetPresignedUrlDto
+import com.graduation.vitlog_android.model.response.ResponseGetSubtitleDto
 import com.graduation.vitlog_android.model.response.ResponsePostVideoDto
 import com.graduation.vitlog_android.util.multipart.ContentUriRequestBody
 import com.graduation.vitlog_android.util.view.UiState
@@ -57,6 +58,9 @@ class EditViewModel @Inject constructor(
 
     private val _getMosaicedVideoState = MutableStateFlow<UiState<ResponseBody>>(UiState.Loading)
     val getMosaicedVideoState: StateFlow<UiState<ResponseBody>> = _getMosaicedVideoState.asStateFlow()
+
+    private val _getSubtitleState = MutableStateFlow<UiState<ResponseGetSubtitleDto>>(UiState.Loading)
+    val getSubtitleState: StateFlow<UiState<ResponseGetSubtitleDto>> = _getSubtitleState.asStateFlow()
 
     fun loadFrames(context: Context, uri: Uri, videoLength: Long) {
         val metaDataSource = MediaMetadataRetriever()
@@ -120,6 +124,24 @@ class EditViewModel @Inject constructor(
                         Timber.e("HTTP 실패: $errorResponse")
                     }
                     _getPresignedUrlState.value = UiState.Failure("${t.message}")
+                }
+        }
+    }
+
+
+    fun getSubtitle() {
+        viewModelScope.launch {
+            _getSubtitleState.value = UiState.Loading
+            videoRepository.getSubtitle(3, "demo")
+                .onSuccess { response ->
+                    _getSubtitleState.value = UiState.Success(response)
+                    Timber.e("성공 $response")
+                }.onFailure { t ->
+                    if (t is HttpException) {
+                        val errorResponse = t.response()?.errorBody()?.string()
+                        Timber.e("HTTP 실패: $errorResponse")
+                    }
+                    _getSubtitleState.value = UiState.Failure("${t.message}")
                 }
         }
     }
