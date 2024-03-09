@@ -70,7 +70,8 @@ class EditFragment : Fragment(), TextureView.SurfaceTextureListener,
             startActivity(Intent(requireContext(), MainActivity::class.java))
         }
         binding.editSaveBtn.setOnClickListener {
-            editViewModel.getPresignedUrl()
+            //editViewModel.getPresignedUrl()
+            editViewModel.getSubtitle()
         }
         getUri?.let {
             setupMediaRetrieverAndSeekBar(it)
@@ -79,6 +80,7 @@ class EditFragment : Fragment(), TextureView.SurfaceTextureListener,
             setPutVideoToPresignedUrlStateObserver()
             setGetPresignedUrlStateObserver()
             setGetMosaicedVideoStateObserver()
+            setGetSubtitleStateObserver()
         }
 
         buttonActions()
@@ -189,6 +191,26 @@ class EditFragment : Fragment(), TextureView.SurfaceTextureListener,
                 }
             }.launchIn(viewLifecycleOwner.lifecycleScope)
     }
+
+    private fun setGetSubtitleStateObserver() {
+        editViewModel.getSubtitleState.flowWithLifecycle(viewLifecycleOwner.lifecycle)
+            .onEach { state ->
+                when (state) {
+                    is UiState.Success -> {
+                        Log.d("Success", state.data.toString())
+                        editViewModel.getMosaicedVideo(1,"hi")
+                    }
+                    is UiState.Failure -> {
+                        Log.d("Failure", state.msg)
+                    }
+
+                    is UiState.Empty -> Unit
+                    is UiState.Loading -> Unit
+                    else -> {}
+                }
+            }.launchIn(viewLifecycleOwner.lifecycleScope)
+    }
+
 
 
     private fun setGetMosaicedVideoStateObserver() {
