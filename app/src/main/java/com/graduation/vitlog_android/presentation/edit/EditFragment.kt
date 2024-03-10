@@ -53,8 +53,8 @@ class EditFragment : Fragment(), TextureView.SurfaceTextureListener,
     private lateinit var frameSeekBar: SeekBar
     private val timeLineImages = mutableListOf<Int>(
         // dummy
-        R.drawable.app_logo_pink,
-        R.drawable.img_mypage_profile,
+        R.drawable.ic_user,
+        R.drawable.background_gray_radius_5,
         R.drawable.app_logo_pink
     )
 
@@ -368,8 +368,8 @@ class EditFragment : Fragment(), TextureView.SurfaceTextureListener,
         rectangleY = binding.blurSelfLayout.y + paddingInPx
         rectangleRightX = rectangleX + binding.blurSelfRectangle.width
         rectangleRightY = rectangleX + binding.blurSelfRectangle.height
-        Log.d("blur rectangle width", binding.blurSelfRectangle.width.toString())
-        Log.d("blur rectangle height", binding.blurSelfRectangle.height.toString())
+//        Log.d("blur rectangle width", binding.blurSelfRectangle.width.toString())
+//        Log.d("blur rectangle height", binding.blurSelfRectangle.height.toString())
     }
 
     override fun onSurfaceTextureSizeChanged(surface: SurfaceTexture, width: Int, height: Int) {

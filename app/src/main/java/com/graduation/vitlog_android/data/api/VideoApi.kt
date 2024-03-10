@@ -1,5 +1,6 @@
 package com.graduation.vitlog_android.data.api
 
+import com.graduation.vitlog_android.model.request.RequestBlurDto
 import com.graduation.vitlog_android.model.response.ResponseGetPresignedUrlDto
 import com.graduation.vitlog_android.model.response.ResponsePostVideoDto
 import okhttp3.MultipartBody
@@ -41,4 +42,10 @@ interface VideoApi {
         @Path("fileName") fileName: String
     ): ResponseBody
 
+    @POST("api/coord/{uid}/{vid}")
+    suspend fun postManualBlur(
+        @Path("uid") uid: Int,
+        @Path("vid") vid: String,
+        @Body requestBlurDto: RequestBlurDto
+    ): ResponseBody
 }
