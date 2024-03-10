@@ -19,13 +19,11 @@ import android.view.View
 import android.view.ViewGroup
 import android.widget.SeekBar
 import androidx.annotation.RequiresApi
-import androidx.constraintlayout.widget.ConstraintSet
 import androidx.core.net.toUri
 import androidx.fragment.app.Fragment
 import androidx.fragment.app.viewModels
 import androidx.lifecycle.flowWithLifecycle
 import androidx.lifecycle.lifecycleScope
-import com.graduation.vitlog_android.R
 import com.graduation.vitlog_android.databinding.FragmentEditBinding
 import com.graduation.vitlog_android.presentation.MainActivity
 import com.graduation.vitlog_android.util.multipart.ContentUriRequestBody
@@ -36,7 +34,6 @@ import kotlinx.coroutines.flow.onEach
 import kotlinx.coroutines.launch
 import timber.log.Timber
 import java.io.IOException
-import java.security.InvalidParameterException
 
 
 @AndroidEntryPoint
@@ -72,15 +69,15 @@ class EditFragment : Fragment(), TextureView.SurfaceTextureListener,
             startActivity(Intent(requireContext(), MainActivity::class.java))
         }
         binding.editSaveBtn.setOnClickListener {
-            editViewModel.videoFileName.value?.let { fileName ->
-                editViewModel.getSubtitle(
-                    uid = 3,
-                    fileName = fileName
-                )
-            }
+//            editViewModel.videoFileName.value?.let { fileName ->
+//                editViewModel.getSubtitle(
+//                    uid = 3,
+//                    fileName = fileName
+//                )
+//            }
             // 현재는 원하는 기능에 따라 주석 처리 해줘야됨
             // 영상만 따로 보내는 API 나오면 영상 먼저 던져 놓고 할 수 있도록
-            //editViewModel.getPresignedUrl()
+            editViewModel.getPresignedUrl()
         }
         getUri?.let {
             setupMediaRetrieverAndSeekBar(it)
@@ -133,25 +130,6 @@ class EditFragment : Fragment(), TextureView.SurfaceTextureListener,
 
     }
 
-    private fun setPostVideoStateObserver() {
-        editViewModel.postVideoState.flowWithLifecycle(viewLifecycleOwner.lifecycle)
-            .onEach { state ->
-                when (state) {
-                    is UiState.Success -> {
-                        Timber.tag("Success").d("POST 완료")
-                    }
-
-                    is UiState.Failure -> {
-                        Timber.tag("Failure").d(state.msg)
-                    }
-
-                    is UiState.Empty -> Unit
-                    is UiState.Loading -> Unit
-                    else -> {}
-                }
-            }.launchIn(viewLifecycleOwner.lifecycleScope)
-    }
-
     private fun uriToRequestBody() {
         viewLifecycleOwner.lifecycleScope.launch {
             getUri?.let { editViewModel.uriToRequestBody(requireContext(), it) }
@@ -176,7 +154,6 @@ class EditFragment : Fragment(), TextureView.SurfaceTextureListener,
 
                     is UiState.Empty -> Unit
                     is UiState.Loading -> Unit
-                    else -> {}
                 }
             }.launchIn(viewLifecycleOwner.lifecycleScope)
     }
@@ -210,9 +187,10 @@ class EditFragment : Fragment(), TextureView.SurfaceTextureListener,
             .onEach { state ->
                 when (state) {
                     is UiState.Success -> {
-                        Log.d("Success",state.data.data.subtitle.toString() )
+                        Log.d("Success", state.data.data.subtitle.toString())
                         Timber.tag("SuccessSubTitle").d(state.data.data.subtitle.toString())
                     }
+
                     is UiState.Failure -> {
                         Timber.tag("Failure").e(state.msg)
                     }
@@ -222,7 +200,6 @@ class EditFragment : Fragment(), TextureView.SurfaceTextureListener,
                 }
             }.launchIn(viewLifecycleOwner.lifecycleScope)
     }
-
 
 
     private fun setGetMosaicedVideoStateObserver() {
@@ -287,6 +264,7 @@ class EditFragment : Fragment(), TextureView.SurfaceTextureListener,
                     dX = view.x - event.rawX
                     dY = view.y - event.rawY
                 }
+
                 MotionEvent.ACTION_MOVE -> {
                     // ImageView 위치 업데이트
                     binding.blurSelfLayout.animate()
@@ -295,11 +273,13 @@ class EditFragment : Fragment(), TextureView.SurfaceTextureListener,
                         .setDuration(0)
                         .start()
                 }
+
                 MotionEvent.ACTION_UP -> {
                     // 사용자가 뷰를 눌렀다가 뗐을 때 performClick() 메서드 호출
                     view.performClick()
                     getCoordinates()
                 }
+
                 else -> return@setOnTouchListener false
             }
             return@setOnTouchListener true
@@ -337,6 +317,7 @@ class EditFragment : Fragment(), TextureView.SurfaceTextureListener,
 
     private var rectangleX = 0F
     private var rectangleY = 0F
+
     // 블러 rectangle 좌측상단 좌표 저장
     private fun getCoordinates() {
         val density = resources.displayMetrics.density
