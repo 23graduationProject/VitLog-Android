@@ -18,5 +18,9 @@ data class ResponseGetPresignedUrlDto(
 @Serializable
 data class Data(
     @SerialName("url")
-    val url: String
+    val url: String,
+    @SerialName("vid")
+    val vid: Int,
+    @SerialName("fileName")
+    val fileName: String
 )

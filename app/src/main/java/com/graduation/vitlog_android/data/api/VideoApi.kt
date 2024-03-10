@@ -27,7 +27,7 @@ interface VideoApi {
     @GET("api/getPreSignedUrl/{uid}")
     suspend fun getPresignedUrl(
         @Path("uid") uid: Int,
-        @Query("fileName") fileName: String
+        @Query("ext") ext: String
     ): ResponseGetPresignedUrlDto
 
     @PUT

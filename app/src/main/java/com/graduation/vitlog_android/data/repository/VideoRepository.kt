@@ -23,9 +23,9 @@ class VideoRepository @Inject constructor(
 
     suspend fun getPresignedUrl(
         uid: Int,
-        fileName: String
+        ext: String
     ): Result<ResponseGetPresignedUrlDto> = runCatching {
-        api.getPresignedUrl(uid = uid, fileName = fileName)
+        api.getPresignedUrl(uid = uid, ext = ext)
     }
 
     suspend fun putVideoToPresignedUrl(
