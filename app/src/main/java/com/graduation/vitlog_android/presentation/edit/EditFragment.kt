@@ -24,6 +24,9 @@ import androidx.fragment.app.Fragment
 import androidx.fragment.app.viewModels
 import androidx.lifecycle.flowWithLifecycle
 import androidx.lifecycle.lifecycleScope
+import androidx.recyclerview.widget.LinearLayoutManager
+import androidx.recyclerview.widget.LinearSmoothScroller
+import androidx.recyclerview.widget.RecyclerView
 import com.graduation.vitlog_android.R
 import com.graduation.vitlog_android.databinding.FragmentEditBinding
 import com.graduation.vitlog_android.presentation.MainActivity
@@ -48,6 +51,12 @@ class EditFragment : Fragment(), TextureView.SurfaceTextureListener,
     private val editViewModel by viewModels<EditViewModel>()
     private lateinit var mediaPlayer: MediaPlayer
     private lateinit var frameSeekBar: SeekBar
+    private val timeLineImages = mutableListOf<Int>(
+        // dummy
+        R.drawable.app_logo_pink,
+        R.drawable.img_mypage_profile,
+        R.drawable.app_logo_pink
+    )
 
     @RequiresApi(Build.VERSION_CODES.Q)
     override fun onCreateView(
@@ -82,8 +91,15 @@ class EditFragment : Fragment(), TextureView.SurfaceTextureListener,
         }
 
         buttonActions()
+        timeLineRV()
 
         return binding.root
+    }
+
+    private fun timeLineRV() {
+
+        binding.editTimelineRv.adapter = TimeLineAdapter(timeLineImages)
+
     }
 
     private fun buttonActions() {
@@ -112,6 +128,24 @@ class EditFragment : Fragment(), TextureView.SurfaceTextureListener,
             override fun onProgressChanged(seekBar: SeekBar?, progress: Int, fromUser: Boolean) {
                 if (fromUser) {
                     mediaPlayer.seekTo(progress)
+
+                    // 영상의 분,초 00:00 형태로 저장
+                    val minutes = (mediaPlayer.currentPosition / 1000) / 60
+                    val seconds = (mediaPlayer.currentPosition / 1000) % 60
+                    val milliseconds = (mediaPlayer.currentPosition % 1000) / 10
+                    val timeString = String.format("%02d:%02d:%02d", minutes, seconds, milliseconds)
+                    binding.editTimeTv.text = timeString
+
+                    // RecyclerView의 LayoutManager를 가져옴
+                    val layoutManager = binding.editTimelineRv.layoutManager as LinearLayoutManager
+
+                    // 아이템당 시간을 10초라고 가정하고, 해당 시간에 대응하는 아이템 위치 계산
+                    val itemDuration = mediaPlayer.duration / timeLineImages.count() // 아이템당 시간
+                    val targetItemPosition = progress / itemDuration
+
+                    // 해당 위치로 RecyclerView 스크롤
+                    layoutManager.smoothScrollToPosition(binding.editTimelineRv, RecyclerView.State(), targetItemPosition)
+                    
                 }
             }
 

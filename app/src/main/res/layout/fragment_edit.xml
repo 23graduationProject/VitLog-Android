@@ -134,11 +134,34 @@
             android:src="@drawable/ic_edit_play_skip_forward"/>
     </LinearLayout>
 
-    <SeekBar
-        android:id="@+id/edit_timeline_sv"
+    <LinearLayout
+        android:id="@+id/edit_seekbar_layout"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        app:layout_constraintTop_toBottomOf="@id/video_play_bar_layout"/>
+        app:layout_constraintTop_toBottomOf="@id/video_play_bar_layout">
+        <TextView
+            android:id="@+id/edit_time_tv"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="00:00:00"
+            android:textColor="@color/white"
+            android:layout_marginStart="10dp"
+            android:layout_marginEnd="5dp"/>
+        <SeekBar
+            android:id="@+id/edit_timeline_sv"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            app:layout_constraintTop_toBottomOf="@id/video_play_bar_layout"/>
+    </LinearLayout>
+
+
+    <androidx.recyclerview.widget.RecyclerView
+        android:id="@+id/edit_timeline_rv"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:orientation="horizontal"
+        app:layoutManager="androidx.recyclerview.widget.LinearLayoutManager"
+        app:layout_constraintTop_toBottomOf="@id/edit_seekbar_layout"/>
 
     <LinearLayout
         android:id="@+id/edit_main_btn_layout"
@@ -146,7 +169,7 @@
         android:layout_height="0dp"
         app:layout_constraintStart_toStartOf="parent"
         app:layout_constraintBottom_toBottomOf="parent"
-        app:layout_constraintTop_toBottomOf="@id/edit_timeline_sv"
+        app:layout_constraintTop_toBottomOf="@id/edit_timeline_rv"
         android:orientation="vertical">
 
         <FrameLayout
@@ -185,7 +208,7 @@
         android:layout_width="1dp"
         android:layout_height="0dp"
         android:background="@color/white_opacity_80"
-        app:layout_constraintTop_toBottomOf="@id/edit_timeline_sv"
+        app:layout_constraintTop_toBottomOf="@id/edit_timeline_rv"
         app:layout_constraintStart_toEndOf="@id/edit_main_btn_layout"/>
     <LinearLayout
         android:id="@+id/edit_sub_blur_btn_layout"
@@ -194,7 +217,7 @@
         android:layout_marginTop="37dp"
         app:layout_constraintEnd_toEndOf="parent"
         app:layout_constraintStart_toEndOf="@id/edit_main_btn_layout"
-        app:layout_constraintTop_toBottomOf="@id/edit_timeline_sv">
+        app:layout_constraintTop_toBottomOf="@id/edit_timeline_rv">
 
         <Button
             android:id="@+id/edit_blur_auto_btn"
