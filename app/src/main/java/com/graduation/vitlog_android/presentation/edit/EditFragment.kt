@@ -1,5 +1,6 @@
 package com.graduation.vitlog_android.presentation.edit
 
+import android.annotation.SuppressLint
 import android.content.Intent
 import android.graphics.SurfaceTexture
 import android.media.MediaExtractor
@@ -33,6 +34,7 @@ import dagger.hilt.android.AndroidEntryPoint
 import kotlinx.coroutines.flow.launchIn
 import kotlinx.coroutines.flow.onEach
 import kotlinx.coroutines.launch
+import timber.log.Timber
 import java.io.IOException
 import java.security.InvalidParameterException
 
@@ -70,13 +72,18 @@ class EditFragment : Fragment(), TextureView.SurfaceTextureListener,
             startActivity(Intent(requireContext(), MainActivity::class.java))
         }
         binding.editSaveBtn.setOnClickListener {
+            editViewModel.videoFileName.value?.let { fileName ->
+                editViewModel.getSubtitle(
+                    uid = 3,
+                    fileName = fileName
+                )
+            }
+            // 현재는 원하는 기능에 따라 주석 처리 해줘야됨
+            // 영상만 따로 보내는 API 나오면 영상 먼저 던져 놓고 할 수 있도록
             //editViewModel.getPresignedUrl()
-            editViewModel.getSubtitle()
         }
         getUri?.let {
             setupMediaRetrieverAndSeekBar(it)
-            //createAndSetVideoRequestBody(getUri!!)
-            //setPostVideoStateObserver()
             setPutVideoToPresignedUrlStateObserver()
             setGetPresignedUrlStateObserver()
             setGetMosaicedVideoStateObserver()
@@ -131,11 +138,11 @@ class EditFragment : Fragment(), TextureView.SurfaceTextureListener,
             .onEach { state ->
                 when (state) {
                     is UiState.Success -> {
-                        Log.d("Success", "POST 완료")
+                        Timber.tag("Success").d("POST 완료")
                     }
 
                     is UiState.Failure -> {
-                        Log.d("Failure", state.msg)
+                        Timber.tag("Failure").d(state.msg)
                     }
 
                     is UiState.Empty -> Unit
@@ -157,13 +164,14 @@ class EditFragment : Fragment(), TextureView.SurfaceTextureListener,
             .onEach { state ->
                 when (state) {
                     is UiState.Success -> {
-                        Log.d("Success", state.data.data.url)
+                        Timber.tag("Success").d(state.data.data.url)
                         uriToRequestBody()
+                        editViewModel.setVideoFileName(state.data.data.fileName)
                         editViewModel.setPresignedUrl(state.data.data.url)
                     }
 
                     is UiState.Failure -> {
-                        Log.d("Failure", state.msg)
+                        Timber.tag("Failure").e(state.msg)
                     }
 
                     is UiState.Empty -> Unit
@@ -178,11 +186,16 @@ class EditFragment : Fragment(), TextureView.SurfaceTextureListener,
             .onEach { state ->
                 when (state) {
                     is UiState.Success -> {
-                        Log.d("Success", state.data.toString())
-                        editViewModel.getMosaicedVideo(1,"hi")
+                        Timber.tag("Success").d(state.data.toString())
+                        editViewModel.videoFileName.value?.let {
+                            editViewModel.getMosaicedVideo(3,
+                                it
+                            )
+                        }
+                        editViewModel.videoFileName.value?.let { Log.d("fileName", it) }
                     }
                     is UiState.Failure -> {
-                        Log.d("Failure", state.msg)
+                        Timber.tag("Failure").e(state.msg)
                     }
 
                     is UiState.Empty -> Unit
@@ -197,16 +210,15 @@ class EditFragment : Fragment(), TextureView.SurfaceTextureListener,
             .onEach { state ->
                 when (state) {
                     is UiState.Success -> {
-                        Log.d("Success", state.data.toString())
-                        editViewModel.getMosaicedVideo(1,"hi")
+                        Log.d("Success",state.data.data.subtitle.toString() )
+                        Timber.tag("SuccessSubTitle").d(state.data.data.subtitle.toString())
                     }
                     is UiState.Failure -> {
-                        Log.d("Failure", state.msg)
+                        Timber.tag("Failure").e(state.msg)
                     }
 
                     is UiState.Empty -> Unit
                     is UiState.Loading -> Unit
-                    else -> {}
                 }
             }.launchIn(viewLifecycleOwner.lifecycleScope)
     }
@@ -219,37 +231,16 @@ class EditFragment : Fragment(), TextureView.SurfaceTextureListener,
                 when (state) {
                     is UiState.Success -> {
                         editViewModel.saveFile(requireContext(),state.data)
-                        Log.d("Success", state.data.toString())
+                        Timber.tag("Success").d(state.data.toString())
                     }
                     is UiState.Failure -> {
-                        Log.d("Failure", state.msg)
+                        Timber.tag("Failure").d(state.msg)
                     }
 
                     is UiState.Empty -> Unit
                     is UiState.Loading -> Unit
-                    else -> {}
                 }
             }.launchIn(viewLifecycleOwner.lifecycleScope)
-    }
-
-    private fun createAndSetVideoRequestBody(uri: Uri) {
-        val videoRequestBody = ContentUriRequestBody(requireContext(), uri)
-        editViewModel.setVideoRequestBody(videoRequestBody)
-    }
-
-    // 선택한 영상의 트랙 추출
-    private fun selectVideoTrack(
-        extractor: MediaExtractor,
-        prefix: String = "video/"
-    ): MediaFormat {
-        for (i in 0 until extractor.trackCount) {
-            val format = extractor.getTrackFormat(i)
-            if (format.getString(MediaFormat.KEY_MIME)?.startsWith(prefix) == true) {
-                extractor.selectTrack(i)
-                return format
-            }
-        }
-        throw InvalidParameterException("File contains no video track")
     }
 
 
@@ -285,6 +276,7 @@ class EditFragment : Fragment(), TextureView.SurfaceTextureListener,
     }
 
     // 수동 블러 rectangle 드래그
+    @SuppressLint("ClickableViewAccessibility")
     private fun dragBlurRectangle() {
         var dX: Float = 0F
         var dY: Float = 0F
