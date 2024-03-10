@@ -145,7 +145,7 @@ class EditFragment : Fragment(), TextureView.SurfaceTextureListener,
 
                     // 해당 위치로 RecyclerView 스크롤
                     layoutManager.smoothScrollToPosition(binding.editTimelineRv, RecyclerView.State(), targetItemPosition)
-                    
+
                 }
             }
 
@@ -357,12 +357,17 @@ class EditFragment : Fragment(), TextureView.SurfaceTextureListener,
 
     private var rectangleX = 0F
     private var rectangleY = 0F
+    private var rectangleRightX = 0F
+    private var rectangleRightY = 0F
+
     // 블러 rectangle 좌측상단 좌표 저장
     private fun getCoordinates() {
         val density = resources.displayMetrics.density
         val paddingInPx = 10 * density
         rectangleX = binding.blurSelfLayout.x + paddingInPx
         rectangleY = binding.blurSelfLayout.y + paddingInPx
+        rectangleRightX = rectangleX + binding.blurSelfRectangle.width
+        rectangleRightY = rectangleX + binding.blurSelfRectangle.height
         Log.d("blur rectangle width", binding.blurSelfRectangle.width.toString())
         Log.d("blur rectangle height", binding.blurSelfRectangle.height.toString())
     }
