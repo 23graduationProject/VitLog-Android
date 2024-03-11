@@ -11,6 +11,7 @@ import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.graduation.vitlog_android.data.repository.VideoRepository
 import com.graduation.vitlog_android.model.response.ResponseGetPresignedUrlDto
+import com.graduation.vitlog_android.model.response.ResponseGetSubtitleDto
 import com.graduation.vitlog_android.model.response.ResponsePostVideoDto
 import com.graduation.vitlog_android.util.multipart.ContentUriRequestBody
 import com.graduation.vitlog_android.util.view.UiState
@@ -58,6 +59,9 @@ class EditViewModel @Inject constructor(
     private val _getMosaicedVideoState = MutableStateFlow<UiState<ResponseBody>>(UiState.Loading)
     val getMosaicedVideoState: StateFlow<UiState<ResponseBody>> = _getMosaicedVideoState.asStateFlow()
 
+    private val _getSubtitleState = MutableStateFlow<UiState<ResponseGetSubtitleDto>>(UiState.Loading)
+    val getSubtitleState: StateFlow<UiState<ResponseGetSubtitleDto>> = _getSubtitleState.asStateFlow()
+
     fun loadFrames(context: Context, uri: Uri, videoLength: Long) {
         val metaDataSource = MediaMetadataRetriever()
         metaDataSource.setDataSource(context, uri)
@@ -89,28 +93,11 @@ class EditViewModel @Inject constructor(
         _imageUri.value = null
     }
 
-    fun postVideo() {
-        viewModelScope.launch {
-            _postVideoState.value = UiState.Loading
-            val video = createRequestBody()
-            videoRepository.postVideo(1, video)
-                .onSuccess { response ->
-                    _postVideoState.value = UiState.Success(response)
-                    Timber.e("성공 $response")
-                }.onFailure { t ->
-                    if (t is HttpException) {
-                        val errorResponse = t.response()?.errorBody()?.string()
-                        Timber.e("HTTP 실패: $errorResponse")
-                    }
-                    _postVideoState.value = UiState.Failure("${t.message}")
-                }
-        }
-    }
 
     fun getPresignedUrl() {
         viewModelScope.launch {
             _getPresignedUrlState.value = UiState.Loading
-            videoRepository.getPresignedUrl(1, "hi")
+            videoRepository.getPresignedUrl(UID, "mp4")
                 .onSuccess { response ->
                     _getPresignedUrlState.value = UiState.Success(response)
                     Timber.e("성공 $response")
@@ -120,6 +107,27 @@ class EditViewModel @Inject constructor(
                         Timber.e("HTTP 실패: $errorResponse")
                     }
                     _getPresignedUrlState.value = UiState.Failure("${t.message}")
+                }
+        }
+    }
+
+
+    fun getSubtitle(
+        uid: Int,
+        fileName: String
+    ) {
+        viewModelScope.launch {
+            _getSubtitleState.value = UiState.Loading
+            videoRepository.getSubtitle(uid, fileName)
+                .onSuccess { response ->
+                    _getSubtitleState.value = UiState.Success(response)
+                    Timber.e("성공 $response")
+                }.onFailure { t ->
+                    if (t is HttpException) {
+                        val errorResponse = t.response()?.errorBody()?.string()
+                        Timber.e("HTTP 실패: $errorResponse")
+                    }
+                    _getSubtitleState.value = UiState.Failure("${t.message}")
                 }
         }
     }
@@ -142,6 +150,16 @@ class EditViewModel @Inject constructor(
         _presignedUrl.value = url
     }
 
+    private val _videoFileName = MutableStateFlow<String?>("")
+    val videoFileName: StateFlow<String?> get() = _videoFileName
+
+    fun setVideoFileName(fileName : String){
+        _videoFileName.value = fileName
+    }
+
+    init {
+        _imageUri.value = null
+    }
     private fun putVideoToPresignedUrl(
         url: String,
         requestBody : RequestBody
@@ -222,6 +240,9 @@ class EditViewModel @Inject constructor(
             outputStream?.close()
         }
         writeResponseBodyToDisk(context,body)
+    }
+    companion object {
+        private const val UID = 3
     }
 }
 

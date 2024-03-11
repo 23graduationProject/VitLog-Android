@@ -1,7 +1,9 @@
 package com.graduation.vitlog_android.data.repository
 
 import com.graduation.vitlog_android.data.api.VideoApi
+import com.graduation.vitlog_android.model.request.RequestGetSubtitleDto
 import com.graduation.vitlog_android.model.response.ResponseGetPresignedUrlDto
+import com.graduation.vitlog_android.model.response.ResponseGetSubtitleDto
 import com.graduation.vitlog_android.model.response.ResponsePostVideoDto
 import okhttp3.MultipartBody
 import okhttp3.RequestBody
@@ -21,9 +23,9 @@ class VideoRepository @Inject constructor(
 
     suspend fun getPresignedUrl(
         uid: Int,
-        fileName: String
+        ext: String
     ): Result<ResponseGetPresignedUrlDto> = runCatching {
-        api.getPresignedUrl(uid = uid, fileName = fileName)
+        api.getPresignedUrl(uid = uid, ext = ext)
     }
 
     suspend fun putVideoToPresignedUrl(
@@ -38,6 +40,13 @@ class VideoRepository @Inject constructor(
         fileName: String
     ): Result<ResponseBody> = runCatching {
         api.getMosaicedVideo(uid = uid, fileName = fileName)
+    }
+
+    suspend fun getSubtitle(
+        uid: Int,
+        fileName: String
+    ): Result<ResponseGetSubtitleDto> = runCatching {
+        api.getSubtitle(uid = uid, fileName = fileName)
     }
 }
 
