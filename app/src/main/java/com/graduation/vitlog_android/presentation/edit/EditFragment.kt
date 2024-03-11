@@ -3,8 +3,6 @@ package com.graduation.vitlog_android.presentation.edit
 import android.annotation.SuppressLint
 import android.content.Intent
 import android.graphics.SurfaceTexture
-import android.media.MediaExtractor
-import android.media.MediaFormat
 import android.media.MediaMetadataRetriever
 import android.media.MediaPlayer
 import android.net.Uri
@@ -26,7 +24,6 @@ import androidx.lifecycle.flowWithLifecycle
 import androidx.lifecycle.lifecycleScope
 import com.graduation.vitlog_android.databinding.FragmentEditBinding
 import com.graduation.vitlog_android.presentation.MainActivity
-import com.graduation.vitlog_android.util.multipart.ContentUriRequestBody
 import com.graduation.vitlog_android.util.view.UiState
 import dagger.hilt.android.AndroidEntryPoint
 import kotlinx.coroutines.flow.launchIn
@@ -48,6 +45,9 @@ class EditFragment : Fragment(), TextureView.SurfaceTextureListener,
     private lateinit var mediaPlayer: MediaPlayer
     private lateinit var frameSeekBar: SeekBar
 
+    private var isBlurModeSelected: Boolean = false
+    private var isSubtitleModeSelected: Boolean = false
+
     @RequiresApi(Build.VERSION_CODES.Q)
     override fun onCreateView(
         inflater: LayoutInflater,
@@ -68,15 +68,13 @@ class EditFragment : Fragment(), TextureView.SurfaceTextureListener,
             mediaPlayer.release()
             startActivity(Intent(requireContext(), MainActivity::class.java))
         }
+        binding.editBlurBtn.setOnClickListener {
+            isBlurModeSelected = true
+        }
+        binding.editSubtitlesBtn.setOnClickListener {
+            isSubtitleModeSelected = true
+        }
         binding.editSaveBtn.setOnClickListener {
-//            editViewModel.videoFileName.value?.let { fileName ->
-//                editViewModel.getSubtitle(
-//                    uid = 3,
-//                    fileName = fileName
-//                )
-//            }
-            // 현재는 원하는 기능에 따라 주석 처리 해줘야됨
-            // 영상만 따로 보내는 API 나오면 영상 먼저 던져 놓고 할 수 있도록
             editViewModel.getPresignedUrl()
         }
         getUri?.let {
@@ -164,20 +162,30 @@ class EditFragment : Fragment(), TextureView.SurfaceTextureListener,
                 when (state) {
                     is UiState.Success -> {
                         Timber.tag("Success").d(state.data.toString())
-                        editViewModel.videoFileName.value?.let {
-                            editViewModel.getMosaicedVideo(3,
-                                it
-                            )
+                        if (isBlurModeSelected) {
+                            editViewModel.videoFileName.value?.let {
+                                editViewModel.getMosaicedVideo(
+                                    3,
+                                    it
+                                )
+                            }
                         }
-                        editViewModel.videoFileName.value?.let { Log.d("fileName", it) }
+                        if (isSubtitleModeSelected) {
+                            editViewModel.videoFileName.value?.let { fileName ->
+                                editViewModel.getSubtitle(
+                                    uid = 3,
+                                    fileName = fileName
+                                )
+                            }
+                        }
                     }
+
                     is UiState.Failure -> {
                         Timber.tag("Failure").e(state.msg)
                     }
 
                     is UiState.Empty -> Unit
                     is UiState.Loading -> Unit
-                    else -> {}
                 }
             }.launchIn(viewLifecycleOwner.lifecycleScope)
     }
@@ -187,11 +195,12 @@ class EditFragment : Fragment(), TextureView.SurfaceTextureListener,
             .onEach { state ->
                 when (state) {
                     is UiState.Success -> {
-                        Log.d("Success", state.data.data.subtitle.toString())
+                        isSubtitleModeSelected = false
                         Timber.tag("SuccessSubTitle").d(state.data.data.subtitle.toString())
                     }
 
                     is UiState.Failure -> {
+                        Log.d("Fail", state.msg)
                         Timber.tag("Failure").e(state.msg)
                     }
 
@@ -207,9 +216,11 @@ class EditFragment : Fragment(), TextureView.SurfaceTextureListener,
             .onEach { state ->
                 when (state) {
                     is UiState.Success -> {
-                        editViewModel.saveFile(requireContext(),state.data)
+                        isBlurModeSelected = false
+                        editViewModel.saveFile(requireContext(), state.data)
                         Timber.tag("Success").d(state.data.toString())
                     }
+
                     is UiState.Failure -> {
                         Timber.tag("Failure").d(state.msg)
                     }
