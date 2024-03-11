@@ -24,6 +24,12 @@ import androidx.fragment.app.Fragment
 import androidx.fragment.app.viewModels
 import androidx.lifecycle.flowWithLifecycle
 import androidx.lifecycle.lifecycleScope
+import com.google.android.exoplayer2.ExoPlayer
+import com.google.android.exoplayer2.MediaItem
+import com.google.android.exoplayer2.Player
+import com.google.android.exoplayer2.trackselection.AdaptiveTrackSelection
+import com.google.android.exoplayer2.trackselection.DefaultTrackSelector
+import com.google.android.exoplayer2.upstream.DefaultBandwidthMeter
 import com.graduation.vitlog_android.databinding.FragmentEditBinding
 import com.graduation.vitlog_android.presentation.MainActivity
 import com.graduation.vitlog_android.util.multipart.ContentUriRequestBody
@@ -45,8 +51,11 @@ class EditFragment : Fragment(), TextureView.SurfaceTextureListener,
     private val binding get() = _binding!!
     private var getUri: Uri? = null
     private val editViewModel by viewModels<EditViewModel>()
-    private lateinit var mediaPlayer: MediaPlayer
+    private lateinit var exoPlayer: ExoPlayer
     private lateinit var frameSeekBar: SeekBar
+
+    private var isBlurModeSelected: Boolean = false
+    private var isSubtitleModeSelected: Boolean = false
 
     @RequiresApi(Build.VERSION_CODES.Q)
     override fun onCreateView(
@@ -62,21 +71,36 @@ class EditFragment : Fragment(), TextureView.SurfaceTextureListener,
         activity?.runOnUiThread {
             binding.editProgressbar.visibility = View.INVISIBLE
         }
-        mediaPlayer = MediaPlayer()
-        binding.video.surfaceTextureListener = this
+        exoPlayer = ExoPlayer.Builder(requireContext()).build()
+
+
+        binding.svVideo.player = exoPlayer
+        val media: MediaItem? = getUri?.let { MediaItem.fromUri(it) }
+        if (media != null) {
+            exoPlayer.setMediaItem(media)
+        }
+
+        // releasePlayer에 저장한 상태 정보를 초기화 중에 플레이어에게 제공하는 부분
+        exoPlayer.playWhenReady = true
+
+        getUri?.let {
+            val mediaItem = MediaItem.fromUri(it)
+            exoPlayer.setMediaItem(mediaItem)
+            exoPlayer.prepare()
+            exoPlayer.playWhenReady = true
+        }
+
         binding.backBtn.setOnClickListener {
-            mediaPlayer.release()
+            exoPlayer.release()
             startActivity(Intent(requireContext(), MainActivity::class.java))
         }
+        binding.editSubtitlesBtn.setOnClickListener {
+            isSubtitleModeSelected = true
+        }
+        binding.editBlurBtn.setOnClickListener {
+            isBlurModeSelected = true
+        }
         binding.editSaveBtn.setOnClickListener {
-//            editViewModel.videoFileName.value?.let { fileName ->
-//                editViewModel.getSubtitle(
-//                    uid = 3,
-//                    fileName = fileName
-//                )
-//            }
-            // 현재는 원하는 기능에 따라 주석 처리 해줘야됨
-            // 영상만 따로 보내는 API 나오면 영상 먼저 던져 놓고 할 수 있도록
             editViewModel.getPresignedUrl()
         }
         getUri?.let {
@@ -91,6 +115,7 @@ class EditFragment : Fragment(), TextureView.SurfaceTextureListener,
 
         return binding.root
     }
+
 
     private fun buttonActions() {
         // 수동 블러 버튼 클릭
@@ -117,7 +142,7 @@ class EditFragment : Fragment(), TextureView.SurfaceTextureListener,
         frameSeekBar.setOnSeekBarChangeListener(object : SeekBar.OnSeekBarChangeListener {
             override fun onProgressChanged(seekBar: SeekBar?, progress: Int, fromUser: Boolean) {
                 if (fromUser) {
-                    mediaPlayer.seekTo(progress)
+                    exoPlayer.seekTo(progress.toLong())
                 }
             }
 
@@ -145,7 +170,18 @@ class EditFragment : Fragment(), TextureView.SurfaceTextureListener,
                         Timber.tag("Success").d(state.data.data.url)
                         uriToRequestBody()
                         editViewModel.setVideoFileName(state.data.data.fileName)
-                        editViewModel.setPresignedUrl(state.data.data.url)
+
+                        if (isBlurModeSelected) {
+                            editViewModel.setPresignedUrl(state.data.data.url)
+                        }
+                        if (isSubtitleModeSelected) {
+                            editViewModel.videoFileName.value?.let { fileName ->
+                                editViewModel.getSubtitle(
+                                    uid = 3,
+                                    fileName = fileName
+                                )
+                            }
+                        }
                     }
 
                     is UiState.Failure -> {
@@ -165,12 +201,14 @@ class EditFragment : Fragment(), TextureView.SurfaceTextureListener,
                     is UiState.Success -> {
                         Timber.tag("Success").d(state.data.toString())
                         editViewModel.videoFileName.value?.let {
-                            editViewModel.getMosaicedVideo(3,
+                            editViewModel.getMosaicedVideo(
+                                3,
                                 it
                             )
                         }
                         editViewModel.videoFileName.value?.let { Log.d("fileName", it) }
                     }
+
                     is UiState.Failure -> {
                         Timber.tag("Failure").e(state.msg)
                     }
@@ -207,9 +245,10 @@ class EditFragment : Fragment(), TextureView.SurfaceTextureListener,
             .onEach { state ->
                 when (state) {
                     is UiState.Success -> {
-                        editViewModel.saveFile(requireContext(),state.data)
+                        editViewModel.saveFile(requireContext(), state.data)
                         Timber.tag("Success").d(state.data.toString())
                     }
+
                     is UiState.Failure -> {
                         Timber.tag("Failure").d(state.msg)
                     }
@@ -223,13 +262,26 @@ class EditFragment : Fragment(), TextureView.SurfaceTextureListener,
 
     override fun onSurfaceTextureAvailable(surface: SurfaceTexture, width: Int, height: Int) {
         try {
-            if (getUri != null) {
-                mediaPlayer.setDataSource(requireContext(), getUri!!)
-                mediaPlayer.apply {
-                    setSurface(Surface(surface))
-                    setOnPreparedListener(this@EditFragment)
-                    prepareAsync()  // mediaPlayer가 준비되었음을 알림
-                }
+            // ExoPlayer 인스턴스 초기화
+            exoPlayer.apply {
+                // MediaItem 준비
+                val mediaItem = MediaItem.fromUri(getUri!!)
+                setMediaItem(mediaItem)
+
+                // Surface 연결
+                setVideoSurface(Surface(surface))
+
+                // 리스너 설정 (예: 준비, 재생 완료 등)
+                addListener(object : Player.Listener {
+                    override fun onPlayerStateChanged(playWhenReady: Boolean, playbackState: Int) {
+                        if (playbackState == Player.STATE_READY) {
+                            // 비디오 준비 완료 시 처리
+                        }
+                    }
+                })
+
+                // 비디오 로딩 시작
+                prepare()
             }
         } catch (e: IOException) {
             e.printStackTrace()
@@ -342,7 +394,7 @@ class EditFragment : Fragment(), TextureView.SurfaceTextureListener,
 
     override fun onDestroy() {
         super.onDestroy()
-        mediaPlayer.release()
+        exoPlayer.release()
     }
 
     companion object {

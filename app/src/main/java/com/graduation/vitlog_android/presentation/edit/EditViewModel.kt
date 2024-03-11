@@ -218,7 +218,6 @@ class EditViewModel @Inject constructor(
 
         try {
             val fileReader = ByteArray(4096)
-            val fileSize = body?.contentLength()
             var fileSizeDownloaded: Long = 0
             inputStream = body?.byteStream()
             outputStream = FileOutputStream(File("path/to/your/file"))
@@ -255,7 +254,6 @@ private fun writeResponseBodyToDisk(context: Context, body: ResponseBody?): Bool
 
         try {
             val fileReader = ByteArray(4096)
-            val fileSize = body?.contentLength()
             var fileSizeDownloaded: Long = 0
             inputStream = body?.byteStream()
             outputStream = FileOutputStream(videoFile)
