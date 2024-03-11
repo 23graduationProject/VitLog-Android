@@ -165,7 +165,7 @@ class EditFragment : Fragment(), TextureView.SurfaceTextureListener,
                         if (isBlurModeSelected) {
                             editViewModel.videoFileName.value?.let {
                                 editViewModel.getMosaicedVideo(
-                                    3,
+                                    UID,
                                     it
                                 )
                             }
@@ -173,7 +173,7 @@ class EditFragment : Fragment(), TextureView.SurfaceTextureListener,
                         if (isSubtitleModeSelected) {
                             editViewModel.videoFileName.value?.let { fileName ->
                                 editViewModel.getSubtitle(
-                                    uid = 3,
+                                    uid = UID,
                                     fileName = fileName
                                 )
                             }
@@ -357,6 +357,6 @@ class EditFragment : Fragment(), TextureView.SurfaceTextureListener,
     }
 
     companion object {
-        private const val TIMEOUT_US = 10000
+        private const val UID = 3
     }
 }
