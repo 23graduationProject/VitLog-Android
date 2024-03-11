@@ -101,4 +101,8 @@ dependencies {
     implementation(libs.hilt.android)
     kapt(libs.hilt.compiler)
 
+    implementation(libs.exo.player.core)
+    implementation(libs.exo.player.dash)
+    implementation(libs.exo.player.ui)
+    implementation(libs.timeline)
 }
