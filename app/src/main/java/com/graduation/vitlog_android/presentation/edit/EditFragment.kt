@@ -3,8 +3,6 @@ package com.graduation.vitlog_android.presentation.edit
 import android.annotation.SuppressLint
 import android.content.Intent
 import android.graphics.SurfaceTexture
-import android.media.MediaExtractor
-import android.media.MediaFormat
 import android.media.MediaMetadataRetriever
 import android.media.MediaPlayer
 import android.net.Uri
@@ -32,7 +30,6 @@ import com.google.android.exoplayer2.trackselection.DefaultTrackSelector
 import com.google.android.exoplayer2.upstream.DefaultBandwidthMeter
 import com.graduation.vitlog_android.databinding.FragmentEditBinding
 import com.graduation.vitlog_android.presentation.MainActivity
-import com.graduation.vitlog_android.util.multipart.ContentUriRequestBody
 import com.graduation.vitlog_android.util.view.UiState
 import dagger.hilt.android.AndroidEntryPoint
 import kotlinx.coroutines.flow.launchIn
@@ -93,6 +90,12 @@ class EditFragment : Fragment(), TextureView.SurfaceTextureListener,
         binding.backBtn.setOnClickListener {
             exoPlayer.release()
             startActivity(Intent(requireContext(), MainActivity::class.java))
+        }
+        binding.editBlurBtn.setOnClickListener {
+            isBlurModeSelected = true
+        }
+        binding.editSubtitlesBtn.setOnClickListener {
+            isSubtitleModeSelected = true
         }
         binding.editSubtitlesBtn.setOnClickListener {
             isSubtitleModeSelected = true
@@ -200,13 +203,22 @@ class EditFragment : Fragment(), TextureView.SurfaceTextureListener,
                 when (state) {
                     is UiState.Success -> {
                         Timber.tag("Success").d(state.data.toString())
-                        editViewModel.videoFileName.value?.let {
-                            editViewModel.getMosaicedVideo(
-                                3,
-                                it
-                            )
+                        if (isBlurModeSelected) {
+                            editViewModel.videoFileName.value?.let {
+                                editViewModel.getMosaicedVideo(
+                                    UID,
+                                    it
+                                )
+                            }
                         }
-                        editViewModel.videoFileName.value?.let { Log.d("fileName", it) }
+                        if (isSubtitleModeSelected) {
+                            editViewModel.videoFileName.value?.let { fileName ->
+                                editViewModel.getSubtitle(
+                                    uid = UID,
+                                    fileName = fileName
+                                )
+                            }
+                        }
                     }
 
                     is UiState.Failure -> {
@@ -215,7 +227,6 @@ class EditFragment : Fragment(), TextureView.SurfaceTextureListener,
 
                     is UiState.Empty -> Unit
                     is UiState.Loading -> Unit
-                    else -> {}
                 }
             }.launchIn(viewLifecycleOwner.lifecycleScope)
     }
@@ -225,11 +236,12 @@ class EditFragment : Fragment(), TextureView.SurfaceTextureListener,
             .onEach { state ->
                 when (state) {
                     is UiState.Success -> {
-                        Log.d("Success", state.data.data.subtitle.toString())
+                        isSubtitleModeSelected = false
                         Timber.tag("SuccessSubTitle").d(state.data.data.subtitle.toString())
                     }
 
                     is UiState.Failure -> {
+                        Log.d("Fail", state.msg)
                         Timber.tag("Failure").e(state.msg)
                     }
 
@@ -245,6 +257,8 @@ class EditFragment : Fragment(), TextureView.SurfaceTextureListener,
             .onEach { state ->
                 when (state) {
                     is UiState.Success -> {
+                        isBlurModeSelected = false
+                        editViewModel.saveFile(requireContext(), state.data)
                         editViewModel.saveFile(requireContext(), state.data)
                         Timber.tag("Success").d(state.data.toString())
                     }
@@ -398,6 +412,6 @@ class EditFragment : Fragment(), TextureView.SurfaceTextureListener,
     }
 
     companion object {
-        private const val TIMEOUT_US = 10000
+        private const val UID = 3
     }
 }

@@ -104,5 +104,5 @@ dependencies {
     implementation(libs.exo.player.core)
     implementation(libs.exo.player.dash)
     implementation(libs.exo.player.ui)
-    implementation(libs.timeline)
+
 }

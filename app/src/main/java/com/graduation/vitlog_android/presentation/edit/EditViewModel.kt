@@ -97,7 +97,7 @@ class EditViewModel @Inject constructor(
     fun getPresignedUrl() {
         viewModelScope.launch {
             _getPresignedUrlState.value = UiState.Loading
-            videoRepository.getPresignedUrl(3, "mp4")
+            videoRepository.getPresignedUrl(UID, "mp4")
                 .onSuccess { response ->
                     _getPresignedUrlState.value = UiState.Success(response)
                     Timber.e("성공 $response")
@@ -239,6 +239,9 @@ class EditViewModel @Inject constructor(
             outputStream?.close()
         }
         writeResponseBodyToDisk(context,body)
+    }
+    companion object {
+        private const val UID = 3
     }
 }
 
