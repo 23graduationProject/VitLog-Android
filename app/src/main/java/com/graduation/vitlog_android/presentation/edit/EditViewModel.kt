@@ -6,6 +6,7 @@ import android.media.MediaMetadataRetriever
 import android.media.MediaScannerConnection
 import android.net.Uri
 import android.os.Environment
+import android.util.Log
 import androidx.lifecycle.MutableLiveData
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
@@ -58,6 +59,8 @@ class EditViewModel @Inject constructor(
     private val _getMosaicedVideoState = MutableStateFlow<UiState<ResponseBody>>(UiState.Loading)
     val getMosaicedVideoState: StateFlow<UiState<ResponseBody>> = _getMosaicedVideoState.asStateFlow()
 
+    val timeLineImages = mutableListOf<Bitmap>()
+
     fun loadFrames(context: Context, uri: Uri, videoLength: Long) {
         val metaDataSource = MediaMetadataRetriever()
         metaDataSource.setDataSource(context, uri)
@@ -72,8 +75,13 @@ class EditViewModel @Inject constructor(
             val frameTime = i * interval
             var bitmap =
                 metaDataSource.getFrameAtTime(frameTime, MediaMetadataRetriever.OPTION_CLOSEST_SYNC)
+
             // 프레임을 추출하고 비트맵 리스트에 추가합니다.
-            bitmap?.let { frameBitmaps.add(it) }
+            bitmap?.let {
+                frameBitmaps.add(it)
+                timeLineImages.add(it)
+            }
+
         }
         metaDataSource.release()
 

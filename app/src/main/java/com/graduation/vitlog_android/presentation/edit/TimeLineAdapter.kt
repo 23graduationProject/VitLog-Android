@@ -1,16 +1,17 @@
 package com.graduation.vitlog_android.presentation.edit
 
+import android.graphics.Bitmap
 import android.net.Uri
 import android.view.LayoutInflater
 import android.view.ViewGroup
 import androidx.recyclerview.widget.RecyclerView
 import com.graduation.vitlog_android.databinding.ItemTimeLineImageBinding
 
-class TimeLineAdapter(private val images: List<Int>): RecyclerView.Adapter<TimeLineAdapter.TimeLIneViewHolder>() {
+class TimeLineAdapter(private val images: List<Bitmap>): RecyclerView.Adapter<TimeLineAdapter.TimeLIneViewHolder>() {
 
     class TimeLIneViewHolder(private val binding: ItemTimeLineImageBinding) : RecyclerView.ViewHolder(binding.root) {
-        fun bind(img: Int) {
-            binding.image.setImageResource(img)
+        fun bind(img: Bitmap) {
+            binding.image.setImageBitmap(img)
         }
     }
 

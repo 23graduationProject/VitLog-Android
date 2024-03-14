@@ -1,6 +1,7 @@
 package com.graduation.vitlog_android.presentation.edit
 
 import android.content.Intent
+import android.graphics.Bitmap
 import android.graphics.SurfaceTexture
 import android.media.MediaExtractor
 import android.media.MediaFormat
@@ -51,12 +52,6 @@ class EditFragment : Fragment(), TextureView.SurfaceTextureListener,
     private val editViewModel by viewModels<EditViewModel>()
     private lateinit var mediaPlayer: MediaPlayer
     private lateinit var frameSeekBar: SeekBar
-    private val timeLineImages = mutableListOf<Int>(
-        // dummy
-        R.drawable.ic_user,
-        R.drawable.background_gray_radius_5,
-        R.drawable.app_logo_pink
-    )
 
     @RequiresApi(Build.VERSION_CODES.Q)
     override fun onCreateView(
@@ -98,7 +93,8 @@ class EditFragment : Fragment(), TextureView.SurfaceTextureListener,
 
     private fun timeLineRV() {
 
-        binding.editTimelineRv.adapter = TimeLineAdapter(timeLineImages)
+        Log.d("edit model", editViewModel.timeLineImages.toString())
+        binding.editTimelineRv.adapter = TimeLineAdapter(editViewModel.timeLineImages)
 
     }
 
@@ -140,7 +136,7 @@ class EditFragment : Fragment(), TextureView.SurfaceTextureListener,
                     val layoutManager = binding.editTimelineRv.layoutManager as LinearLayoutManager
 
                     // 아이템당 시간을 10초라고 가정하고, 해당 시간에 대응하는 아이템 위치 계산
-                    val itemDuration = mediaPlayer.duration / timeLineImages.count() // 아이템당 시간
+                    val itemDuration = mediaPlayer.duration / editViewModel.timeLineImages.count() // 아이템당 시간
                     val targetItemPosition = progress / itemDuration
 
                     // 해당 위치로 RecyclerView 스크롤
