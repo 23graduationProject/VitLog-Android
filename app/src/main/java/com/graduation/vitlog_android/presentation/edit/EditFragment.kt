@@ -28,6 +28,7 @@ import androidx.recyclerview.widget.LinearSmoothScroller
 import androidx.recyclerview.widget.RecyclerView
 import com.graduation.vitlog_android.R
 import com.graduation.vitlog_android.databinding.FragmentEditBinding
+import com.graduation.vitlog_android.model.request.RequestBlurDto
 import com.graduation.vitlog_android.presentation.MainActivity
 import com.graduation.vitlog_android.util.view.UiState
 import dagger.hilt.android.AndroidEntryPoint
@@ -51,6 +52,10 @@ class EditFragment : Fragment(), TextureView.SurfaceTextureListener,
 
     private var isBlurModeSelected: Boolean = false
     private var isSubtitleModeSelected: Boolean = false
+
+    private var manualBlurData = mutableListOf<RequestBlurDto>()
+    private var startTime: String = "00:00:00"
+    private var endTime: String = "00:00:00"
 
     @RequiresApi(Build.VERSION_CODES.Q)
     override fun onCreateView(
@@ -83,6 +88,8 @@ class EditFragment : Fragment(), TextureView.SurfaceTextureListener,
             } else if (binding.editSaveBtn.text == "완료") {
                 binding.editSaveBtn.text = "저장"
                 // 수동블러
+                manualBlurData.add(RequestBlurDto(startTime = startTime, endTime = endTime, x1 = rectangleX, y1 = rectangleY, x2 = rectangleRightX, y2 = rectangleRightY))
+                
             }
         }
         getUri?.let {
