@@ -51,57 +51,64 @@
         app:layout_constraintEnd_toEndOf="parent"
         app:layout_constraintTop_toTopOf="parent" />
 
-    <FrameLayout
-        android:id="@+id/video_framelayout"
+    <androidx.constraintlayout.widget.ConstraintLayout
+        android:id="@+id/cl_video_player"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        android:layout_marginTop="10dp"
         app:layout_constraintBottom_toTopOf="@id/video_play_bar_layout"
         app:layout_constraintTop_toBottomOf="@id/back_btn">
 
-        <TextureView
-            android:id="@+id/video"
+        <FrameLayout
+            android:id="@+id/video_framelayout"
             android:layout_width="match_parent"
-            android:layout_height="200dp" />
-
-        <androidx.constraintlayout.widget.ConstraintLayout
-            android:id="@+id/blur_self_layout"
-            android:layout_width="wrap_content"
             android:layout_height="wrap_content"
-            android:layout_gravity="center"
-            android:visibility="gone">
+            android:layout_marginTop="10dp"
+            app:layout_constraintTop_toTopOf="parent">
 
-            <ImageView
-                android:id="@+id/blur_self_rectangle"
-                android:layout_width="70dp"
-                android:layout_height="70dp"
-                android:src="@drawable/rectangle_blur_self"
-                app:layout_constraintBottom_toBottomOf="parent"
-                app:layout_constraintEnd_toEndOf="parent"
-                app:layout_constraintStart_toStartOf="parent"
-                app:layout_constraintTop_toTopOf="parent" />
+            <TextureView
+                android:id="@+id/tv_video"
+                android:layout_width="match_parent"
+                android:layout_height="250dp" />
 
-            <ImageView
-                android:id="@+id/blur_rectangle_x"
-                android:layout_width="20dp"
-                android:layout_height="20dp"
-                android:layout_marginStart="-10dp"
-                android:layout_marginTop="-10dp"
-                android:src="@drawable/ic_x_circle"
-                app:layout_constraintStart_toStartOf="@id/blur_self_rectangle"
-                app:layout_constraintTop_toTopOf="@id/blur_self_rectangle" />
+            <androidx.constraintlayout.widget.ConstraintLayout
+                android:id="@+id/blur_self_layout"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:visibility="gone"
+                android:layout_gravity="center">
 
-            <ImageView
-                android:id="@+id/blur_rectangle_resize"
-                android:layout_width="20dp"
-                android:layout_height="20dp"
-                android:layout_marginStart="-10dp"
-                android:layout_marginTop="-10dp"
-                android:src="@drawable/ic_resize"
-                app:layout_constraintStart_toEndOf="@id/blur_self_rectangle"
-                app:layout_constraintTop_toBottomOf="@id/blur_self_rectangle" />
-        </androidx.constraintlayout.widget.ConstraintLayout>
-    </FrameLayout>
+                <ImageView
+                    android:id="@+id/blur_self_rectangle"
+                    android:layout_width="70dp"
+                    android:layout_height="70dp"
+                    android:src="@drawable/rectangle_blur_self"
+                    app:layout_constraintBottom_toBottomOf="parent"
+                    app:layout_constraintEnd_toEndOf="parent"
+                    app:layout_constraintStart_toStartOf="parent"
+                    app:layout_constraintTop_toTopOf="parent" />
+
+                <ImageView
+                    android:id="@+id/blur_rectangle_x"
+                    android:layout_width="20dp"
+                    android:layout_height="20dp"
+                    android:layout_marginStart="-10dp"
+                    android:layout_marginTop="-10dp"
+                    android:src="@drawable/ic_x_circle"
+                    app:layout_constraintStart_toStartOf="@id/blur_self_rectangle"
+                    app:layout_constraintTop_toTopOf="@id/blur_self_rectangle" />
+
+                <ImageView
+                    android:id="@+id/blur_rectangle_resize"
+                    android:layout_width="20dp"
+                    android:layout_height="20dp"
+                    android:layout_marginStart="-10dp"
+                    android:layout_marginTop="-10dp"
+                    android:src="@drawable/ic_resize"
+                    app:layout_constraintStart_toEndOf="@id/blur_self_rectangle"
+                    app:layout_constraintTop_toBottomOf="@id/blur_self_rectangle" />
+            </androidx.constraintlayout.widget.ConstraintLayout>
+        </FrameLayout>
+    </androidx.constraintlayout.widget.ConstraintLayout>
 
     <LinearLayout
         android:id="@+id/video_play_bar_layout"
@@ -111,7 +118,7 @@
         android:gravity="center"
         android:orientation="horizontal"
         app:layout_constraintBottom_toTopOf="@id/sv_edit_timeline"
-        app:layout_constraintTop_toBottomOf="@id/video_framelayout">
+        app:layout_constraintTop_toBottomOf="@id/cl_video_player">
 
         <ImageView
             android:id="@+id/play_skip_back_btn"
@@ -149,7 +156,7 @@
         android:id="@+id/sv_edit_timeline"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        android:layout_marginVertical="30dp"
+        android:layout_marginBottom="30dp"
         app:layout_constraintBottom_toTopOf="@id/cl_edit_tool"
         app:layout_constraintTop_toBottomOf="@id/video_play_bar_layout" />
 
@@ -192,7 +199,7 @@
             android:layout_width="1dp"
             android:layout_height="0dp"
             android:background="@color/white_opacity_80"
-            android:layout_marginStart="20dp"
+            android:paddingHorizontal="10dp"
             app:layout_constraintStart_toEndOf="@id/btn_edit_blur"
             app:layout_constraintTop_toTopOf="parent" />
 
@@ -200,14 +207,14 @@
             android:id="@+id/btn_edit_blur_auto"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
+            android:layout_marginStart="30dp"
+            android:layout_marginTop="50dp"
             android:background="@color/transparent"
             android:drawableTop="@drawable/ic_edit_blur_auto"
-            android:layout_marginTop="50dp"
-            android:layout_marginStart="30dp"
-            app:layout_constraintTop_toTopOf="parent"
-            app:layout_constraintStart_toEndOf="@id/v_edit_line"
             android:text="전체 블러"
-            android:textColor="@color/white" />
+            android:textColor="@color/white"
+            app:layout_constraintStart_toEndOf="@id/v_edit_line"
+            app:layout_constraintTop_toTopOf="parent" />
 
 
         <Button
@@ -215,13 +222,13 @@
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
             android:layout_marginTop="50dp"
-            app:layout_constraintTop_toTopOf="parent"
-            app:layout_constraintEnd_toEndOf="parent"
             android:layout_marginEnd="30dp"
             android:background="@color/transparent"
             android:drawableTop="@drawable/ic_edit_blur_self"
             android:text="수동 블러"
-            android:textColor="@color/white" />
+            android:textColor="@color/white"
+            app:layout_constraintEnd_toEndOf="parent"
+            app:layout_constraintTop_toTopOf="parent" />
 
     </androidx.constraintlayout.widget.ConstraintLayout>
 

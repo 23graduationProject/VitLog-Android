@@ -55,7 +55,7 @@ class EditFragment : Fragment(), TextureView.SurfaceTextureListener,
         savedInstanceState: Bundle?
     ): View {
         _binding = FragmentEditBinding.inflate(layoutInflater, container, false)
-        frameSeekBar = binding.editTimelineSv
+        frameSeekBar = binding.svEditTimeline
 
         getUri = arguments?.getString("videoUri")?.toUri()
 
@@ -63,15 +63,15 @@ class EditFragment : Fragment(), TextureView.SurfaceTextureListener,
             binding.editProgressbar.visibility = View.INVISIBLE
         }
         mediaPlayer = MediaPlayer()
-        binding.video.surfaceTextureListener = this
+        binding.tvVideo.surfaceTextureListener = this
         binding.backBtn.setOnClickListener {
             mediaPlayer.release()
             startActivity(Intent(requireContext(), MainActivity::class.java))
         }
-        binding.editBlurBtn.setOnClickListener {
+        binding.btnEditBlur.setOnClickListener {
             isBlurModeSelected = true
         }
-        binding.editSubtitlesBtn.setOnClickListener {
+        binding.btnEditSubtitle.setOnClickListener {
             isSubtitleModeSelected = true
         }
         binding.editSaveBtn.setOnClickListener {
@@ -92,7 +92,7 @@ class EditFragment : Fragment(), TextureView.SurfaceTextureListener,
 
     private fun buttonActions() {
         // 수동 블러 버튼 클릭
-        binding.editBlurSelfBtn.setOnClickListener {
+        binding.btnEditBlurSelf.setOnClickListener {
             binding.blurSelfLayout.visibility = View.VISIBLE
         }
 
@@ -141,6 +141,7 @@ class EditFragment : Fragment(), TextureView.SurfaceTextureListener,
                 when (state) {
                     is UiState.Success -> {
                         Timber.tag("Success").d(state.data.data.url)
+                        Log.d("Success","Presigned")
                         uriToRequestBody()
                         editViewModel.setVideoFileName(state.data.data.fileName)
                         editViewModel.setPresignedUrl(state.data.data.url)
@@ -148,6 +149,7 @@ class EditFragment : Fragment(), TextureView.SurfaceTextureListener,
 
                     is UiState.Failure -> {
                         Timber.tag("Failure").e(state.msg)
+                        Log.d("Failure","Presigned${state.msg}")
                     }
 
                     is UiState.Empty -> Unit
@@ -162,7 +164,9 @@ class EditFragment : Fragment(), TextureView.SurfaceTextureListener,
                 when (state) {
                     is UiState.Success -> {
                         Timber.tag("Success").d(state.data.toString())
+                        Log.d("Success","setPutVideoToPresignedUrlStateObserver")
                         if (isBlurModeSelected) {
+                            Log.d("Blur","Blur")
                             editViewModel.videoFileName.value?.let {
                                 editViewModel.getMosaicedVideo(
                                     UID,
@@ -171,6 +175,7 @@ class EditFragment : Fragment(), TextureView.SurfaceTextureListener,
                             }
                         }
                         if (isSubtitleModeSelected) {
+                            Log.d("Subtitle","Subtitle")
                             editViewModel.videoFileName.value?.let { fileName ->
                                 editViewModel.getSubtitle(
                                     uid = UID,
@@ -195,7 +200,7 @@ class EditFragment : Fragment(), TextureView.SurfaceTextureListener,
             .onEach { state ->
                 when (state) {
                     is UiState.Success -> {
-                        isSubtitleModeSelected = false
+                        Log.d("Subttile",state.data.data.subtitle.toString())
                         Timber.tag("SuccessSubTitle").d(state.data.data.subtitle.toString())
                     }
 
@@ -216,7 +221,6 @@ class EditFragment : Fragment(), TextureView.SurfaceTextureListener,
             .onEach { state ->
                 when (state) {
                     is UiState.Success -> {
-                        isBlurModeSelected = false
                         editViewModel.saveFile(requireContext(), state.data)
                         Timber.tag("Success").d(state.data.toString())
                     }
