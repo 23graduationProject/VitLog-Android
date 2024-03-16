@@ -1,6 +1,7 @@
 package com.graduation.vitlog_android.model.response
 
-import com.graduation.vitlog_android.util.number.TimeStamp.formatTimeStamp
+import com.graduation.vitlog_android.util.number.TimeUtil.formatTimeStamp
+import com.graduation.vitlog_android.util.number.TimeUtil.toMillis
 import kotlinx.serialization.SerialName
 import kotlinx.serialization.Serializable
 
@@ -32,7 +33,9 @@ data class ResponseGetSubtitleDto(
     fun convertToSubtitle() = this.data.subtitle.map {
         com.graduation.vitlog_android.model.entity.Subtitle(
             timeStamp = formatTimeStamp(it.start, it.end),
-            text = it.text
+            text = it.text,
+            startMill = it.start.toMillis(),
+            endMill = it.end.toMillis()
         )
     }
 }

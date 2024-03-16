@@ -1,6 +1,6 @@
 package com.graduation.vitlog_android.util.number
 
-object TimeStamp {
+object TimeUtil {
     fun formatTimeStamp(a: Double, b: Double): String {
         var formattedA = String.format("%.2f", a)
         var formattedB = String.format("%.2f", b)
@@ -15,4 +15,12 @@ object TimeStamp {
 
         return "$formattedA ~ $formattedB"
     }
+
+    fun Double.toMillis(): Int {
+        val seconds = this.toInt() // 초 부분을 추출합니다.
+        val milliseconds = ((this - seconds) * 1000).toInt() // 소수 부분을 밀리초로 변환합니다.
+        return (seconds * 1000) + milliseconds // 전체 시간을 밀리초로 변환하여 반환합니다.
+    }
+
+
 }
