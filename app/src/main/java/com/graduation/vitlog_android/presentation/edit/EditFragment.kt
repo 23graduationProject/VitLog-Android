@@ -177,6 +177,9 @@ class EditFragment : Fragment(), TextureView.SurfaceTextureListener,
                     (scrollY / recyclerView.width.toFloat() * videoLengthInMilliseconds).toInt()
                 mediaPlayer.seekTo(desiredPositionInMilliseconds)
 
+                // 타임라인 이동에 따른 자막 업데이트
+                updateSubtitle(mediaPlayer.currentPosition, editViewModel.subtitleList)
+
                 // 영상의 분,초 00:00 형태로 저장
                 val minutes = (mediaPlayer.currentPosition / 1000) / 60
                 val seconds = (mediaPlayer.currentPosition / 1000) % 60
