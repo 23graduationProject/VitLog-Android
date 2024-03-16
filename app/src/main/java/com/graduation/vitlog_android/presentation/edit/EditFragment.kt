@@ -131,7 +131,7 @@ class EditFragment : Fragment(), TextureView.SurfaceTextureListener,
                 // 예를 들어, 비디오의 총 길이를 알고 있다면 scrollY를 비디오의 전체 길이로 나누어 해당 위치로 이동시킬 수 있습니다.
                 // mediaPlayer.seekTo(progress)를 호출하여 재생 위치를 조정합니다.
                 val videoLengthInMilliseconds = mediaPlayer.duration // 밀리초 단위로 영상의 총 길이를 가져옵니다.
-                val desiredPositionInMilliseconds = (scrollY / recyclerView.height.toFloat() * videoLengthInMilliseconds).toInt()
+                val desiredPositionInMilliseconds = (scrollY / recyclerView.width.toFloat() * videoLengthInMilliseconds).toInt()
                 mediaPlayer.seekTo(desiredPositionInMilliseconds)
 
                 // 영상의 분,초 00:00 형태로 저장
