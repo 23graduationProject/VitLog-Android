@@ -31,6 +31,7 @@ import com.graduation.vitlog_android.databinding.FragmentEditBinding
 import com.graduation.vitlog_android.model.entity.Subtitle
 import com.graduation.vitlog_android.model.request.RequestBlurDto
 import com.graduation.vitlog_android.presentation.MainActivity
+import com.graduation.vitlog_android.util.preference.SharedPrefManager.uid
 import com.graduation.vitlog_android.util.view.UiState
 import dagger.hilt.android.AndroidEntryPoint
 import kotlinx.coroutines.flow.launchIn
@@ -256,7 +257,7 @@ class EditFragment : Fragment(), TextureView.SurfaceTextureListener,
                         if (isBlurModeSelected) {
                             editViewModel.videoFileName.value?.let {
                                 editViewModel.getMosaicedVideo(
-                                    UID,
+                                    uid,
                                     it
                                 )
                             }
@@ -264,7 +265,7 @@ class EditFragment : Fragment(), TextureView.SurfaceTextureListener,
                         if (isSubtitleModeSelected) {
                             editViewModel.videoFileName.value?.let { fileName ->
                                 editViewModel.getSubtitle(
-                                    uid = UID,
+                                    uid = uid,
                                     fileName = fileName
                                 )
                             }
@@ -471,10 +472,6 @@ class EditFragment : Fragment(), TextureView.SurfaceTextureListener,
     override fun onDestroy() {
         super.onDestroy()
         mediaPlayer.release()
-    }
-
-    companion object {
-        private const val UID = 3
     }
 
 //     TODO : 혜선 1. 자동로그인 2. 자막 클릭 시, 편집 할 수 있도록 3. 내용 뿐만 아니라 폰트 및 색상 까지 4. 자막 서버 연결
