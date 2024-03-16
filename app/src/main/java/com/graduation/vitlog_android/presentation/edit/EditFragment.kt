@@ -132,6 +132,7 @@ class EditFragment : Fragment(), TextureView.SurfaceTextureListener,
             override fun onProgressChanged(seekBar: SeekBar?, progress: Int, fromUser: Boolean) {
                 if (fromUser) {
                     mediaPlayer.seekTo(progress)
+                    updateSubtitle(progress,editViewModel.subtitleList)
                 }
             }
 
@@ -213,7 +214,6 @@ class EditFragment : Fragment(), TextureView.SurfaceTextureListener,
                         Timber.tag("Success").d(state.data.toString())
                         Log.d("Success", "setPutVideoToPresignedUrlStateObserver")
                         if (isBlurModeSelected) {
-                            Log.d("Blur", "Blur")
                             editViewModel.videoFileName.value?.let {
                                 editViewModel.getMosaicedVideo(
                                     UID,
@@ -222,7 +222,6 @@ class EditFragment : Fragment(), TextureView.SurfaceTextureListener,
                             }
                         }
                         if (isSubtitleModeSelected) {
-                            Log.d("Subtitle", "Subtitle")
                             editViewModel.videoFileName.value?.let { fileName ->
                                 editViewModel.getSubtitle(
                                     uid = UID,
@@ -254,17 +253,16 @@ class EditFragment : Fragment(), TextureView.SurfaceTextureListener,
                         binding.editProgressbar.visibility = INVISIBLE
                         showSubtitleEditBar()
                         startSubtitleUpdater(state.data)
+                        editViewModel.saveSubtitleList(state.data)
                         subtitleAdapter.submitList(state.data)
                         editViewModel._getSubtitleState.value = UiState.Empty
                     }
 
                     is UiState.Failure -> {
-                        Log.d("Fail", state.msg)
                         Timber.tag("Failure").e(state.msg)
                     }
 
                     is UiState.Empty -> Unit
-                    is UiState.Loading -> Unit
                 }
             }.launchIn(viewLifecycleOwner.lifecycleScope)
     }

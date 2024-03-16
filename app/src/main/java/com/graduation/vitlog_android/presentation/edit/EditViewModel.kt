@@ -59,6 +59,12 @@ class EditViewModel @Inject constructor(
     var _getSubtitleState = MutableStateFlow<UiState<List<Subtitle>>>(UiState.Empty)
     val getSubtitleState: StateFlow<UiState<List<Subtitle>>> = _getSubtitleState.asStateFlow()
 
+    var _subtitleList = listOf<Subtitle>()
+    val subtitleList: List<Subtitle> = _subtitleList
+
+    fun saveSubtitleList(subtitle: List<Subtitle>){
+        _subtitleList = subtitle
+    }
     fun loadFrames(context: Context, uri: Uri, videoLength: Long) {
         val metaDataSource = MediaMetadataRetriever()
         metaDataSource.setDataSource(context, uri)
