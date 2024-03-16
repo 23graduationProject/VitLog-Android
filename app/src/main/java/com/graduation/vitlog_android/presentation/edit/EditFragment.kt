@@ -50,7 +50,6 @@ class EditFragment : Fragment(), TextureView.SurfaceTextureListener,
     private var getUri: Uri? = null
     private val editViewModel by viewModels<EditViewModel>()
     private lateinit var mediaPlayer: MediaPlayer
-    private lateinit var frameSeekBar: SeekBar
     private lateinit var subtitleAdapter: SubtitleAdapter
 
     private var isBlurModeSelected: Boolean = false
@@ -73,7 +72,7 @@ class EditFragment : Fragment(), TextureView.SurfaceTextureListener,
             binding.editProgressbar.visibility = View.INVISIBLE
         }
         mediaPlayer = MediaPlayer()
-        initSubtitleAdapter()
+        initAdapter()
         setListener()
         setObserver()
 
@@ -82,41 +81,19 @@ class EditFragment : Fragment(), TextureView.SurfaceTextureListener,
             mediaPlayer.release()
             startActivity(Intent(requireContext(), MainActivity::class.java))
         }
-        binding.editSaveBtn.setOnClickListener {
-            if (binding.editSaveBtn.text == "저장") {
-                editViewModel.getPresignedUrl()
-            } else if (binding.editSaveBtn.text == "완료") {
-                binding.editSaveBtn.text = "저장"
-                // 수동블러
-                manualBlurData.add(
-                    RequestBlurDto(
-                        startTime = startTime,
-                        endTime = endTime,
-                        x1 = rectangleX,
-                        y1 = rectangleY,
-                        x2 = rectangleRightX,
-                        y2 = rectangleRightY
-                    )
-                )
-
-            }
-        }
         getUri?.let {
             setupMediaRetrieverAndSeekBar(it)
         }
 
-        buttonActions()
-        timeLineRV()
-
         return binding.root
     }
 
-    private fun timeLineRV() {
-
-        Log.d("edit model", editViewModel.timeLineImages.toString())
+    private fun initAdapter() {
         binding.editTimelineRv.adapter = TimeLineAdapter(editViewModel.timeLineImages)
-
+        subtitleAdapter = SubtitleAdapter()
+        binding.rvEditToolSubtitle.adapter = subtitleAdapter
     }
+
 
     private fun buttonActions() {
         // 수동 블러 버튼 클릭
@@ -146,6 +123,26 @@ class EditFragment : Fragment(), TextureView.SurfaceTextureListener,
         }
         binding.editSaveBtn.setOnClickListener {
             editViewModel.getPresignedUrl()
+        }
+
+        binding.editSaveBtn.setOnClickListener {
+            if (binding.editSaveBtn.text == "저장") {
+                editViewModel.getPresignedUrl()
+            } else if (binding.editSaveBtn.text == "완료") {
+                binding.editSaveBtn.text = "저장"
+                // 수동블러
+                manualBlurData.add(
+                    RequestBlurDto(
+                        startTime = startTime,
+                        endTime = endTime,
+                        x1 = rectangleX,
+                        y1 = rectangleY,
+                        x2 = rectangleRightX,
+                        y2 = rectangleRightY
+                    )
+                )
+
+            }
         }
 
         subtitleCompleteButtonListener()
@@ -220,11 +217,6 @@ class EditFragment : Fragment(), TextureView.SurfaceTextureListener,
         viewLifecycleOwner.lifecycleScope.launch {
             getUri?.let { editViewModel.uriToRequestBody(requireContext(), it) }
         }
-    }
-
-    private fun initSubtitleAdapter() {
-        subtitleAdapter = SubtitleAdapter()
-        binding.rvEditToolSubtitle.adapter = subtitleAdapter
     }
 
 
