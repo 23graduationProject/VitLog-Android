@@ -121,35 +121,35 @@ class EditFragment : Fragment(), TextureView.SurfaceTextureListener,
         }
 
         // SeekBar의 드래그 이벤트 처리
-        frameSeekBar.setOnSeekBarChangeListener(object : SeekBar.OnSeekBarChangeListener {
-            override fun onProgressChanged(seekBar: SeekBar?, progress: Int, fromUser: Boolean) {
-                if (fromUser) {
-                    mediaPlayer.seekTo(progress)
-
-                    // 영상의 분,초 00:00 형태로 저장
-                    val minutes = (mediaPlayer.currentPosition / 1000) / 60
-                    val seconds = (mediaPlayer.currentPosition / 1000) % 60
-                    val milliseconds = (mediaPlayer.currentPosition % 1000) / 10
-                    val timeString = String.format("%02d:%02d:%02d", minutes, seconds, milliseconds)
-                    binding.editTimeTv.text = timeString
-
-                    // RecyclerView의 LayoutManager를 가져옴
-                    val layoutManager = binding.editTimelineRv.layoutManager as LinearLayoutManager
-
-                    // 아이템당 시간을 10초라고 가정하고, 해당 시간에 대응하는 아이템 위치 계산
-                    val itemDuration = mediaPlayer.duration / editViewModel.timeLineImages.count() // 아이템당 시간
-                    val targetItemPosition = progress / itemDuration
-
-                    // 해당 위치로 RecyclerView 스크롤
-                    layoutManager.smoothScrollToPosition(binding.editTimelineRv, RecyclerView.State(), targetItemPosition)
-
-                }
-            }
-
-            override fun onStartTrackingTouch(seekBar: SeekBar?) {}
-
-            override fun onStopTrackingTouch(seekBar: SeekBar?) {}
-        })
+//        frameSeekBar.setOnSeekBarChangeListener(object : SeekBar.OnSeekBarChangeListener {
+//            override fun onProgressChanged(seekBar: SeekBar?, progress: Int, fromUser: Boolean) {
+//                if (fromUser) {
+//                    mediaPlayer.seekTo(progress)
+//
+//                    // 영상의 분,초 00:00 형태로 저장
+//                    val minutes = (mediaPlayer.currentPosition / 1000) / 60
+//                    val seconds = (mediaPlayer.currentPosition / 1000) % 60
+//                    val milliseconds = (mediaPlayer.currentPosition % 1000) / 10
+//                    val timeString = String.format("%02d:%02d:%02d", minutes, seconds, milliseconds)
+//                    binding.editTimeTv.text = timeString
+//
+//                    // RecyclerView의 LayoutManager를 가져옴
+//                    val layoutManager = binding.editTimelineRv.layoutManager as LinearLayoutManager
+//
+//                    // 아이템당 시간을 10초라고 가정하고, 해당 시간에 대응하는 아이템 위치 계산
+//                    val itemDuration = mediaPlayer.duration / editViewModel.timeLineImages.count() // 아이템당 시간
+//                    val targetItemPosition = progress / itemDuration
+//
+//                    // 해당 위치로 RecyclerView 스크롤
+//                    layoutManager.smoothScrollToPosition(binding.editTimelineRv, RecyclerView.State(), targetItemPosition)
+//
+//                }
+//            }
+//
+//            override fun onStartTrackingTouch(seekBar: SeekBar?) {}
+//
+//            override fun onStopTrackingTouch(seekBar: SeekBar?) {}
+//        })
 
         binding.editTimelineRv.addOnScrollListener(object : RecyclerView.OnScrollListener() {
             override fun onScrolled(recyclerView: RecyclerView, dx: Int, dy: Int) {
@@ -164,9 +164,16 @@ class EditFragment : Fragment(), TextureView.SurfaceTextureListener,
                 // 예를 들어, scrollY를 시간(초)으로 변환하여 mediaPlayer를 조정할 수 있습니다.
                 // 예를 들어, 비디오의 총 길이를 알고 있다면 scrollY를 비디오의 전체 길이로 나누어 해당 위치로 이동시킬 수 있습니다.
                 // mediaPlayer.seekTo(progress)를 호출하여 재생 위치를 조정합니다.
-                val videoLengthInSeconds = mediaPlayer.duration / 1000 // 밀리초를 초로 변환
-                val desiredPositionInSeconds = (scrollY / recyclerView.height.toFloat() * videoLengthInSeconds).toInt()
-                mediaPlayer.seekTo(desiredPositionInSeconds * 1000) // 초를 밀리초로 변환하여 설정합니다.
+                val videoLengthInMilliseconds = mediaPlayer.duration // 밀리초 단위로 영상의 총 길이를 가져옵니다.
+                val desiredPositionInMilliseconds = (scrollY / recyclerView.height.toFloat() * videoLengthInMilliseconds).toInt()
+                mediaPlayer.seekTo(desiredPositionInMilliseconds)
+
+                // 영상의 분,초 00:00 형태로 저장
+                val minutes = (mediaPlayer.currentPosition / 1000) / 60
+                val seconds = (mediaPlayer.currentPosition / 1000) % 60
+                val milliseconds = (mediaPlayer.currentPosition % 1000) / 10
+                val timeString = String.format("%02d:%02d:%02d", minutes, seconds, milliseconds)
+                binding.editTimeTv.text = timeString
             }
         })
 
