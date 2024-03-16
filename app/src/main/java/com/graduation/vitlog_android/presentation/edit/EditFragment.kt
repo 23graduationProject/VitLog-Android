@@ -105,6 +105,7 @@ class EditFragment : Fragment(), TextureView.SurfaceTextureListener,
         // 수동 블러 버튼 클릭
         binding.editBlurSelfBtn.setOnClickListener {
             binding.blurSelfLayout.visibility = View.VISIBLE
+            binding.timelineSectionIv.visibility = View.VISIBLE
         }
 
         // 수동 블러 rectangle 드래그
