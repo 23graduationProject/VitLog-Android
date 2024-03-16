@@ -19,7 +19,6 @@ import android.view.View
 import android.view.View.INVISIBLE
 import android.view.View.VISIBLE
 import android.view.ViewGroup
-import android.widget.SeekBar
 import androidx.annotation.RequiresApi
 import androidx.core.net.toUri
 import androidx.fragment.app.Fragment
@@ -180,16 +179,32 @@ class EditFragment : Fragment(), TextureView.SurfaceTextureListener,
                 // 타임라인 이동에 따른 자막 업데이용
                 updateSubtitle(mediaPlayer.currentPosition, editViewModel.subtitleList)
 
-                // 영상의 분,초 00:00 형태로 저장
-                val minutes = (mediaPlayer.currentPosition / 1000) / 60
-                val seconds = (mediaPlayer.currentPosition / 1000) % 60
-                val milliseconds = (mediaPlayer.currentPosition % 1000) / 10
-                val timeString = String.format("%02d:%02d:%02d", minutes, seconds, milliseconds)
-                binding.editTimeTv.text = timeString
+                updateTimeString()
             }
         })
     }
 
+    private fun updateTimeString() {
+        // 영상의 분,초 00:00 형태로 저장
+        val minutes = (mediaPlayer.currentPosition / 1000) / 60
+        val seconds = (mediaPlayer.currentPosition / 1000) % 60
+        val milliseconds = (mediaPlayer.currentPosition % 1000) / 10
+        val timeString = String.format("%02d:%02d:%02d", minutes, seconds, milliseconds)
+        binding.editTimeTv.text = timeString
+    }
+
+    private fun updateTime() {
+        val handler = Handler(Looper.getMainLooper())
+        val updateTask = object : Runnable {
+            override fun run() {
+                if (mediaPlayer.isPlaying) {
+                    updateTimeString()
+                    handler.postDelayed(this, 1) // 1밀리초마다 업데이트
+                }
+            }
+        }
+        handler.post(updateTask)
+    }
 
     fun updateSubtitle(currentPosition: Int, subtitles: List<Subtitle>) {
         val currentSubtitle = subtitles.find { subtitle ->
@@ -366,6 +381,7 @@ class EditFragment : Fragment(), TextureView.SurfaceTextureListener,
             mp!!.start()
             binding.videoPlayBtn.visibility = View.GONE
             binding.videoPauseBtn.visibility = View.VISIBLE
+            updateTime()
         }
 
         // 일시정지 버튼
