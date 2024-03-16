@@ -1,10 +1,9 @@
 package com.graduation.vitlog_android.presentation.edit
 
+import android.annotation.SuppressLint
 import android.content.Intent
 import android.graphics.Bitmap
 import android.graphics.SurfaceTexture
-import android.media.MediaExtractor
-import android.media.MediaFormat
 import android.media.MediaMetadataRetriever
 import android.media.MediaPlayer
 import android.net.Uri
@@ -19,7 +18,6 @@ import android.view.View
 import android.view.ViewGroup
 import android.widget.SeekBar
 import androidx.annotation.RequiresApi
-import androidx.constraintlayout.widget.ConstraintSet
 import androidx.core.net.toUri
 import androidx.fragment.app.Fragment
 import androidx.fragment.app.viewModels
@@ -31,14 +29,13 @@ import androidx.recyclerview.widget.RecyclerView
 import com.graduation.vitlog_android.R
 import com.graduation.vitlog_android.databinding.FragmentEditBinding
 import com.graduation.vitlog_android.presentation.MainActivity
-import com.graduation.vitlog_android.util.multipart.ContentUriRequestBody
 import com.graduation.vitlog_android.util.view.UiState
 import dagger.hilt.android.AndroidEntryPoint
 import kotlinx.coroutines.flow.launchIn
 import kotlinx.coroutines.flow.onEach
 import kotlinx.coroutines.launch
+import timber.log.Timber
 import java.io.IOException
-import java.security.InvalidParameterException
 
 
 @AndroidEntryPoint
@@ -51,6 +48,9 @@ class EditFragment : Fragment(), TextureView.SurfaceTextureListener,
     private var getUri: Uri? = null
     private val editViewModel by viewModels<EditViewModel>()
     private lateinit var mediaPlayer: MediaPlayer
+
+    private var isBlurModeSelected: Boolean = false
+    private var isSubtitleModeSelected: Boolean = false
 
     @RequiresApi(Build.VERSION_CODES.Q)
     override fun onCreateView(
@@ -71,16 +71,21 @@ class EditFragment : Fragment(), TextureView.SurfaceTextureListener,
             mediaPlayer.release()
             startActivity(Intent(requireContext(), MainActivity::class.java))
         }
+        binding.editBlurBtn.setOnClickListener {
+            isBlurModeSelected = true
+        }
+        binding.editSubtitlesBtn.setOnClickListener {
+            isSubtitleModeSelected = true
+        }
         binding.editSaveBtn.setOnClickListener {
             editViewModel.getPresignedUrl()
         }
         getUri?.let {
             setupMediaRetrieverAndSeekBar(it)
-            //createAndSetVideoRequestBody(getUri!!)
-            //setPostVideoStateObserver()
             setPutVideoToPresignedUrlStateObserver()
             setGetPresignedUrlStateObserver()
             setGetMosaicedVideoStateObserver()
+            setGetSubtitleStateObserver()
         }
 
         buttonActions()
@@ -147,25 +152,6 @@ class EditFragment : Fragment(), TextureView.SurfaceTextureListener,
 
     }
 
-    private fun setPostVideoStateObserver() {
-        editViewModel.postVideoState.flowWithLifecycle(viewLifecycleOwner.lifecycle)
-            .onEach { state ->
-                when (state) {
-                    is UiState.Success -> {
-                        Log.d("Success", "POST 완료")
-                    }
-
-                    is UiState.Failure -> {
-                        Log.d("Failure", state.msg)
-                    }
-
-                    is UiState.Empty -> Unit
-                    is UiState.Loading -> Unit
-                    else -> {}
-                }
-            }.launchIn(viewLifecycleOwner.lifecycleScope)
-    }
-
     private fun uriToRequestBody() {
         viewLifecycleOwner.lifecycleScope.launch {
             getUri?.let { editViewModel.uriToRequestBody(requireContext(), it) }
@@ -178,18 +164,18 @@ class EditFragment : Fragment(), TextureView.SurfaceTextureListener,
             .onEach { state ->
                 when (state) {
                     is UiState.Success -> {
-                        Log.d("Success", state.data.data.url)
+                        Timber.tag("Success").d(state.data.data.url)
                         uriToRequestBody()
+                        editViewModel.setVideoFileName(state.data.data.fileName)
                         editViewModel.setPresignedUrl(state.data.data.url)
                     }
 
                     is UiState.Failure -> {
-                        Log.d("Failure", state.msg)
+                        Timber.tag("Failure").e(state.msg)
                     }
 
                     is UiState.Empty -> Unit
                     is UiState.Loading -> Unit
-                    else -> {}
                 }
             }.launchIn(viewLifecycleOwner.lifecycleScope)
     }
@@ -199,16 +185,51 @@ class EditFragment : Fragment(), TextureView.SurfaceTextureListener,
             .onEach { state ->
                 when (state) {
                     is UiState.Success -> {
-                        Log.d("Success", state.data.toString())
-                        editViewModel.getMosaicedVideo(1,"hi")
+                        Timber.tag("Success").d(state.data.toString())
+                        if (isBlurModeSelected) {
+                            editViewModel.videoFileName.value?.let {
+                                editViewModel.getMosaicedVideo(
+                                    UID,
+                                    it
+                                )
+                            }
+                        }
+                        if (isSubtitleModeSelected) {
+                            editViewModel.videoFileName.value?.let { fileName ->
+                                editViewModel.getSubtitle(
+                                    uid = UID,
+                                    fileName = fileName
+                                )
+                            }
+                        }
                     }
+
                     is UiState.Failure -> {
-                        Log.d("Failure", state.msg)
+                        Timber.tag("Failure").e(state.msg)
                     }
 
                     is UiState.Empty -> Unit
                     is UiState.Loading -> Unit
-                    else -> {}
+                }
+            }.launchIn(viewLifecycleOwner.lifecycleScope)
+    }
+
+    private fun setGetSubtitleStateObserver() {
+        editViewModel.getSubtitleState.flowWithLifecycle(viewLifecycleOwner.lifecycle)
+            .onEach { state ->
+                when (state) {
+                    is UiState.Success -> {
+                        isSubtitleModeSelected = false
+                        Timber.tag("SuccessSubTitle").d(state.data.data.subtitle.toString())
+                    }
+
+                    is UiState.Failure -> {
+                        Log.d("Fail", state.msg)
+                        Timber.tag("Failure").e(state.msg)
+                    }
+
+                    is UiState.Empty -> Unit
+                    is UiState.Loading -> Unit
                 }
             }.launchIn(viewLifecycleOwner.lifecycleScope)
     }
@@ -219,38 +240,19 @@ class EditFragment : Fragment(), TextureView.SurfaceTextureListener,
             .onEach { state ->
                 when (state) {
                     is UiState.Success -> {
-                        editViewModel.saveFile(requireContext(),state.data)
-                        Log.d("Success", state.data.toString())
+                        isBlurModeSelected = false
+                        editViewModel.saveFile(requireContext(), state.data)
+                        Timber.tag("Success").d(state.data.toString())
                     }
+
                     is UiState.Failure -> {
-                        Log.d("Failure", state.msg)
+                        Timber.tag("Failure").d(state.msg)
                     }
 
                     is UiState.Empty -> Unit
                     is UiState.Loading -> Unit
-                    else -> {}
                 }
             }.launchIn(viewLifecycleOwner.lifecycleScope)
-    }
-
-    private fun createAndSetVideoRequestBody(uri: Uri) {
-        val videoRequestBody = ContentUriRequestBody(requireContext(), uri)
-        editViewModel.setVideoRequestBody(videoRequestBody)
-    }
-
-    // 선택한 영상의 트랙 추출
-    private fun selectVideoTrack(
-        extractor: MediaExtractor,
-        prefix: String = "video/"
-    ): MediaFormat {
-        for (i in 0 until extractor.trackCount) {
-            val format = extractor.getTrackFormat(i)
-            if (format.getString(MediaFormat.KEY_MIME)?.startsWith(prefix) == true) {
-                extractor.selectTrack(i)
-                return format
-            }
-        }
-        throw InvalidParameterException("File contains no video track")
     }
 
 
@@ -286,6 +288,7 @@ class EditFragment : Fragment(), TextureView.SurfaceTextureListener,
     }
 
     // 수동 블러 rectangle 드래그
+    @SuppressLint("ClickableViewAccessibility")
     private fun dragBlurRectangle() {
         var dX: Float = 0F
         var dY: Float = 0F
@@ -296,6 +299,7 @@ class EditFragment : Fragment(), TextureView.SurfaceTextureListener,
                     dX = view.x - event.rawX
                     dY = view.y - event.rawY
                 }
+
                 MotionEvent.ACTION_MOVE -> {
                     // ImageView 위치 업데이트
                     binding.blurSelfLayout.animate()
@@ -304,11 +308,13 @@ class EditFragment : Fragment(), TextureView.SurfaceTextureListener,
                         .setDuration(0)
                         .start()
                 }
+
                 MotionEvent.ACTION_UP -> {
                     // 사용자가 뷰를 눌렀다가 뗐을 때 performClick() 메서드 호출
                     view.performClick()
                     getCoordinates()
                 }
+
                 else -> return@setOnTouchListener false
             }
             return@setOnTouchListener true
@@ -379,6 +385,6 @@ class EditFragment : Fragment(), TextureView.SurfaceTextureListener,
     }
 
     companion object {
-        private const val TIMEOUT_US = 10000
+        private const val UID = 3
     }
 }

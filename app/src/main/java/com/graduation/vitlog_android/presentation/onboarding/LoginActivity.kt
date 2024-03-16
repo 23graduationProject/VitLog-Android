@@ -7,6 +7,7 @@ import androidx.activity.viewModels
 import androidx.core.widget.doAfterTextChanged
 import androidx.lifecycle.flowWithLifecycle
 import androidx.lifecycle.lifecycleScope
+import com.google.android.material.snackbar.Snackbar
 import com.graduation.vitlog_android.R
 import com.graduation.vitlog_android.databinding.ActivityLoginBinding
 import com.graduation.vitlog_android.presentation.MainActivity
@@ -97,7 +98,7 @@ class LoginActivity : BindingActivity<ActivityLoginBinding>(R.layout.activity_lo
                     }
 
                     is UiState.Failure -> {
-                        Log.d("Failure", state.msg)
+                        Snackbar.make(binding.root, "아이디와 비밀번호를 확인해주세요", 1000).show()
                     }
 
                     is UiState.Empty -> Unit

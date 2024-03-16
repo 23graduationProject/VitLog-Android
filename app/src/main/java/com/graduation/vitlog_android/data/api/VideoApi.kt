@@ -2,6 +2,7 @@ package com.graduation.vitlog_android.data.api
 
 import com.graduation.vitlog_android.model.request.RequestBlurDto
 import com.graduation.vitlog_android.model.response.ResponseGetPresignedUrlDto
+import com.graduation.vitlog_android.model.response.ResponseGetSubtitleDto
 import com.graduation.vitlog_android.model.response.ResponsePostVideoDto
 import okhttp3.MultipartBody
 import okhttp3.RequestBody
@@ -27,7 +28,7 @@ interface VideoApi {
     @GET("api/getPreSignedUrl/{uid}")
     suspend fun getPresignedUrl(
         @Path("uid") uid: Int,
-        @Query("fileName") fileName: String
+        @Query("ext") ext: String
     ): ResponseGetPresignedUrlDto
 
     @PUT
@@ -48,4 +49,11 @@ interface VideoApi {
         @Path("vid") vid: String,
         @Body requestBlurDto: RequestBlurDto
     ): ResponseBody
+
+    @GET("api/subtitle/{uid}/{fileName}")
+    suspend fun getSubtitle(
+        @Path("uid") uid: Int,
+        @Path("fileName") fileName: String
+    ): ResponseGetSubtitleDto
+
 }
