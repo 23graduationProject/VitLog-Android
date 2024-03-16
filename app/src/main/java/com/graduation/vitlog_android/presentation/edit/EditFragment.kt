@@ -14,6 +14,8 @@ import android.view.MotionEvent
 import android.view.Surface
 import android.view.TextureView
 import android.view.View
+import android.view.View.INVISIBLE
+import android.view.View.VISIBLE
 import android.view.ViewGroup
 import android.widget.SeekBar
 import androidx.annotation.RequiresApi
@@ -44,6 +46,7 @@ class EditFragment : Fragment(), TextureView.SurfaceTextureListener,
     private val editViewModel by viewModels<EditViewModel>()
     private lateinit var mediaPlayer: MediaPlayer
     private lateinit var frameSeekBar: SeekBar
+    private lateinit var subtitleAdapter: SubtitleAdapter
 
     private var isBlurModeSelected: Boolean = false
     private var isSubtitleModeSelected: Boolean = false
@@ -63,6 +66,7 @@ class EditFragment : Fragment(), TextureView.SurfaceTextureListener,
             binding.editProgressbar.visibility = View.INVISIBLE
         }
         mediaPlayer = MediaPlayer()
+        initSubtitleAdapter()
         binding.tvVideo.surfaceTextureListener = this
         binding.backBtn.setOnClickListener {
             mediaPlayer.release()
@@ -134,6 +138,11 @@ class EditFragment : Fragment(), TextureView.SurfaceTextureListener,
         }
     }
 
+    private fun initSubtitleAdapter(){
+        subtitleAdapter = SubtitleAdapter()
+        binding.rvEditToolSubtitle.adapter = subtitleAdapter
+    }
+
 
     private fun setGetPresignedUrlStateObserver() {
         editViewModel.getPresignedUrlState.flowWithLifecycle(viewLifecycleOwner.lifecycle)
@@ -199,9 +208,14 @@ class EditFragment : Fragment(), TextureView.SurfaceTextureListener,
         editViewModel.getSubtitleState.flowWithLifecycle(viewLifecycleOwner.lifecycle)
             .onEach { state ->
                 when (state) {
+                    is UiState.Loading -> {
+                        binding.editProgressbar.visibility = VISIBLE
+                    }
                     is UiState.Success -> {
-                        Log.d("Subttile",state.data.data.subtitle.toString())
-                        Timber.tag("SuccessSubTitle").d(state.data.data.subtitle.toString())
+                        binding.editProgressbar.visibility = INVISIBLE
+                        binding.clEditTool.visibility = INVISIBLE
+                        binding.clEditToolSubtitle.visibility = VISIBLE
+                        subtitleAdapter.submitList(state.data)
                     }
 
                     is UiState.Failure -> {
