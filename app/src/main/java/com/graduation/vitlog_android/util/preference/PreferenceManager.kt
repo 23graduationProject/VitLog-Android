@@ -33,4 +33,8 @@ object SharedPrefManager {
     fun getBoolean(key: String, defaultValue: Boolean = false): Boolean =
         preferences.getBoolean(key, defaultValue)
 
+
+    var uid: Int
+        get() = getInt("uid", -1)
+        set(value) = save("uid", value)
 }

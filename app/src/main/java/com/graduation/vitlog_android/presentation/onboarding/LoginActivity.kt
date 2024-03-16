@@ -14,6 +14,7 @@ import com.graduation.vitlog_android.databinding.ActivityLoginBinding
 import com.graduation.vitlog_android.presentation.MainActivity
 import com.graduation.vitlog_android.util.binding.BindingActivity
 import com.graduation.vitlog_android.util.preference.SharedPrefManager
+import com.graduation.vitlog_android.util.preference.SharedPrefManager.uid
 import com.graduation.vitlog_android.util.view.UiState
 import dagger.hilt.android.AndroidEntryPoint
 import kotlinx.coroutines.flow.collectLatest
@@ -35,8 +36,7 @@ class LoginActivity : BindingActivity<ActivityLoginBinding>(R.layout.activity_lo
     }
 
     private fun autoLogin(){
-        val uid = SharedPrefManager.getString("uid")
-        if(uid.isNotBlank()){
+        if(uid != -1){
             navigateToMain()
         }
     }
