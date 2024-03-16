@@ -89,7 +89,7 @@ class EditFragment : Fragment(), TextureView.SurfaceTextureListener,
                 binding.editSaveBtn.text = "저장"
                 // 수동블러
                 manualBlurData.add(RequestBlurDto(startTime = startTime, endTime = endTime, x1 = rectangleX, y1 = rectangleY, x2 = rectangleRightX, y2 = rectangleRightY))
-                
+
             }
         }
         getUri?.let {
