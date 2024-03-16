@@ -177,7 +177,7 @@ class EditFragment : Fragment(), TextureView.SurfaceTextureListener,
                     (scrollY / recyclerView.width.toFloat() * videoLengthInMilliseconds).toInt()
                 mediaPlayer.seekTo(desiredPositionInMilliseconds)
 
-                // 타임라인 이동에 따른 자막 업데이트
+                // 타임라인 이동에 따른 자막 업데이용
                 updateSubtitle(mediaPlayer.currentPosition, editViewModel.subtitleList)
 
                 // 영상의 분,초 00:00 형태로 저장
@@ -476,4 +476,7 @@ class EditFragment : Fragment(), TextureView.SurfaceTextureListener,
     companion object {
         private const val UID = 3
     }
+
+//     TODO : 혜선 1. 자동로그인 2. 자막 클릭 시, 편집 할 수 있도록 3. 내용 뿐만 아니라 폰트 및 색상 까지 4. 자막 서버 연결
+
 }
