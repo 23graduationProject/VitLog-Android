@@ -117,6 +117,7 @@ class EditFragment : Fragment(), TextureView.SurfaceTextureListener,
                 ?.toLong()
         if (videoLength != null) {
             frameSeekBar.max = videoLength.toInt()
+            getUri?.let { editViewModel.loadFrames(requireContext(), it, videoLength) }
         }
 
         // SeekBar의 드래그 이벤트 처리
@@ -150,7 +151,26 @@ class EditFragment : Fragment(), TextureView.SurfaceTextureListener,
             override fun onStopTrackingTouch(seekBar: SeekBar?) {}
         })
 
-        getUri?.let { editViewModel.loadFrames(requireContext(), it, videoLength!!) }
+        binding.editTimelineRv.addOnScrollListener(object : RecyclerView.OnScrollListener() {
+            override fun onScrolled(recyclerView: RecyclerView, dx: Int, dy: Int) {
+                super.onScrolled(recyclerView, dx, dy)
+                // RecyclerView가 스크롤될 때 호출됩니다.
+                // dx와 dy 매개변수는 스크롤 이동량을 나타냅니다. (가로 및 세로 방향으로의 이동량)
+
+                // 현재 스크롤 위치를 계산합니다.
+                val scrollY = recyclerView.computeHorizontalScrollOffset()
+
+                // 여기서 scrollY를 이용하여 mediaPlayer.seekTo(progress)와 같은 동작을 구현합니다.
+                // 예를 들어, scrollY를 시간(초)으로 변환하여 mediaPlayer를 조정할 수 있습니다.
+                // 예를 들어, 비디오의 총 길이를 알고 있다면 scrollY를 비디오의 전체 길이로 나누어 해당 위치로 이동시킬 수 있습니다.
+                // mediaPlayer.seekTo(progress)를 호출하여 재생 위치를 조정합니다.
+                val videoLengthInSeconds = mediaPlayer.duration / 1000 // 밀리초를 초로 변환
+                val desiredPositionInSeconds = (scrollY / recyclerView.height.toFloat() * videoLengthInSeconds).toInt()
+                mediaPlayer.seekTo(desiredPositionInSeconds * 1000) // 초를 밀리초로 변환하여 설정합니다.
+            }
+        })
+
+
 
     }
 
