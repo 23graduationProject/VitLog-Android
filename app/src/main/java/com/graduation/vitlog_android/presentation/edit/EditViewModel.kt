@@ -65,28 +65,24 @@ class EditViewModel @Inject constructor(
         val metaDataSource = MediaMetadataRetriever()
         metaDataSource.setDataSource(context, uri)
 
-        val thumbnailCount = 7
-        val interval = videoLength / thumbnailCount
+        val durationString = metaDataSource.extractMetadata(MediaMetadataRetriever.METADATA_KEY_DURATION)
+        val duration = durationString?.toLong() ?: 0
 
-        // 비트맵을 저장할 리스트를 선언합니다.
-        val frameBitmaps = ArrayList<Bitmap>()
+        val frameRate = 1 // 프레임 속도 (1초 당 프레임 수)
+        val numFrames = (duration / 1000) * frameRate // 영상의 총 프레임 수
 
-        for (i in 0 until thumbnailCount - 1) {
-            val frameTime = i * interval
-            var bitmap =
-                metaDataSource.getFrameAtTime(frameTime, MediaMetadataRetriever.OPTION_CLOSEST_SYNC)
-
-            // 프레임을 추출하고 비트맵 리스트에 추가합니다.
-            bitmap?.let {
-                frameBitmaps.add(it)
-                timeLineImages.add(it)
-            }
-
+        for (i in 0 until numFrames) {
+            val timeUs = i * 1000000 / frameRate // 프레임의 시간(마이크로초)을 계산합니다.
+            val bitmap = metaDataSource.getFrameAtTime(timeUs, MediaMetadataRetriever.OPTION_CLOSEST_SYNC)
+            // 비트맵(bitmap)을 사용하여 작업을 수행합니다.
+            // 예를 들어, 프레임을 화면에 표시하거나 파일로 저장할 수 있습니다.
+            bitmap?.let { timeLineImages.add(it) }
         }
+
         metaDataSource.release()
 
         // LiveData 객체를 업데이트합니다.
-        frames.value = frameBitmaps
+//        frames.value = frameBitmaps
     }
 
 
