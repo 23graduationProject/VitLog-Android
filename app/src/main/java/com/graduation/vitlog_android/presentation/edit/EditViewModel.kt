@@ -17,6 +17,7 @@ import com.graduation.vitlog_android.model.response.ResponseGetPresignedUrlDto
 import com.graduation.vitlog_android.model.response.ResponseGetSubtitleDto
 import com.graduation.vitlog_android.model.response.ResponsePostVideoDto
 import com.graduation.vitlog_android.util.multipart.ContentUriRequestBody
+import com.graduation.vitlog_android.util.preference.SharedPrefManager.uid
 import com.graduation.vitlog_android.util.view.UiState
 import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.Dispatchers
@@ -107,7 +108,7 @@ class EditViewModel @Inject constructor(
     fun getPresignedUrl() {
         viewModelScope.launch {
             _getPresignedUrlState.value = UiState.Loading
-            videoRepository.getPresignedUrl(UID, "mp4")
+            videoRepository.getPresignedUrl(uid, "mp4")
                 .onSuccess { response ->
                     _getPresignedUrlState.value = UiState.Success(response)
                     Timber.e("성공 $response")
@@ -274,9 +275,6 @@ class EditViewModel @Inject constructor(
         writeResponseBodyToDisk(context, body)
     }
 
-    companion object {
-        private const val UID = 3
-    }
 }
 
 

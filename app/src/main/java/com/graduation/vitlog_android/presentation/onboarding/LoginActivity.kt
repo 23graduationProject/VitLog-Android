@@ -1,6 +1,7 @@
 package com.graduation.vitlog_android.presentation.onboarding
 
 import android.content.Intent
+import android.content.SharedPreferences
 import android.os.Bundle
 import android.util.Log
 import androidx.activity.viewModels
@@ -12,6 +13,8 @@ import com.graduation.vitlog_android.R
 import com.graduation.vitlog_android.databinding.ActivityLoginBinding
 import com.graduation.vitlog_android.presentation.MainActivity
 import com.graduation.vitlog_android.util.binding.BindingActivity
+import com.graduation.vitlog_android.util.preference.SharedPrefManager
+import com.graduation.vitlog_android.util.preference.SharedPrefManager.uid
 import com.graduation.vitlog_android.util.view.UiState
 import dagger.hilt.android.AndroidEntryPoint
 import kotlinx.coroutines.flow.collectLatest
@@ -27,8 +30,15 @@ class LoginActivity : BindingActivity<ActivityLoginBinding>(R.layout.activity_lo
         super.onCreate(savedInstanceState)
         binding = ActivityLoginBinding.inflate(layoutInflater)
         setContentView(binding.root)
+        autoLogin()
         addListener()
         addObserver()
+    }
+
+    private fun autoLogin(){
+        if(uid != -1){
+            navigateToMain()
+        }
     }
 
 
@@ -93,6 +103,7 @@ class LoginActivity : BindingActivity<ActivityLoginBinding>(R.layout.activity_lo
                 when (state) {
                     is UiState.Success -> {
                         Log.d("Success", state.data.toString())
+                        SharedPrefManager.save("uid",state.data.uid)
                         navigateToMain()
                         finish()
                     }
