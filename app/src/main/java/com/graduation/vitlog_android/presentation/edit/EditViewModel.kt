@@ -6,10 +6,12 @@ import android.media.MediaMetadataRetriever
 import android.media.MediaScannerConnection
 import android.net.Uri
 import android.os.Environment
+import android.util.Log
 import androidx.lifecycle.MutableLiveData
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.graduation.vitlog_android.data.repository.VideoRepository
+import com.graduation.vitlog_android.model.request.RequestBlurDto
 import com.graduation.vitlog_android.model.response.ResponseGetPresignedUrlDto
 import com.graduation.vitlog_android.model.response.ResponseGetSubtitleDto
 import com.graduation.vitlog_android.model.response.ResponsePostVideoDto
@@ -59,30 +61,36 @@ class EditViewModel @Inject constructor(
     private val _getMosaicedVideoState = MutableStateFlow<UiState<ResponseBody>>(UiState.Loading)
     val getMosaicedVideoState: StateFlow<UiState<ResponseBody>> = _getMosaicedVideoState.asStateFlow()
 
+    val timeLineImages = mutableListOf<Bitmap>()
+
     private val _getSubtitleState = MutableStateFlow<UiState<ResponseGetSubtitleDto>>(UiState.Loading)
     val getSubtitleState: StateFlow<UiState<ResponseGetSubtitleDto>> = _getSubtitleState.asStateFlow()
+
+    private val _postManualBlurState = MutableStateFlow<UiState<ResponseBody>>(UiState.Loading)
+    val postManualBlurState: StateFlow<UiState<ResponseBody>> = _postManualBlurState.asStateFlow()
 
     fun loadFrames(context: Context, uri: Uri, videoLength: Long) {
         val metaDataSource = MediaMetadataRetriever()
         metaDataSource.setDataSource(context, uri)
 
-        val thumbnailCount = 7
-        val interval = videoLength / thumbnailCount
+        val durationString = metaDataSource.extractMetadata(MediaMetadataRetriever.METADATA_KEY_DURATION)
+        val duration = durationString?.toLong() ?: 0
 
-        // 비트맵을 저장할 리스트를 선언합니다.
-        val frameBitmaps = ArrayList<Bitmap>()
+        val frameRate = 1 // 프레임 속도 (1초 당 프레임 수)
+        val numFrames = (duration / 1000) * frameRate // 영상의 총 프레임 수
 
-        for (i in 0 until thumbnailCount - 1) {
-            val frameTime = i * interval
-            var bitmap =
-                metaDataSource.getFrameAtTime(frameTime, MediaMetadataRetriever.OPTION_CLOSEST_SYNC)
-            // 프레임을 추출하고 비트맵 리스트에 추가합니다.
-            bitmap?.let { frameBitmaps.add(it) }
+        for (i in 0 until numFrames) {
+            val timeUs = i * 1000000 / frameRate // 프레임의 시간(마이크로초)을 계산합니다.
+            val bitmap = metaDataSource.getFrameAtTime(timeUs, MediaMetadataRetriever.OPTION_CLOSEST_SYNC)
+            // 비트맵(bitmap)을 사용하여 작업을 수행합니다.
+            // 예를 들어, 프레임을 화면에 표시하거나 파일로 저장할 수 있습니다.
+            bitmap?.let { timeLineImages.add(it) }
         }
+
         metaDataSource.release()
 
         // LiveData 객체를 업데이트합니다.
-        frames.value = frameBitmaps
+//        frames.value = frameBitmaps
     }
 
 
@@ -128,6 +136,27 @@ class EditViewModel @Inject constructor(
                         Timber.e("HTTP 실패: $errorResponse")
                     }
                     _getSubtitleState.value = UiState.Failure("${t.message}")
+                }
+        }
+    }
+
+    fun postManualBlur(
+        uid: Int,
+        vid: String,
+        requestBlurDto: RequestBlurDto
+    ) {
+        viewModelScope.launch {
+            _postManualBlurState.value = UiState.Loading
+            videoRepository.postManualBlur(uid, vid, requestBlurDto)
+                .onSuccess { response ->
+                    _postManualBlurState.value = UiState.Success(response)
+                    Timber.e("성공 $response")
+                }.onFailure { t ->
+                    if (t is HttpException) {
+                        val errorResponse = t.response()?.errorBody()?.string()
+                        Timber.e("HTTP 실패: $errorResponse")
+                    }
+                    _postManualBlurState.value = UiState.Failure("${t.message}")
                 }
         }
     }

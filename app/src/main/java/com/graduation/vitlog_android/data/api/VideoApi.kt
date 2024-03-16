@@ -1,5 +1,6 @@
 package com.graduation.vitlog_android.data.api
 
+import com.graduation.vitlog_android.model.request.RequestBlurDto
 import com.graduation.vitlog_android.model.response.ResponseGetPresignedUrlDto
 import com.graduation.vitlog_android.model.response.ResponseGetSubtitleDto
 import com.graduation.vitlog_android.model.response.ResponsePostVideoDto
@@ -42,11 +43,17 @@ interface VideoApi {
         @Path("fileName") fileName: String
     ): ResponseBody
 
+    @POST("api/coord/{uid}/{vid}")
+    suspend fun postManualBlur(
+        @Path("uid") uid: Int,
+        @Path("vid") vid: String,
+        @Body requestBlurDto: RequestBlurDto
+    ): ResponseBody
+
     @GET("api/subtitle/{uid}/{fileName}")
     suspend fun getSubtitle(
         @Path("uid") uid: Int,
         @Path("fileName") fileName: String
     ): ResponseGetSubtitleDto
-
 
 }

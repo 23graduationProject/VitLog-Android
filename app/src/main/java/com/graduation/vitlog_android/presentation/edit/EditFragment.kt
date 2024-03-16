@@ -2,6 +2,7 @@ package com.graduation.vitlog_android.presentation.edit
 
 import android.annotation.SuppressLint
 import android.content.Intent
+import android.graphics.Bitmap
 import android.graphics.SurfaceTexture
 import android.media.MediaMetadataRetriever
 import android.media.MediaPlayer
@@ -22,7 +23,12 @@ import androidx.fragment.app.Fragment
 import androidx.fragment.app.viewModels
 import androidx.lifecycle.flowWithLifecycle
 import androidx.lifecycle.lifecycleScope
+import androidx.recyclerview.widget.LinearLayoutManager
+import androidx.recyclerview.widget.LinearSmoothScroller
+import androidx.recyclerview.widget.RecyclerView
+import com.graduation.vitlog_android.R
 import com.graduation.vitlog_android.databinding.FragmentEditBinding
+import com.graduation.vitlog_android.model.request.RequestBlurDto
 import com.graduation.vitlog_android.presentation.MainActivity
 import com.graduation.vitlog_android.util.view.UiState
 import dagger.hilt.android.AndroidEntryPoint
@@ -43,10 +49,13 @@ class EditFragment : Fragment(), TextureView.SurfaceTextureListener,
     private var getUri: Uri? = null
     private val editViewModel by viewModels<EditViewModel>()
     private lateinit var mediaPlayer: MediaPlayer
-    private lateinit var frameSeekBar: SeekBar
 
     private var isBlurModeSelected: Boolean = false
     private var isSubtitleModeSelected: Boolean = false
+
+    private var manualBlurData = mutableListOf<RequestBlurDto>()
+    private var startTime: String = "00:00:00"
+    private var endTime: String = "00:00:00"
 
     @RequiresApi(Build.VERSION_CODES.Q)
     override fun onCreateView(
@@ -55,7 +64,6 @@ class EditFragment : Fragment(), TextureView.SurfaceTextureListener,
         savedInstanceState: Bundle?
     ): View {
         _binding = FragmentEditBinding.inflate(layoutInflater, container, false)
-        frameSeekBar = binding.editTimelineSv
 
         getUri = arguments?.getString("videoUri")?.toUri()
 
@@ -75,7 +83,14 @@ class EditFragment : Fragment(), TextureView.SurfaceTextureListener,
             isSubtitleModeSelected = true
         }
         binding.editSaveBtn.setOnClickListener {
-            editViewModel.getPresignedUrl()
+            if (binding.editSaveBtn.text == "저장") {
+                editViewModel.getPresignedUrl()
+            } else if (binding.editSaveBtn.text == "완료") {
+                binding.editSaveBtn.text = "저장"
+                // 수동블러
+                manualBlurData.add(RequestBlurDto(startTime = startTime, endTime = endTime, x1 = rectangleX, y1 = rectangleY, x2 = rectangleRightX, y2 = rectangleRightY))
+
+            }
         }
         getUri?.let {
             setupMediaRetrieverAndSeekBar(it)
@@ -86,14 +101,24 @@ class EditFragment : Fragment(), TextureView.SurfaceTextureListener,
         }
 
         buttonActions()
+        timeLineRV()
 
         return binding.root
+    }
+
+    private fun timeLineRV() {
+
+        Log.d("edit model", editViewModel.timeLineImages.toString())
+        binding.editTimelineRv.adapter = TimeLineAdapter(editViewModel.timeLineImages)
+
     }
 
     private fun buttonActions() {
         // 수동 블러 버튼 클릭
         binding.editBlurSelfBtn.setOnClickListener {
             binding.blurSelfLayout.visibility = View.VISIBLE
+            binding.timelineSectionIv.visibility = View.VISIBLE
+            binding.editSaveBtn.text = "완료"
         }
 
         // 수동 블러 rectangle 드래그
@@ -108,23 +133,36 @@ class EditFragment : Fragment(), TextureView.SurfaceTextureListener,
             mediaMetadataRetriever.extractMetadata(MediaMetadataRetriever.METADATA_KEY_DURATION)
                 ?.toLong()
         if (videoLength != null) {
-            frameSeekBar.max = videoLength.toInt()
+            getUri?.let { editViewModel.loadFrames(requireContext(), it, videoLength) }
         }
 
-        // SeekBar의 드래그 이벤트 처리
-        frameSeekBar.setOnSeekBarChangeListener(object : SeekBar.OnSeekBarChangeListener {
-            override fun onProgressChanged(seekBar: SeekBar?, progress: Int, fromUser: Boolean) {
-                if (fromUser) {
-                    mediaPlayer.seekTo(progress)
-                }
+        binding.editTimelineRv.addOnScrollListener(object : RecyclerView.OnScrollListener() {
+            override fun onScrolled(recyclerView: RecyclerView, dx: Int, dy: Int) {
+                super.onScrolled(recyclerView, dx, dy)
+                // RecyclerView가 스크롤될 때 호출됩니다.
+                // dx와 dy 매개변수는 스크롤 이동량을 나타냅니다. (가로 및 세로 방향으로의 이동량)
+
+                // 현재 스크롤 위치를 계산합니다.
+                val scrollY = recyclerView.computeHorizontalScrollOffset()
+
+                // 여기서 scrollY를 이용하여 mediaPlayer.seekTo(progress)와 같은 동작을 구현합니다.
+                // 예를 들어, scrollY를 시간(초)으로 변환하여 mediaPlayer를 조정할 수 있습니다.
+                // 예를 들어, 비디오의 총 길이를 알고 있다면 scrollY를 비디오의 전체 길이로 나누어 해당 위치로 이동시킬 수 있습니다.
+                // mediaPlayer.seekTo(progress)를 호출하여 재생 위치를 조정합니다.
+                val videoLengthInMilliseconds = mediaPlayer.duration // 밀리초 단위로 영상의 총 길이를 가져옵니다.
+                val desiredPositionInMilliseconds = (scrollY / recyclerView.width.toFloat() * videoLengthInMilliseconds).toInt()
+                mediaPlayer.seekTo(desiredPositionInMilliseconds)
+
+                // 영상의 분,초 00:00 형태로 저장
+                val minutes = (mediaPlayer.currentPosition / 1000) / 60
+                val seconds = (mediaPlayer.currentPosition / 1000) % 60
+                val milliseconds = (mediaPlayer.currentPosition % 1000) / 10
+                val timeString = String.format("%02d:%02d:%02d", minutes, seconds, milliseconds)
+                binding.editTimeTv.text = timeString
             }
-
-            override fun onStartTrackingTouch(seekBar: SeekBar?) {}
-
-            override fun onStopTrackingTouch(seekBar: SeekBar?) {}
         })
 
-        getUri?.let { editViewModel.loadFrames(requireContext(), it, videoLength!!) }
+
 
     }
 
@@ -328,6 +366,8 @@ class EditFragment : Fragment(), TextureView.SurfaceTextureListener,
 
     private var rectangleX = 0F
     private var rectangleY = 0F
+    private var rectangleRightX = 0F
+    private var rectangleRightY = 0F
 
     // 블러 rectangle 좌측상단 좌표 저장
     private fun getCoordinates() {
@@ -335,8 +375,10 @@ class EditFragment : Fragment(), TextureView.SurfaceTextureListener,
         val paddingInPx = 10 * density
         rectangleX = binding.blurSelfLayout.x + paddingInPx
         rectangleY = binding.blurSelfLayout.y + paddingInPx
-        Log.d("blur rectangle width", binding.blurSelfRectangle.width.toString())
-        Log.d("blur rectangle height", binding.blurSelfRectangle.height.toString())
+        rectangleRightX = rectangleX + binding.blurSelfRectangle.width
+        rectangleRightY = rectangleX + binding.blurSelfRectangle.height
+//        Log.d("blur rectangle width", binding.blurSelfRectangle.width.toString())
+//        Log.d("blur rectangle height", binding.blurSelfRectangle.height.toString())
     }
 
     override fun onSurfaceTextureSizeChanged(surface: SurfaceTexture, width: Int, height: Int) {

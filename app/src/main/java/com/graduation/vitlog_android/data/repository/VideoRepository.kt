@@ -1,6 +1,7 @@
 package com.graduation.vitlog_android.data.repository
 
 import com.graduation.vitlog_android.data.api.VideoApi
+import com.graduation.vitlog_android.model.request.RequestBlurDto
 import com.graduation.vitlog_android.model.request.RequestGetSubtitleDto
 import com.graduation.vitlog_android.model.response.ResponseGetPresignedUrlDto
 import com.graduation.vitlog_android.model.response.ResponseGetSubtitleDto
@@ -40,6 +41,14 @@ class VideoRepository @Inject constructor(
         fileName: String
     ): Result<ResponseBody> = runCatching {
         api.getMosaicedVideo(uid = uid, fileName = fileName)
+    }
+    
+    suspend fun postManualBlur(
+        uid: Int,
+        vid: String,
+        requestBlurDto: RequestBlurDto
+    ): Result<ResponseBody> = runCatching {
+        api.postManualBlur(uid = uid, vid = vid, requestBlurDto = requestBlurDto)
     }
 
     suspend fun getSubtitle(
