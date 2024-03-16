@@ -103,7 +103,6 @@ class LoginActivity : BindingActivity<ActivityLoginBinding>(R.layout.activity_lo
 
                     is UiState.Empty -> Unit
                     is UiState.Loading -> Unit
-                    else -> {}
                 }
             }.launchIn(lifecycleScope)
     }
