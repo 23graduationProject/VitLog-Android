@@ -2,19 +2,22 @@ package com.graduation.vitlog_android.presentation.edit
 
 import android.annotation.SuppressLint
 import android.content.Intent
-import android.graphics.Bitmap
 import android.graphics.SurfaceTexture
 import android.media.MediaMetadataRetriever
 import android.media.MediaPlayer
 import android.net.Uri
 import android.os.Build
 import android.os.Bundle
+import android.os.Handler
+import android.os.Looper
 import android.util.Log
 import android.view.LayoutInflater
 import android.view.MotionEvent
 import android.view.Surface
 import android.view.TextureView
 import android.view.View
+import android.view.View.INVISIBLE
+import android.view.View.VISIBLE
 import android.view.ViewGroup
 import android.widget.SeekBar
 import androidx.annotation.RequiresApi
@@ -23,11 +26,9 @@ import androidx.fragment.app.Fragment
 import androidx.fragment.app.viewModels
 import androidx.lifecycle.flowWithLifecycle
 import androidx.lifecycle.lifecycleScope
-import androidx.recyclerview.widget.LinearLayoutManager
-import androidx.recyclerview.widget.LinearSmoothScroller
 import androidx.recyclerview.widget.RecyclerView
-import com.graduation.vitlog_android.R
 import com.graduation.vitlog_android.databinding.FragmentEditBinding
+import com.graduation.vitlog_android.model.entity.Subtitle
 import com.graduation.vitlog_android.model.request.RequestBlurDto
 import com.graduation.vitlog_android.presentation.MainActivity
 import com.graduation.vitlog_android.util.view.UiState
@@ -49,6 +50,7 @@ class EditFragment : Fragment(), TextureView.SurfaceTextureListener,
     private var getUri: Uri? = null
     private val editViewModel by viewModels<EditViewModel>()
     private lateinit var mediaPlayer: MediaPlayer
+    private lateinit var subtitleAdapter: SubtitleAdapter
 
     private var isBlurModeSelected: Boolean = false
     private var isSubtitleModeSelected: Boolean = false
@@ -64,58 +66,38 @@ class EditFragment : Fragment(), TextureView.SurfaceTextureListener,
         savedInstanceState: Bundle?
     ): View {
         _binding = FragmentEditBinding.inflate(layoutInflater, container, false)
-
         getUri = arguments?.getString("videoUri")?.toUri()
 
         activity?.runOnUiThread {
             binding.editProgressbar.visibility = View.INVISIBLE
         }
         mediaPlayer = MediaPlayer()
-        binding.video.surfaceTextureListener = this
+        initAdapter()
+        setListener()
+        setObserver()
+
+        binding.tvVideo.surfaceTextureListener = this
         binding.backBtn.setOnClickListener {
             mediaPlayer.release()
             startActivity(Intent(requireContext(), MainActivity::class.java))
         }
-        binding.editBlurBtn.setOnClickListener {
-            isBlurModeSelected = true
-        }
-        binding.editSubtitlesBtn.setOnClickListener {
-            isSubtitleModeSelected = true
-        }
-        binding.editSaveBtn.setOnClickListener {
-            if (binding.editSaveBtn.text == "저장") {
-                editViewModel.getPresignedUrl()
-            } else if (binding.editSaveBtn.text == "완료") {
-                binding.editSaveBtn.text = "저장"
-                // 수동블러
-                manualBlurData.add(RequestBlurDto(startTime = startTime, endTime = endTime, x1 = rectangleX, y1 = rectangleY, x2 = rectangleRightX, y2 = rectangleRightY))
-
-            }
-        }
         getUri?.let {
             setupMediaRetrieverAndSeekBar(it)
-            setPutVideoToPresignedUrlStateObserver()
-            setGetPresignedUrlStateObserver()
-            setGetMosaicedVideoStateObserver()
-            setGetSubtitleStateObserver()
         }
-
-        buttonActions()
-        timeLineRV()
 
         return binding.root
     }
 
-    private fun timeLineRV() {
-
-        Log.d("edit model", editViewModel.timeLineImages.toString())
+    private fun initAdapter() {
         binding.editTimelineRv.adapter = TimeLineAdapter(editViewModel.timeLineImages)
-
+        subtitleAdapter = SubtitleAdapter()
+        binding.rvEditToolSubtitle.adapter = subtitleAdapter
     }
+
 
     private fun buttonActions() {
         // 수동 블러 버튼 클릭
-        binding.editBlurSelfBtn.setOnClickListener {
+        binding.btnEditBlurSelf.setOnClickListener {
             binding.blurSelfLayout.visibility = View.VISIBLE
             binding.timelineSectionIv.visibility = View.VISIBLE
             binding.editSaveBtn.text = "완료"
@@ -123,6 +105,48 @@ class EditFragment : Fragment(), TextureView.SurfaceTextureListener,
 
         // 수동 블러 rectangle 드래그
         dragBlurRectangle()
+    }
+
+    private fun setObserver() {
+        setPutVideoToPresignedUrlStateObserver()
+        setGetPresignedUrlStateObserver()
+        setGetMosaicedVideoStateObserver()
+        setGetSubtitleStateObserver()
+    }
+
+    private fun setListener() {
+        binding.btnEditBlur.setOnClickListener {
+            isBlurModeSelected = true
+        }
+        binding.btnEditSubtitle.setOnClickListener {
+            isSubtitleModeSelected = true
+        }
+        binding.editSaveBtn.setOnClickListener {
+            editViewModel.getPresignedUrl()
+        }
+
+        binding.editSaveBtn.setOnClickListener {
+            if (binding.editSaveBtn.text == "저장") {
+                editViewModel.getPresignedUrl()
+            } else if (binding.editSaveBtn.text == "완료") {
+                binding.editSaveBtn.text = "저장"
+                // 수동블러
+                manualBlurData.add(
+                    RequestBlurDto(
+                        startTime = startTime,
+                        endTime = endTime,
+                        x1 = rectangleX,
+                        y1 = rectangleY,
+                        x2 = rectangleRightX,
+                        y2 = rectangleRightY
+                    )
+                )
+
+            }
+        }
+
+        subtitleCompleteButtonListener()
+        buttonActions()
     }
 
     private fun setupMediaRetrieverAndSeekBar(uri: Uri) {
@@ -135,7 +159,6 @@ class EditFragment : Fragment(), TextureView.SurfaceTextureListener,
         if (videoLength != null) {
             getUri?.let { editViewModel.loadFrames(requireContext(), it, videoLength) }
         }
-
         binding.editTimelineRv.addOnScrollListener(object : RecyclerView.OnScrollListener() {
             override fun onScrolled(recyclerView: RecyclerView, dx: Int, dy: Int) {
                 super.onScrolled(recyclerView, dx, dy)
@@ -150,8 +173,12 @@ class EditFragment : Fragment(), TextureView.SurfaceTextureListener,
                 // 예를 들어, 비디오의 총 길이를 알고 있다면 scrollY를 비디오의 전체 길이로 나누어 해당 위치로 이동시킬 수 있습니다.
                 // mediaPlayer.seekTo(progress)를 호출하여 재생 위치를 조정합니다.
                 val videoLengthInMilliseconds = mediaPlayer.duration // 밀리초 단위로 영상의 총 길이를 가져옵니다.
-                val desiredPositionInMilliseconds = (scrollY / recyclerView.width.toFloat() * videoLengthInMilliseconds).toInt()
+                val desiredPositionInMilliseconds =
+                    (scrollY / recyclerView.width.toFloat() * videoLengthInMilliseconds).toInt()
                 mediaPlayer.seekTo(desiredPositionInMilliseconds)
+
+                // 타임라인 이동에 따른 자막 업데이용
+                updateSubtitle(mediaPlayer.currentPosition, editViewModel.subtitleList)
 
                 // 영상의 분,초 00:00 형태로 저장
                 val minutes = (mediaPlayer.currentPosition / 1000) / 60
@@ -161,10 +188,33 @@ class EditFragment : Fragment(), TextureView.SurfaceTextureListener,
                 binding.editTimeTv.text = timeString
             }
         })
-
-
-
     }
+
+
+    fun updateSubtitle(currentPosition: Int, subtitles: List<Subtitle>) {
+        val currentSubtitle = subtitles.find { subtitle ->
+            // startMill, endMill로  currentPosition이 자막의 시작과 종료 시간 사이에 있는지 확인
+            subtitle.startMill <= currentPosition && currentPosition < subtitle.endMill
+        }
+        binding.tvSubtitle.text = currentSubtitle?.text ?: ""
+    }
+
+
+    // MediaPlayer가 재생 중일 때 currentPosition에 맞게 자막 업데이트
+    private fun startSubtitleUpdater(subtitle: List<Subtitle>) {
+        val handler = Handler(Looper.getMainLooper())
+        val updateTask = object : Runnable {
+            override fun run() {
+                if (mediaPlayer.isPlaying) {
+                    val currentPosition = mediaPlayer.currentPosition
+                    updateSubtitle(currentPosition, subtitle)
+                    handler.postDelayed(this, 1000) // 1초마다 업데이트
+                }
+            }
+        }
+        handler.post(updateTask)
+    }
+
 
     private fun uriToRequestBody() {
         viewLifecycleOwner.lifecycleScope.launch {
@@ -179,6 +229,7 @@ class EditFragment : Fragment(), TextureView.SurfaceTextureListener,
                 when (state) {
                     is UiState.Success -> {
                         Timber.tag("Success").d(state.data.data.url)
+                        Log.d("Success", "Presigned")
                         uriToRequestBody()
                         editViewModel.setVideoFileName(state.data.data.fileName)
                         editViewModel.setPresignedUrl(state.data.data.url)
@@ -186,6 +237,7 @@ class EditFragment : Fragment(), TextureView.SurfaceTextureListener,
 
                     is UiState.Failure -> {
                         Timber.tag("Failure").e(state.msg)
+                        Log.d("Failure", "Presigned${state.msg}")
                     }
 
                     is UiState.Empty -> Unit
@@ -200,6 +252,7 @@ class EditFragment : Fragment(), TextureView.SurfaceTextureListener,
                 when (state) {
                     is UiState.Success -> {
                         Timber.tag("Success").d(state.data.toString())
+                        Log.d("Success", "setPutVideoToPresignedUrlStateObserver")
                         if (isBlurModeSelected) {
                             editViewModel.videoFileName.value?.let {
                                 editViewModel.getMosaicedVideo(
@@ -232,9 +285,17 @@ class EditFragment : Fragment(), TextureView.SurfaceTextureListener,
         editViewModel.getSubtitleState.flowWithLifecycle(viewLifecycleOwner.lifecycle)
             .onEach { state ->
                 when (state) {
+                    is UiState.Loading -> {
+                        binding.editProgressbar.visibility = VISIBLE
+                    }
+
                     is UiState.Success -> {
-                        isSubtitleModeSelected = false
-                        Timber.tag("SuccessSubTitle").d(state.data.data.subtitle.toString())
+                        binding.editProgressbar.visibility = INVISIBLE
+                        showSubtitleEditBar()
+                        startSubtitleUpdater(state.data)
+                        editViewModel.saveSubtitleList(state.data)
+                        subtitleAdapter.submitList(state.data)
+                        editViewModel._getSubtitleState.value = UiState.Empty
                     }
 
                     is UiState.Failure -> {
@@ -248,13 +309,27 @@ class EditFragment : Fragment(), TextureView.SurfaceTextureListener,
             }.launchIn(viewLifecycleOwner.lifecycleScope)
     }
 
+    private fun showEditToolBar() {
+        binding.clEditTool.visibility = VISIBLE
+        binding.clEditToolSubtitle.visibility = INVISIBLE
+    }
+
+    private fun showSubtitleEditBar() {
+        binding.clEditTool.visibility = INVISIBLE
+        binding.clEditToolSubtitle.visibility = VISIBLE
+    }
+
+    private fun subtitleCompleteButtonListener() {
+        binding.tvEditToolComplete.setOnClickListener {
+            showEditToolBar()
+        }
+    }
 
     private fun setGetMosaicedVideoStateObserver() {
         editViewModel.getMosaicedVideoState.flowWithLifecycle(viewLifecycleOwner.lifecycle)
             .onEach { state ->
                 when (state) {
                     is UiState.Success -> {
-                        isBlurModeSelected = false
                         editViewModel.saveFile(requireContext(), state.data)
                         Timber.tag("Success").d(state.data.toString())
                     }
@@ -401,4 +476,7 @@ class EditFragment : Fragment(), TextureView.SurfaceTextureListener,
     companion object {
         private const val UID = 3
     }
+
+//     TODO : 혜선 1. 자동로그인 2. 자막 클릭 시, 편집 할 수 있도록 3. 내용 뿐만 아니라 폰트 및 색상 까지 4. 자막 서버 연결
+
 }

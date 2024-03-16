@@ -12,6 +12,7 @@ import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.graduation.vitlog_android.data.repository.VideoRepository
 import com.graduation.vitlog_android.model.request.RequestBlurDto
+import com.graduation.vitlog_android.model.entity.Subtitle
 import com.graduation.vitlog_android.model.response.ResponseGetPresignedUrlDto
 import com.graduation.vitlog_android.model.response.ResponseGetSubtitleDto
 import com.graduation.vitlog_android.model.response.ResponsePostVideoDto
@@ -43,29 +44,30 @@ class EditViewModel @Inject constructor(
 ) : ViewModel() {
     val frames = MutableLiveData<List<Bitmap>>()
 
-    private val _postVideoState = MutableStateFlow<UiState<ResponsePostVideoDto>>(UiState.Loading)
-    val postVideoState: StateFlow<UiState<ResponsePostVideoDto>> = _postVideoState.asStateFlow()
-
-    private val _getDownloadVideoState = MutableStateFlow<UiState<ResponseBody>>(UiState.Loading)
-    val getDownloadVideoState: StateFlow<UiState<ResponseBody>> = _getDownloadVideoState.asStateFlow()
-
-
-    private val _putVideoToPresignedUrlState = MutableStateFlow<UiState<ResponseBody>>(UiState.Loading)
-    val putVideoToPresignedUrlState: StateFlow<UiState<ResponseBody>> = _putVideoToPresignedUrlState.asStateFlow()
+    private val _putVideoToPresignedUrlState =
+        MutableStateFlow<UiState<ResponseBody>>(UiState.Empty)
+    val putVideoToPresignedUrlState: StateFlow<UiState<ResponseBody>> =
+        _putVideoToPresignedUrlState.asStateFlow()
 
     private val _getPresignedUrlState =
-        MutableStateFlow<UiState<ResponseGetPresignedUrlDto>>(UiState.Loading)
+        MutableStateFlow<UiState<ResponseGetPresignedUrlDto>>(UiState.Empty)
     val getPresignedUrlState: StateFlow<UiState<ResponseGetPresignedUrlDto>> =
         _getPresignedUrlState.asStateFlow()
 
-    private val _getMosaicedVideoState = MutableStateFlow<UiState<ResponseBody>>(UiState.Loading)
-    val getMosaicedVideoState: StateFlow<UiState<ResponseBody>> = _getMosaicedVideoState.asStateFlow()
+    private val _getMosaicedVideoState = MutableStateFlow<UiState<ResponseBody>>(UiState.Empty)
+    val getMosaicedVideoState: StateFlow<UiState<ResponseBody>> =
+        _getMosaicedVideoState.asStateFlow()
 
+    var _getSubtitleState = MutableStateFlow<UiState<List<Subtitle>>>(UiState.Empty)
+    val getSubtitleState: StateFlow<UiState<List<Subtitle>>> = _getSubtitleState.asStateFlow()
     val timeLineImages = mutableListOf<Bitmap>()
 
-    private val _getSubtitleState = MutableStateFlow<UiState<ResponseGetSubtitleDto>>(UiState.Loading)
-    val getSubtitleState: StateFlow<UiState<ResponseGetSubtitleDto>> = _getSubtitleState.asStateFlow()
+    var _subtitleList = listOf<Subtitle>()
+    val subtitleList: List<Subtitle> = _subtitleList
 
+    fun saveSubtitleList(subtitle: List<Subtitle>){
+        _subtitleList = subtitle
+    }
     private val _postManualBlurState = MutableStateFlow<UiState<ResponseBody>>(UiState.Loading)
     val postManualBlurState: StateFlow<UiState<ResponseBody>> = _postManualBlurState.asStateFlow()
 
@@ -175,23 +177,24 @@ class EditViewModel @Inject constructor(
     val presignedUrl: StateFlow<String> get() = _presignedUrl
     private val _presignedUrl = MutableStateFlow("")
 
-    fun setPresignedUrl(url : String){
+    fun setPresignedUrl(url: String) {
         _presignedUrl.value = url
     }
 
     private val _videoFileName = MutableStateFlow<String?>("")
     val videoFileName: StateFlow<String?> get() = _videoFileName
 
-    fun setVideoFileName(fileName : String){
+    fun setVideoFileName(fileName: String) {
         _videoFileName.value = fileName
     }
 
     init {
         _imageUri.value = null
     }
+
     private fun putVideoToPresignedUrl(
         url: String,
-        requestBody : RequestBody
+        requestBody: RequestBody
     ) {
         viewModelScope.launch {
             _putVideoToPresignedUrlState.value = UiState.Loading
@@ -210,8 +213,8 @@ class EditViewModel @Inject constructor(
     }
 
     fun getMosaicedVideo(
-        uid : Int,
-        fileName : String
+        uid: Int,
+        fileName: String
     ) {
         viewModelScope.launch {
             _getMosaicedVideoState.value = UiState.Loading
@@ -268,8 +271,9 @@ class EditViewModel @Inject constructor(
             inputStream?.close()
             outputStream?.close()
         }
-        writeResponseBodyToDisk(context,body)
+        writeResponseBodyToDisk(context, body)
     }
+
     companion object {
         private const val UID = 3
     }
@@ -279,7 +283,9 @@ class EditViewModel @Inject constructor(
 private fun writeResponseBodyToDisk(context: Context, body: ResponseBody?): Boolean {
     return try {
         // 저장할 파일의 경로 지정
-        val filePath = Environment.getExternalStoragePublicDirectory(Environment.DIRECTORY_DOWNLOADS).toString() + "/your_video_name.mp4"
+        val filePath =
+            Environment.getExternalStoragePublicDirectory(Environment.DIRECTORY_DOWNLOADS)
+                .toString() + "/your_video_name.mp4"
         val videoFile = File(filePath)
 
         var inputStream: InputStream? = null
