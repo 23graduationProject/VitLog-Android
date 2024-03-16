@@ -2,7 +2,6 @@ package com.graduation.vitlog_android.presentation.edit
 
 import android.annotation.SuppressLint
 import android.content.Intent
-import android.graphics.Bitmap
 import android.graphics.SurfaceTexture
 import android.media.MediaMetadataRetriever
 import android.media.MediaPlayer
@@ -27,13 +26,10 @@ import androidx.fragment.app.Fragment
 import androidx.fragment.app.viewModels
 import androidx.lifecycle.flowWithLifecycle
 import androidx.lifecycle.lifecycleScope
-import androidx.recyclerview.widget.LinearLayoutManager
-import androidx.recyclerview.widget.LinearSmoothScroller
 import androidx.recyclerview.widget.RecyclerView
-import com.graduation.vitlog_android.R
 import com.graduation.vitlog_android.databinding.FragmentEditBinding
-import com.graduation.vitlog_android.model.request.RequestBlurDto
 import com.graduation.vitlog_android.model.entity.Subtitle
+import com.graduation.vitlog_android.model.request.RequestBlurDto
 import com.graduation.vitlog_android.presentation.MainActivity
 import com.graduation.vitlog_android.util.view.UiState
 import dagger.hilt.android.AndroidEntryPoint
@@ -71,8 +67,6 @@ class EditFragment : Fragment(), TextureView.SurfaceTextureListener,
         savedInstanceState: Bundle?
     ): View {
         _binding = FragmentEditBinding.inflate(layoutInflater, container, false)
-        frameSeekBar = binding.svEditTimeline
-
         getUri = arguments?.getString("videoUri")?.toUri()
 
         activity?.runOnUiThread {
@@ -94,7 +88,16 @@ class EditFragment : Fragment(), TextureView.SurfaceTextureListener,
             } else if (binding.editSaveBtn.text == "완료") {
                 binding.editSaveBtn.text = "저장"
                 // 수동블러
-                manualBlurData.add(RequestBlurDto(startTime = startTime, endTime = endTime, x1 = rectangleX, y1 = rectangleY, x2 = rectangleRightX, y2 = rectangleRightY))
+                manualBlurData.add(
+                    RequestBlurDto(
+                        startTime = startTime,
+                        endTime = endTime,
+                        x1 = rectangleX,
+                        y1 = rectangleY,
+                        x2 = rectangleRightX,
+                        y2 = rectangleRightY
+                    )
+                )
 
             }
         }
@@ -159,15 +162,6 @@ class EditFragment : Fragment(), TextureView.SurfaceTextureListener,
         if (videoLength != null) {
             getUri?.let { editViewModel.loadFrames(requireContext(), it, videoLength) }
         }
-
-        // SeekBar의 드래그 이벤트 처리
-        frameSeekBar.setOnSeekBarChangeListener(object : SeekBar.OnSeekBarChangeListener {
-            override fun onProgressChanged(seekBar: SeekBar?, progress: Int, fromUser: Boolean) {
-                if (fromUser) {
-                    mediaPlayer.seekTo(progress)
-                    updateSubtitle(progress,editViewModel.subtitleList)
-                }
-            }
         binding.editTimelineRv.addOnScrollListener(object : RecyclerView.OnScrollListener() {
             override fun onScrolled(recyclerView: RecyclerView, dx: Int, dy: Int) {
                 super.onScrolled(recyclerView, dx, dy)
@@ -182,7 +176,8 @@ class EditFragment : Fragment(), TextureView.SurfaceTextureListener,
                 // 예를 들어, 비디오의 총 길이를 알고 있다면 scrollY를 비디오의 전체 길이로 나누어 해당 위치로 이동시킬 수 있습니다.
                 // mediaPlayer.seekTo(progress)를 호출하여 재생 위치를 조정합니다.
                 val videoLengthInMilliseconds = mediaPlayer.duration // 밀리초 단위로 영상의 총 길이를 가져옵니다.
-                val desiredPositionInMilliseconds = (scrollY / recyclerView.width.toFloat() * videoLengthInMilliseconds).toInt()
+                val desiredPositionInMilliseconds =
+                    (scrollY / recyclerView.width.toFloat() * videoLengthInMilliseconds).toInt()
                 mediaPlayer.seekTo(desiredPositionInMilliseconds)
 
                 // 영상의 분,초 00:00 형태로 저장
@@ -193,9 +188,6 @@ class EditFragment : Fragment(), TextureView.SurfaceTextureListener,
                 binding.editTimeTv.text = timeString
             }
         })
-
-
-
     }
 
 

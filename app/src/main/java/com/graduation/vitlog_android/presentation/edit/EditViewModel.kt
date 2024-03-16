@@ -62,9 +62,6 @@ class EditViewModel @Inject constructor(
     val getSubtitleState: StateFlow<UiState<List<Subtitle>>> = _getSubtitleState.asStateFlow()
     val timeLineImages = mutableListOf<Bitmap>()
 
-    private val _getSubtitleState = MutableStateFlow<UiState<ResponseGetSubtitleDto>>(UiState.Loading)
-    val getSubtitleState: StateFlow<UiState<ResponseGetSubtitleDto>> = _getSubtitleState.asStateFlow()
-
     var _subtitleList = listOf<Subtitle>()
     val subtitleList: List<Subtitle> = _subtitleList
 
