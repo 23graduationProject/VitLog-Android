@@ -56,7 +56,7 @@ class EditViewModel @Inject constructor(
     val getMosaicedVideoState: StateFlow<UiState<ResponseBody>> =
         _getMosaicedVideoState.asStateFlow()
 
-    private val _getSubtitleState = MutableStateFlow<UiState<List<Subtitle>>>(UiState.Empty)
+    var _getSubtitleState = MutableStateFlow<UiState<List<Subtitle>>>(UiState.Empty)
     val getSubtitleState: StateFlow<UiState<List<Subtitle>>> = _getSubtitleState.asStateFlow()
 
     fun loadFrames(context: Context, uri: Uri, videoLength: Long) {

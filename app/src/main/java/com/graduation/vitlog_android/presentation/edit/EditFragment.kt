@@ -67,30 +67,17 @@ class EditFragment : Fragment(), TextureView.SurfaceTextureListener,
         }
         mediaPlayer = MediaPlayer()
         initSubtitleAdapter()
+        setListener()
+        setObserver()
+
         binding.tvVideo.surfaceTextureListener = this
         binding.backBtn.setOnClickListener {
             mediaPlayer.release()
             startActivity(Intent(requireContext(), MainActivity::class.java))
         }
-        binding.btnEditBlur.setOnClickListener {
-            isBlurModeSelected = true
-        }
-        binding.btnEditSubtitle.setOnClickListener {
-            isSubtitleModeSelected = true
-        }
-        binding.editSaveBtn.setOnClickListener {
-            editViewModel.getPresignedUrl()
-        }
         getUri?.let {
             setupMediaRetrieverAndSeekBar(it)
-            setPutVideoToPresignedUrlStateObserver()
-            setGetPresignedUrlStateObserver()
-            setGetMosaicedVideoStateObserver()
-            setGetSubtitleStateObserver()
         }
-
-        buttonActions()
-
         return binding.root
     }
 
@@ -102,6 +89,27 @@ class EditFragment : Fragment(), TextureView.SurfaceTextureListener,
 
         // 수동 블러 rectangle 드래그
         dragBlurRectangle()
+    }
+
+    private fun setObserver(){
+        setPutVideoToPresignedUrlStateObserver()
+        setGetPresignedUrlStateObserver()
+        setGetMosaicedVideoStateObserver()
+        setGetSubtitleStateObserver()
+    }
+    private fun setListener(){
+        binding.btnEditBlur.setOnClickListener {
+            isBlurModeSelected = true
+        }
+        binding.btnEditSubtitle.setOnClickListener {
+            isSubtitleModeSelected = true
+        }
+        binding.editSaveBtn.setOnClickListener {
+            editViewModel.getPresignedUrl()
+        }
+
+        subtitleCompleteButtonListener()
+        buttonActions()
     }
 
     private fun setupMediaRetrieverAndSeekBar(uri: Uri) {
@@ -213,9 +221,9 @@ class EditFragment : Fragment(), TextureView.SurfaceTextureListener,
                     }
                     is UiState.Success -> {
                         binding.editProgressbar.visibility = INVISIBLE
-                        binding.clEditTool.visibility = INVISIBLE
-                        binding.clEditToolSubtitle.visibility = VISIBLE
+                        showSubtitleEditBar()
                         subtitleAdapter.submitList(state.data)
+                        editViewModel._getSubtitleState.value = UiState.Empty
                     }
 
                     is UiState.Failure -> {
@@ -227,6 +235,22 @@ class EditFragment : Fragment(), TextureView.SurfaceTextureListener,
                     is UiState.Loading -> Unit
                 }
             }.launchIn(viewLifecycleOwner.lifecycleScope)
+    }
+
+    private fun showEditToolBar(){
+        binding.clEditTool.visibility = VISIBLE
+        binding.clEditToolSubtitle.visibility = INVISIBLE
+    }
+
+    private fun showSubtitleEditBar(){
+        binding.clEditTool.visibility = INVISIBLE
+        binding.clEditToolSubtitle.visibility = VISIBLE
+    }
+
+    private fun subtitleCompleteButtonListener(){
+        binding.tvEditToolComplete.setOnClickListener {
+            showEditToolBar()
+        }
     }
 
 

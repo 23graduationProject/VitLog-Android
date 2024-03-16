@@ -34,8 +34,6 @@
             android:text="@{data.text}"
             android:textColor="@color/white_opacity_80"
             android:textSize="15dp"
-            app:layout_constraintEnd_toEndOf="parent"
-            android:gravity="start"
             app:layout_constraintStart_toEndOf="@id/tv_subtitle_timestamp"
             app:layout_constraintTop_toTopOf="parent" />
     </androidx.constraintlayout.widget.ConstraintLayout>
