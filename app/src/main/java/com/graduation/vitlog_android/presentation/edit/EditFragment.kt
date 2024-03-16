@@ -78,7 +78,12 @@ class EditFragment : Fragment(), TextureView.SurfaceTextureListener,
             isSubtitleModeSelected = true
         }
         binding.editSaveBtn.setOnClickListener {
-            editViewModel.getPresignedUrl()
+            if (binding.editSaveBtn.text == "저장") {
+                editViewModel.getPresignedUrl()
+            } else if (binding.editSaveBtn.text == "완료") {
+                binding.editSaveBtn.text = "저장"
+                // 수동블러
+            }
         }
         getUri?.let {
             setupMediaRetrieverAndSeekBar(it)
@@ -106,6 +111,7 @@ class EditFragment : Fragment(), TextureView.SurfaceTextureListener,
         binding.editBlurSelfBtn.setOnClickListener {
             binding.blurSelfLayout.visibility = View.VISIBLE
             binding.timelineSectionIv.visibility = View.VISIBLE
+            binding.editSaveBtn.text = "완료"
         }
 
         // 수동 블러 rectangle 드래그
