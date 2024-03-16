@@ -168,7 +168,7 @@
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
             android:src="@drawable/ic_timeline_section"
-            android:layout_marginStart="100dp"
+            android:layout_marginStart="74dp"
             android:layout_marginVertical="30dp"
             android:visibility="gone"/>
         </FrameLayout>
