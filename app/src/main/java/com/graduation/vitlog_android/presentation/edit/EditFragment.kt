@@ -8,6 +8,8 @@ import android.media.MediaPlayer
 import android.net.Uri
 import android.os.Build
 import android.os.Bundle
+import android.os.Handler
+import android.os.Looper
 import android.util.Log
 import android.view.LayoutInflater
 import android.view.MotionEvent
@@ -25,6 +27,7 @@ import androidx.fragment.app.viewModels
 import androidx.lifecycle.flowWithLifecycle
 import androidx.lifecycle.lifecycleScope
 import com.graduation.vitlog_android.databinding.FragmentEditBinding
+import com.graduation.vitlog_android.model.entity.Subtitle
 import com.graduation.vitlog_android.presentation.MainActivity
 import com.graduation.vitlog_android.util.view.UiState
 import dagger.hilt.android.AndroidEntryPoint
@@ -91,13 +94,14 @@ class EditFragment : Fragment(), TextureView.SurfaceTextureListener,
         dragBlurRectangle()
     }
 
-    private fun setObserver(){
+    private fun setObserver() {
         setPutVideoToPresignedUrlStateObserver()
         setGetPresignedUrlStateObserver()
         setGetMosaicedVideoStateObserver()
         setGetSubtitleStateObserver()
     }
-    private fun setListener(){
+
+    private fun setListener() {
         binding.btnEditBlur.setOnClickListener {
             isBlurModeSelected = true
         }
@@ -140,13 +144,39 @@ class EditFragment : Fragment(), TextureView.SurfaceTextureListener,
 
     }
 
+
+    fun updateSubtitle(currentPosition: Int, subtitles: List<Subtitle>) {
+        val currentSubtitle = subtitles.find { subtitle ->
+            // startMill, endMill로  currentPosition이 자막의 시작과 종료 시간 사이에 있는지 확인
+            subtitle.startMill <= currentPosition && currentPosition < subtitle.endMill
+        }
+        binding.tvSubtitle.text = currentSubtitle?.text ?: ""
+    }
+
+
+    // MediaPlayer가 재생 중일 때 currentPosition에 맞게 자막 업데이트
+    private fun startSubtitleUpdater(subtitle: List<Subtitle>) {
+        val handler = Handler(Looper.getMainLooper())
+        val updateTask = object : Runnable {
+            override fun run() {
+                if (mediaPlayer.isPlaying) {
+                    val currentPosition = mediaPlayer.currentPosition
+                    updateSubtitle(currentPosition, subtitle)
+                    handler.postDelayed(this, 1000) // 1초마다 업데이트
+                }
+            }
+        }
+        handler.post(updateTask)
+    }
+
+
     private fun uriToRequestBody() {
         viewLifecycleOwner.lifecycleScope.launch {
             getUri?.let { editViewModel.uriToRequestBody(requireContext(), it) }
         }
     }
 
-    private fun initSubtitleAdapter(){
+    private fun initSubtitleAdapter() {
         subtitleAdapter = SubtitleAdapter()
         binding.rvEditToolSubtitle.adapter = subtitleAdapter
     }
@@ -158,7 +188,7 @@ class EditFragment : Fragment(), TextureView.SurfaceTextureListener,
                 when (state) {
                     is UiState.Success -> {
                         Timber.tag("Success").d(state.data.data.url)
-                        Log.d("Success","Presigned")
+                        Log.d("Success", "Presigned")
                         uriToRequestBody()
                         editViewModel.setVideoFileName(state.data.data.fileName)
                         editViewModel.setPresignedUrl(state.data.data.url)
@@ -166,7 +196,7 @@ class EditFragment : Fragment(), TextureView.SurfaceTextureListener,
 
                     is UiState.Failure -> {
                         Timber.tag("Failure").e(state.msg)
-                        Log.d("Failure","Presigned${state.msg}")
+                        Log.d("Failure", "Presigned${state.msg}")
                     }
 
                     is UiState.Empty -> Unit
@@ -181,9 +211,9 @@ class EditFragment : Fragment(), TextureView.SurfaceTextureListener,
                 when (state) {
                     is UiState.Success -> {
                         Timber.tag("Success").d(state.data.toString())
-                        Log.d("Success","setPutVideoToPresignedUrlStateObserver")
+                        Log.d("Success", "setPutVideoToPresignedUrlStateObserver")
                         if (isBlurModeSelected) {
-                            Log.d("Blur","Blur")
+                            Log.d("Blur", "Blur")
                             editViewModel.videoFileName.value?.let {
                                 editViewModel.getMosaicedVideo(
                                     UID,
@@ -192,7 +222,7 @@ class EditFragment : Fragment(), TextureView.SurfaceTextureListener,
                             }
                         }
                         if (isSubtitleModeSelected) {
-                            Log.d("Subtitle","Subtitle")
+                            Log.d("Subtitle", "Subtitle")
                             editViewModel.videoFileName.value?.let { fileName ->
                                 editViewModel.getSubtitle(
                                     uid = UID,
@@ -219,9 +249,11 @@ class EditFragment : Fragment(), TextureView.SurfaceTextureListener,
                     is UiState.Loading -> {
                         binding.editProgressbar.visibility = VISIBLE
                     }
+
                     is UiState.Success -> {
                         binding.editProgressbar.visibility = INVISIBLE
                         showSubtitleEditBar()
+                        startSubtitleUpdater(state.data)
                         subtitleAdapter.submitList(state.data)
                         editViewModel._getSubtitleState.value = UiState.Empty
                     }
@@ -237,22 +269,21 @@ class EditFragment : Fragment(), TextureView.SurfaceTextureListener,
             }.launchIn(viewLifecycleOwner.lifecycleScope)
     }
 
-    private fun showEditToolBar(){
+    private fun showEditToolBar() {
         binding.clEditTool.visibility = VISIBLE
         binding.clEditToolSubtitle.visibility = INVISIBLE
     }
 
-    private fun showSubtitleEditBar(){
+    private fun showSubtitleEditBar() {
         binding.clEditTool.visibility = INVISIBLE
         binding.clEditToolSubtitle.visibility = VISIBLE
     }
 
-    private fun subtitleCompleteButtonListener(){
+    private fun subtitleCompleteButtonListener() {
         binding.tvEditToolComplete.setOnClickListener {
             showEditToolBar()
         }
     }
-
 
     private fun setGetMosaicedVideoStateObserver() {
         editViewModel.getMosaicedVideoState.flowWithLifecycle(viewLifecycleOwner.lifecycle)
