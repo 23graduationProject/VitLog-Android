@@ -1,6 +1,7 @@
 package com.graduation.vitlog_android.presentation.edit
 
 import android.annotation.SuppressLint
+import android.content.Context
 import android.content.Intent
 import android.graphics.Bitmap
 import android.graphics.RenderEffect
@@ -110,14 +111,22 @@ class EditFragment : Fragment(), TextureView.SurfaceTextureListener,
         dragBlurRectangle()
     }
 
+    @RequiresApi(Build.VERSION_CODES.S)
     private fun setBlurPartOfBitmap() {
         val metaDataSource = MediaMetadataRetriever()
         metaDataSource.setDataSource(context, getUri)
 
+        val context = this.context ?: return
+        val density = context.resources.displayMetrics.density
+        val px = (70 * density).toInt()
+
         val currentVideoPosition = mediaPlayer.currentPosition.toLong()
         Log.d("current position", currentVideoPosition.toString())
         val bitmap = metaDataSource.getFrameAtTime(currentVideoPosition*1000, MediaMetadataRetriever.OPTION_CLOSEST)
-        val partialBitmap = Bitmap.createBitmap(bitmap!!, binding.blurSelfLayout.x.toInt(), binding.blurSelfLayout.y.toInt(), 70,70)
+
+
+        val partialBitmap = Bitmap.createBitmap(bitmap!!, binding.blurSelfLayout.x.toInt(), binding.blurSelfLayout.y.toInt(), px, px)
+
 
         val blurEffect = RenderEffect.createBlurEffect(10F, 10F, Shader.TileMode.MIRROR)
         binding.blurSelfRectangle.setRenderEffect(blurEffect)
