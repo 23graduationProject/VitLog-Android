@@ -2,6 +2,9 @@ package com.graduation.vitlog_android.presentation.edit
 
 import android.annotation.SuppressLint
 import android.content.Intent
+import android.graphics.Bitmap
+import android.graphics.RenderEffect
+import android.graphics.Shader
 import android.graphics.SurfaceTexture
 import android.media.MediaMetadataRetriever
 import android.media.MediaPlayer
@@ -94,17 +97,31 @@ class EditFragment : Fragment(), TextureView.SurfaceTextureListener,
         binding.rvEditToolSubtitle.adapter = subtitleAdapter
     }
 
-
     private fun buttonActions() {
         // 수동 블러 버튼 클릭
         binding.btnEditBlurSelf.setOnClickListener {
             binding.blurSelfLayout.visibility = View.VISIBLE
             binding.timelineSectionIv.visibility = View.VISIBLE
             binding.editSaveBtn.text = "완료"
+            setBlurPartOfBitmap()
         }
 
         // 수동 블러 rectangle 드래그
         dragBlurRectangle()
+    }
+
+    private fun setBlurPartOfBitmap() {
+        val metaDataSource = MediaMetadataRetriever()
+        metaDataSource.setDataSource(context, getUri)
+
+        val currentVideoPosition = mediaPlayer.currentPosition.toLong()
+        Log.d("current position", currentVideoPosition.toString())
+        val bitmap = metaDataSource.getFrameAtTime(currentVideoPosition*1000, MediaMetadataRetriever.OPTION_CLOSEST)
+        val partialBitmap = Bitmap.createBitmap(bitmap!!, binding.blurSelfLayout.x.toInt(), binding.blurSelfLayout.y.toInt(), 70,70)
+
+        val blurEffect = RenderEffect.createBlurEffect(10F, 10F, Shader.TileMode.MIRROR)
+        binding.blurSelfRectangle.setRenderEffect(blurEffect)
+        binding.blurSelfRectangle.setImageBitmap(partialBitmap)
     }
 
     private fun setObserver() {
@@ -407,6 +424,7 @@ class EditFragment : Fragment(), TextureView.SurfaceTextureListener,
                 }
 
                 MotionEvent.ACTION_MOVE -> {
+                    setBlurPartOfBitmap()
                     // ImageView 위치 업데이트
                     binding.blurSelfLayout.animate()
                         .x(event.rawX + dX)
