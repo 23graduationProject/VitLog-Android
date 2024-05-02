@@ -1,7 +1,6 @@
 package com.graduation.vitlog_android.presentation.edit
 
 import android.annotation.SuppressLint
-import android.content.Context
 import android.content.Intent
 import android.graphics.Bitmap
 import android.graphics.RenderEffect
@@ -10,7 +9,6 @@ import android.graphics.SurfaceTexture
 import android.media.MediaMetadataRetriever
 import android.media.MediaPlayer
 import android.net.Uri
-import android.os.Build
 import android.os.Bundle
 import android.os.Handler
 import android.os.Looper
@@ -23,7 +21,6 @@ import android.view.View
 import android.view.View.INVISIBLE
 import android.view.View.VISIBLE
 import android.view.ViewGroup
-import androidx.annotation.RequiresApi
 import androidx.core.net.toUri
 import androidx.fragment.app.Fragment
 import androidx.fragment.app.viewModels
@@ -63,7 +60,6 @@ class EditFragment : Fragment(), TextureView.SurfaceTextureListener,
     private var startTime: String = "00:00:00"
     private var endTime: String = "00:00:00"
 
-    @RequiresApi(Build.VERSION_CODES.Q)
     override fun onCreateView(
         inflater: LayoutInflater,
         container: ViewGroup?,
@@ -111,7 +107,6 @@ class EditFragment : Fragment(), TextureView.SurfaceTextureListener,
         dragBlurRectangle()
     }
 
-    @RequiresApi(Build.VERSION_CODES.S)
     private fun setBlurPartOfBitmap() {
         val metaDataSource = MediaMetadataRetriever()
         metaDataSource.setDataSource(context, getUri)
@@ -122,10 +117,19 @@ class EditFragment : Fragment(), TextureView.SurfaceTextureListener,
 
         val currentVideoPosition = mediaPlayer.currentPosition.toLong()
         Log.d("current position", currentVideoPosition.toString())
-        val bitmap = metaDataSource.getFrameAtTime(currentVideoPosition*1000, MediaMetadataRetriever.OPTION_CLOSEST)
+        val bitmap = metaDataSource.getFrameAtTime(
+            currentVideoPosition * 1000,
+            MediaMetadataRetriever.OPTION_CLOSEST
+        )
 
 
-        val partialBitmap = Bitmap.createBitmap(bitmap!!, binding.blurSelfLayout.x.toInt(), binding.blurSelfLayout.y.toInt(), px, px)
+        val partialBitmap = Bitmap.createBitmap(
+            bitmap!!,
+            binding.blurSelfLayout.x.toInt(),
+            binding.blurSelfLayout.y.toInt(),
+            px,
+            px
+        )
 
 
         val blurEffect = RenderEffect.createBlurEffect(10F, 10F, Shader.TileMode.MIRROR)
