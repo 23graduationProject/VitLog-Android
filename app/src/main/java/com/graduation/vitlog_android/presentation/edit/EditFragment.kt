@@ -185,6 +185,12 @@ class EditFragment : Fragment(), TextureView.SurfaceTextureListener,
 
         subtitleCompleteButtonListener()
         buttonActions()
+
+        // 재생 완료 되었을 때
+        mediaPlayer.setOnCompletionListener {
+            binding.videoPlayBtn.visibility = View.VISIBLE
+            binding.videoPauseBtn.visibility = View.GONE
+        }
     }
 
     private fun setupMediaRetrieverAndSeekBar(uri: Uri) {
