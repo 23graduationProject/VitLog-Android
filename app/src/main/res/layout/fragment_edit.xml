@@ -32,13 +32,13 @@
         android:id="@+id/edit_save_btn"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
+        android:layout_marginEnd="10dp"
         android:background="@color/transparent"
         android:gravity="center"
+        android:padding="10dp"
         android:text="저장"
         android:textColor="@color/white"
         android:textSize="15dp"
-        android:padding="10dp"
-        android:layout_marginEnd="10dp"
         app:layout_constraintBottom_toBottomOf="@id/back_btn"
         app:layout_constraintEnd_toEndOf="parent"
         app:layout_constraintTop_toTopOf="@id/back_btn" />
@@ -48,8 +48,8 @@
         android:layout_width="match_parent"
         android:layout_height="0dp"
         android:layout_marginTop="10dp"
-        app:layout_constraintDimensionRatio="16:9"
         app:layout_constraintBottom_toTopOf="@id/video_play_bar_layout"
+        app:layout_constraintDimensionRatio="16:9"
         app:layout_constraintTop_toBottomOf="@id/back_btn">
 
         <FrameLayout
@@ -68,16 +68,16 @@
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
                 android:layout_gravity="bottom|center"
+                android:padding="16dp"
                 android:textAlignment="center"
-                android:textColor="@android:color/white"
-                android:padding="16dp" />
+                android:textColor="@android:color/white" />
 
             <androidx.constraintlayout.widget.ConstraintLayout
                 android:id="@+id/blur_self_layout"
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
-                android:visibility="gone"
-                android:layout_gravity="center">
+                android:layout_gravity="center"
+                android:visibility="gone">
 
                 <ImageView
                     android:id="@+id/blur_self_rectangle"
@@ -117,17 +117,17 @@
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
         android:layout_marginTop="10dp"
-        android:paddingVertical="10dp"
         android:gravity="center"
         android:orientation="horizontal"
+        android:paddingVertical="10dp"
         app:layout_constraintBottom_toTopOf="@id/edit_seekbar_layout"
         app:layout_constraintTop_toBottomOf="@id/cl_video_player">
 
         <ImageView
             android:id="@+id/play_skip_back_btn"
             android:layout_width="wrap_content"
-            android:padding="5dp"
             android:layout_height="wrap_content"
+            android:padding="5dp"
             android:src="@drawable/ic_edit_play_skip_back" />
 
         <ImageView
@@ -163,41 +163,42 @@
         android:id="@+id/edit_seekbar_layout"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        app:layout_constraintBottom_toTopOf="@id/cl_edit_tool"
         android:orientation="vertical"
+        app:layout_constraintBottom_toTopOf="@id/cl_edit_tool"
         app:layout_constraintTop_toBottomOf="@id/video_play_bar_layout">
+
         <TextView
             android:id="@+id/edit_time_tv"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
-            android:text="00:00:00"
-            android:textColor="@color/white"
             android:layout_marginStart="10dp"
-            android:layout_marginEnd="5dp"/>
+            android:layout_marginEnd="5dp"
+            android:text="00:00:00"
+            android:textColor="@color/white" />
+
         <FrameLayout
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
             android:layout_marginTop="10dp">
 
-        <androidx.recyclerview.widget.RecyclerView
-            android:id="@+id/edit_timeline_rv"
-            android:layout_width="match_parent"
-            android:layout_height="wrap_content"
-            android:background="@color/black"
-            android:orientation="horizontal"
-            android:paddingVertical="10dp"
-            android:paddingStart="100dp"
-            app:layoutManager="androidx.recyclerview.widget.LinearLayoutManager"
-            app:layout_constraintTop_toBottomOf="@id/edit_seekbar_layout"/>
+            <androidx.recyclerview.widget.RecyclerView
+                android:id="@+id/edit_timeline_rv"
+                android:layout_width="match_parent"
+                android:layout_height="match_parent"
+                android:background="@color/black"
+                android:orientation="horizontal"
+                android:paddingVertical="10dp"
+                android:paddingStart="100dp"
+                app:layoutManager="androidx.recyclerview.widget.LinearLayoutManager" />
 
-        <ImageView
-            android:id="@+id/timeline_section_iv"
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:src="@drawable/ic_timeline_section"
-            android:layout_marginStart="74dp"
-            android:layout_marginVertical="30dp"
-            android:visibility="gone"/>
+            <ImageView
+                android:id="@+id/timeline_section_iv"
+                android:layout_width="wrap_content"
+                android:layout_height="match_parent"
+                android:paddingStart="100dp"
+                android:visibility="gone"
+                android:src="@drawable/ic_timeline_section"
+                app:layout_constraintTop_toBottomOf="@id/edit_seekbar_layout" />
         </FrameLayout>
     </LinearLayout>
 
@@ -227,15 +228,15 @@
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
             android:layout_gravity="center"
+            android:layout_marginVertical="50dp"
             android:background="@color/transparent"
             android:drawableTop="@drawable/ic_edit_subtitles"
             android:text="AI 자막 생성"
-            android:layout_marginVertical="50dp"
             android:textColor="@color/white"
             app:layout_constraintBottom_toBottomOf="parent"
-            app:layout_constraintTop_toBottomOf="@id/btn_edit_blur"
             app:layout_constraintEnd_toStartOf="@id/v_edit_line"
-            app:layout_constraintStart_toStartOf="@id/btn_edit_blur" />
+            app:layout_constraintStart_toStartOf="@id/btn_edit_blur"
+            app:layout_constraintTop_toBottomOf="@id/btn_edit_blur" />
 
         <View
             android:id="@+id/v_edit_line"
@@ -288,39 +289,39 @@
             android:id="@+id/tv_edit_tool_subtitle"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
-            app:layout_constraintStart_toStartOf="parent"
-            app:layout_constraintEnd_toEndOf="parent"
-            app:layout_constraintTop_toTopOf="parent"
+            android:layout_marginTop="20dp"
             android:text="Vitlog에서 생성한 자막입니다"
             android:textColor="@color/white"
-            android:layout_marginTop="20dp"/>
+            app:layout_constraintEnd_toEndOf="parent"
+            app:layout_constraintStart_toStartOf="parent"
+            app:layout_constraintTop_toTopOf="parent" />
 
         <androidx.recyclerview.widget.RecyclerView
             android:id="@+id/rv_edit_tool_subtitle"
             android:layout_width="match_parent"
             android:layout_height="0dp"
+            android:layout_marginTop="10dp"
             android:orientation="vertical"
             app:layoutManager="androidx.recyclerview.widget.LinearLayoutManager"
-            android:layout_marginTop="10dp"
-            tools:listitem="@layout/item_edit_subtitle"
+            app:layout_constraintBottom_toTopOf="@id/tv_edit_tool_complete"
             app:layout_constraintTop_toBottomOf="@id/tv_edit_tool_subtitle"
-            app:layout_constraintBottom_toTopOf="@id/tv_edit_tool_complete"/>
+            tools:listitem="@layout/item_edit_subtitle" />
 
         <TextView
             android:id="@+id/tv_edit_tool_complete"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
-            app:layout_constraintStart_toStartOf="parent"
-            app:layout_constraintEnd_toEndOf="parent"
-            app:layout_constraintTop_toBottomOf="@id/rv_edit_tool_subtitle"
-            app:layout_constraintBottom_toBottomOf="parent"
+            android:layout_marginBottom="10dp"
+            android:paddingHorizontal="30dp"
+            android:paddingVertical="10dp"
             android:text="완료"
+            android:textColor="@color/white"
             android:textSize="16dp"
             android:textStyle="bold"
-            android:layout_marginBottom="10dp"
-            android:paddingVertical="10dp"
-            android:paddingHorizontal="30dp"
-            android:textColor="@color/white" />
+            app:layout_constraintBottom_toBottomOf="parent"
+            app:layout_constraintEnd_toEndOf="parent"
+            app:layout_constraintStart_toStartOf="parent"
+            app:layout_constraintTop_toBottomOf="@id/rv_edit_tool_subtitle" />
 
     </androidx.constraintlayout.widget.ConstraintLayout>
 
