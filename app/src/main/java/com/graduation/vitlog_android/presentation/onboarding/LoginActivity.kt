@@ -1,7 +1,6 @@
 package com.graduation.vitlog_android.presentation.onboarding
 
 import android.content.Intent
-import android.content.SharedPreferences
 import android.os.Bundle
 import android.util.Log
 import androidx.activity.viewModels
@@ -12,6 +11,7 @@ import com.google.android.material.snackbar.Snackbar
 import com.graduation.vitlog_android.R
 import com.graduation.vitlog_android.databinding.ActivityLoginBinding
 import com.graduation.vitlog_android.presentation.MainActivity
+import com.graduation.vitlog_android.util.RequestPermission
 import com.graduation.vitlog_android.util.binding.BindingActivity
 import com.graduation.vitlog_android.util.preference.SharedPrefManager
 import com.graduation.vitlog_android.util.preference.SharedPrefManager.uid
@@ -30,6 +30,7 @@ class LoginActivity : BindingActivity<ActivityLoginBinding>(R.layout.activity_lo
         super.onCreate(savedInstanceState)
         binding = ActivityLoginBinding.inflate(layoutInflater)
         setContentView(binding.root)
+        RequestPermission(this).checkAndRequestPermissions()
         autoLogin()
         addListener()
         addObserver()
