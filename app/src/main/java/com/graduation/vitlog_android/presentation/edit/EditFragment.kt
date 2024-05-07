@@ -83,7 +83,7 @@ class EditFragment : Fragment(), TextureView.SurfaceTextureListener,
         binding.tvVideo.surfaceTextureListener = this
         binding.backBtn.setOnClickListener {
             mediaPlayer.release()
-            startActivity(Intent(requireContext(), MainActivity::class.java))
+            activity?.finish()
         }
         getUri?.let {
             setupMediaRetrieverAndSeekBar(it)
