@@ -8,6 +8,7 @@
         android:id="@+id/image"
         android:layout_width="0dp"
         android:layout_height="50dp"
+        android:scaleType="centerCrop"
         app:layout_constraintDimensionRatio="16:9"
         app:layout_constraintTop_toTopOf="parent"
         app:layout_constraintStart_toStartOf="parent"/>

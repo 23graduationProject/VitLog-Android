@@ -13,6 +13,7 @@
         android:layout_height="wrap_content"
         android:layout_marginStart="10dp"
         android:layout_marginTop="10dp"
+        android:padding="5dp"
         android:src="@drawable/ic_edit_x"
         app:layout_constraintStart_toStartOf="parent"
         app:layout_constraintTop_toTopOf="parent" />
@@ -29,36 +30,38 @@
 
     <TextView
         android:id="@+id/edit_save_btn"
-        android:layout_width="30dp"
-        android:layout_height="30dp"
-        android:layout_marginTop="10dp"
-        android:layout_marginEnd="10dp"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
         android:background="@color/transparent"
         android:gravity="center"
         android:text="저장"
         android:textColor="@color/white"
         android:textSize="15dp"
+        android:padding="10dp"
+        android:layout_marginEnd="10dp"
+        app:layout_constraintBottom_toBottomOf="@id/back_btn"
         app:layout_constraintEnd_toEndOf="parent"
-        app:layout_constraintTop_toTopOf="parent" />
+        app:layout_constraintTop_toTopOf="@id/back_btn" />
 
     <androidx.constraintlayout.widget.ConstraintLayout
         android:id="@+id/cl_video_player"
         android:layout_width="match_parent"
-        android:layout_height="wrap_content"
+        android:layout_height="0dp"
+        android:layout_marginTop="10dp"
+        app:layout_constraintDimensionRatio="16:9"
         app:layout_constraintBottom_toTopOf="@id/video_play_bar_layout"
         app:layout_constraintTop_toBottomOf="@id/back_btn">
 
         <FrameLayout
             android:id="@+id/video_framelayout"
             android:layout_width="match_parent"
-            android:layout_height="wrap_content"
-            android:layout_marginTop="10dp"
+            android:layout_height="match_parent"
             app:layout_constraintTop_toTopOf="parent">
 
             <TextureView
                 android:id="@+id/tv_video"
                 android:layout_width="match_parent"
-                android:layout_height="250dp" />
+                android:layout_height="match_parent" />
 
             <TextView
                 android:id="@+id/tv_subtitle"
@@ -112,8 +115,9 @@
     <LinearLayout
         android:id="@+id/video_play_bar_layout"
         android:layout_width="match_parent"
-        android:layout_height="35dp"
+        android:layout_height="wrap_content"
         android:layout_marginTop="10dp"
+        android:paddingVertical="10dp"
         android:gravity="center"
         android:orientation="horizontal"
         app:layout_constraintBottom_toTopOf="@id/edit_seekbar_layout"
@@ -121,33 +125,37 @@
 
         <ImageView
             android:id="@+id/play_skip_back_btn"
-            android:layout_width="20dp"
-            android:layout_height="20dp"
+            android:layout_width="wrap_content"
+            android:padding="5dp"
+            android:layout_height="wrap_content"
             android:src="@drawable/ic_edit_play_skip_back" />
 
         <ImageView
             android:id="@+id/video_play_btn"
-            android:layout_width="30dp"
-            android:layout_height="30dp"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
             android:layout_gravity="center"
             android:layout_marginStart="20dp"
             android:layout_marginEnd="20dp"
+            android:padding="5dp"
             android:src="@drawable/ic_edit_play_fill" />
 
         <ImageView
             android:id="@+id/video_pause_btn"
-            android:layout_width="20dp"
-            android:layout_height="20dp"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
             android:layout_gravity="center"
             android:layout_marginStart="20dp"
             android:layout_marginEnd="20dp"
+            android:padding="5dp"
             android:src="@drawable/ic_edit_pause_fill"
             android:visibility="gone" />
 
         <ImageView
             android:id="@+id/play_skip_forward_btn"
-            android:layout_width="20dp"
-            android:layout_height="20dp"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:padding="5dp"
             android:src="@drawable/ic_edit_play_skip_forward" />
     </LinearLayout>
 
@@ -155,7 +163,6 @@
         android:id="@+id/edit_seekbar_layout"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        android:layout_marginBottom="30dp"
         app:layout_constraintBottom_toTopOf="@id/cl_edit_tool"
         android:orientation="vertical"
         app:layout_constraintTop_toBottomOf="@id/video_play_bar_layout">
@@ -178,7 +185,7 @@
             android:layout_height="wrap_content"
             android:background="@color/black"
             android:orientation="horizontal"
-            android:paddingVertical="30dp"
+            android:paddingVertical="10dp"
             android:paddingStart="100dp"
             app:layoutManager="androidx.recyclerview.widget.LinearLayoutManager"
             app:layout_constraintTop_toBottomOf="@id/edit_seekbar_layout"/>
@@ -198,7 +205,7 @@
     <androidx.constraintlayout.widget.ConstraintLayout
         android:id="@+id/cl_edit_tool"
         android:layout_width="match_parent"
-        android:layout_height="300dp"
+        android:layout_height="wrap_content"
         app:layout_constraintBottom_toBottomOf="parent"
         app:layout_constraintTop_toBottomOf="@id/edit_seekbar_layout">
 
@@ -220,12 +227,13 @@
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
             android:layout_gravity="center"
-            android:layout_marginBottom="50dp"
             android:background="@color/transparent"
             android:drawableTop="@drawable/ic_edit_subtitles"
-            android:text="자막"
+            android:text="AI 자막 생성"
+            android:layout_marginVertical="50dp"
             android:textColor="@color/white"
             app:layout_constraintBottom_toBottomOf="parent"
+            app:layout_constraintTop_toBottomOf="@id/btn_edit_blur"
             app:layout_constraintEnd_toStartOf="@id/v_edit_line"
             app:layout_constraintStart_toStartOf="@id/btn_edit_blur" />
 
@@ -235,6 +243,7 @@
             android:layout_height="0dp"
             android:background="@color/white_opacity_80"
             android:paddingHorizontal="10dp"
+            app:layout_constraintBottom_toBottomOf="parent"
             app:layout_constraintStart_toEndOf="@id/btn_edit_blur"
             app:layout_constraintTop_toTopOf="parent" />
 
