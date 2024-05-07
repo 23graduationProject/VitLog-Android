@@ -459,13 +459,13 @@ class EditFragment : Fragment(), TextureView.SurfaceTextureListener,
                 }
 
                 MotionEvent.ACTION_MOVE -> {
-                    setBlurPartOfBitmap()
                     // ImageView 위치 업데이트
                     binding.blurSelfLayout.animate()
                         .x(event.rawX + dX)
                         .y(event.rawY + dY)
                         .setDuration(0)
                         .start()
+                    setBlurPartOfBitmap()
                 }
 
                 MotionEvent.ACTION_UP -> {
