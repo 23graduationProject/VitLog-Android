@@ -80,7 +80,7 @@
                 android:layout_height="match_parent"
                 android:layout_marginHorizontal="50dp"
                 android:gravity="top"
-                android:hint="패스워드를 입력하세요"
+                android:hint="비밀번호를 입력하세요"
                 android:inputType="textPassword"
                 android:maxLength="8"
                 android:textColor="@color/white"
