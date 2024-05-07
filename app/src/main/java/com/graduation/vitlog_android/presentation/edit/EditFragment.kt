@@ -2,11 +2,13 @@ package com.graduation.vitlog_android.presentation.edit
 
 import android.annotation.SuppressLint
 import android.content.Intent
+import android.graphics.Bitmap
+import android.graphics.RenderEffect
+import android.graphics.Shader
 import android.graphics.SurfaceTexture
 import android.media.MediaMetadataRetriever
 import android.media.MediaPlayer
 import android.net.Uri
-import android.os.Build
 import android.os.Bundle
 import android.os.Handler
 import android.os.Looper
@@ -19,7 +21,6 @@ import android.view.View
 import android.view.View.INVISIBLE
 import android.view.View.VISIBLE
 import android.view.ViewGroup
-import androidx.annotation.RequiresApi
 import androidx.core.net.toUri
 import androidx.fragment.app.Fragment
 import androidx.fragment.app.viewModels
@@ -59,7 +60,6 @@ class EditFragment : Fragment(), TextureView.SurfaceTextureListener,
     private var startTime: String = "00:00:00"
     private var endTime: String = "00:00:00"
 
-    @RequiresApi(Build.VERSION_CODES.Q)
     override fun onCreateView(
         inflater: LayoutInflater,
         container: ViewGroup?,
@@ -94,17 +94,47 @@ class EditFragment : Fragment(), TextureView.SurfaceTextureListener,
         binding.rvEditToolSubtitle.adapter = subtitleAdapter
     }
 
-
     private fun buttonActions() {
         // 수동 블러 버튼 클릭
         binding.btnEditBlurSelf.setOnClickListener {
             binding.blurSelfLayout.visibility = View.VISIBLE
             binding.timelineSectionIv.visibility = View.VISIBLE
             binding.editSaveBtn.text = "완료"
+            setBlurPartOfBitmap()
         }
 
         // 수동 블러 rectangle 드래그
         dragBlurRectangle()
+    }
+
+    private fun setBlurPartOfBitmap() {
+        val metaDataSource = MediaMetadataRetriever()
+        metaDataSource.setDataSource(context, getUri)
+
+        val context = this.context ?: return
+        val density = context.resources.displayMetrics.density
+        val px = (70 * density).toInt()
+
+        val currentVideoPosition = mediaPlayer.currentPosition.toLong()
+        Log.d("current position", currentVideoPosition.toString())
+        val bitmap = metaDataSource.getFrameAtTime(
+            currentVideoPosition * 1000,
+            MediaMetadataRetriever.OPTION_CLOSEST
+        )
+
+
+        val partialBitmap = Bitmap.createBitmap(
+            bitmap!!,
+            binding.blurSelfLayout.x.toInt(),
+            binding.blurSelfLayout.y.toInt(),
+            px,
+            px
+        )
+
+
+        val blurEffect = RenderEffect.createBlurEffect(10F, 10F, Shader.TileMode.MIRROR)
+        binding.blurSelfRectangle.setRenderEffect(blurEffect)
+        binding.blurSelfRectangle.setImageBitmap(partialBitmap)
     }
 
     private fun setObserver() {
@@ -407,6 +437,7 @@ class EditFragment : Fragment(), TextureView.SurfaceTextureListener,
                 }
 
                 MotionEvent.ACTION_MOVE -> {
+                    setBlurPartOfBitmap()
                     // ImageView 위치 업데이트
                     binding.blurSelfLayout.animate()
                         .x(event.rawX + dX)

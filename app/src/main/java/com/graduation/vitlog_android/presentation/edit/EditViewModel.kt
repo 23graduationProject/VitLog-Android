@@ -219,7 +219,7 @@ class EditViewModel @Inject constructor(
     ) {
         viewModelScope.launch {
             _getMosaicedVideoState.value = UiState.Loading
-            videoRepository.getMosaicedVideo(uid, fileName)
+            videoRepository.getMosaicedVideo(uid, fileName + ".mp4")
                 .onSuccess { response ->
                     _getMosaicedVideoState.value = UiState.Success(response)
                     Timber.e("성공 $response")
