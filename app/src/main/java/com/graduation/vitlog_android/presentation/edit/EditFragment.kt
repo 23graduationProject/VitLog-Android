@@ -79,7 +79,7 @@ class EditFragment : Fragment(), TextureView.SurfaceTextureListener,
         binding.tvVideo.surfaceTextureListener = this
         binding.backBtn.setOnClickListener {
             mediaPlayer.release()
-            startActivity(Intent(requireContext(), MainActivity::class.java))
+            activity?.finish()
         }
         getUri?.let {
             setupMediaRetrieverAndSeekBar(it)
@@ -105,6 +105,18 @@ class EditFragment : Fragment(), TextureView.SurfaceTextureListener,
 
         // 수동 블러 rectangle 드래그
         dragBlurRectangle()
+
+        // 영상 -3초
+        binding.playSkipBackBtn.setOnClickListener {
+            val currentPosition = mediaPlayer.currentPosition
+            val newPosition = if ((currentPosition - 3000) > 0) currentPosition - 3000 else 0
+            mediaPlayer.seekTo(newPosition)
+        }
+        // 영상 +3초
+        binding.playSkipForwardBtn.setOnClickListener {
+            val currentPosition = mediaPlayer.currentPosition
+            mediaPlayer.seekTo(currentPosition + 3000)
+        }
     }
 
     private fun setBlurPartOfBitmap() {
@@ -177,6 +189,12 @@ class EditFragment : Fragment(), TextureView.SurfaceTextureListener,
 
         subtitleCompleteButtonListener()
         buttonActions()
+
+        // 재생 완료 되었을 때
+        mediaPlayer.setOnCompletionListener {
+            binding.videoPlayBtn.visibility = View.VISIBLE
+            binding.videoPauseBtn.visibility = View.GONE
+        }
     }
 
     private fun setupMediaRetrieverAndSeekBar(uri: Uri) {
