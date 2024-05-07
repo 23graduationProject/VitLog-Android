@@ -109,6 +109,18 @@ class EditFragment : Fragment(), TextureView.SurfaceTextureListener,
 
         // 수동 블러 rectangle 드래그
         dragBlurRectangle()
+
+        // 영상 -3초
+        binding.playSkipBackBtn.setOnClickListener {
+            val currentPosition = mediaPlayer.currentPosition
+            val newPosition = if ((currentPosition - 3000) > 0) currentPosition - 3000 else 0
+            mediaPlayer.seekTo(newPosition)
+        }
+        // 영상 +3초
+        binding.playSkipForwardBtn.setOnClickListener {
+            val currentPosition = mediaPlayer.currentPosition
+            mediaPlayer.seekTo(currentPosition + 3000)
+        }
     }
 
     @RequiresApi(Build.VERSION_CODES.S)
