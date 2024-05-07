@@ -485,6 +485,7 @@ class EditFragment : Fragment(), TextureView.SurfaceTextureListener,
 
         binding.blurRectangleX.setOnClickListener {
             binding.blurSelfLayout.visibility = View.GONE
+            binding.timelineSectionIv.visibility = View.GONE
         }
 
 //        var nX: Float = 0F
