@@ -125,7 +125,8 @@ class EditFragment : Fragment(), TextureView.SurfaceTextureListener,
 
         val context = this.context ?: return
         val density = context.resources.displayMetrics.density
-        val px = (70 * density).toInt()
+        var px = (70 * density).toInt()
+        var py = (70 * density).toInt()
 
         val currentVideoPosition = mediaPlayer.currentPosition.toLong()
         Log.d("current position", currentVideoPosition.toString())
@@ -134,15 +135,24 @@ class EditFragment : Fragment(), TextureView.SurfaceTextureListener,
             MediaMetadataRetriever.OPTION_CLOSEST
         )
 
+        val dx = binding.blurSelfLayout.x.coerceAtLeast(0F).toInt()
+        val dy = binding.blurSelfLayout.y.coerceAtLeast(0F).toInt()
 
+        if (dx >= bitmap!!.width - binding.blurSelfLayout.width) {
+            px = (bitmap.width-dx).coerceAtLeast(0)
+        }
+        if (dy >= bitmap.height - binding.blurSelfLayout.height) {
+            py = (bitmap.height-dy).coerceAtLeast(0)
+        }
+
+        Log.d("dx",dx.toString())
         val partialBitmap = Bitmap.createBitmap(
-            bitmap!!,
-            binding.blurSelfLayout.x.toInt(),
-            binding.blurSelfLayout.y.toInt(),
+            bitmap,
+            dx,
+            dy,
             px,
-            px
+            py
         )
-
 
         val blurEffect = RenderEffect.createBlurEffect(10F, 10F, Shader.TileMode.MIRROR)
         binding.blurSelfRectangle.setRenderEffect(blurEffect)
@@ -459,13 +469,13 @@ class EditFragment : Fragment(), TextureView.SurfaceTextureListener,
                 }
 
                 MotionEvent.ACTION_MOVE -> {
-                    setBlurPartOfBitmap()
                     // ImageView 위치 업데이트
                     binding.blurSelfLayout.animate()
                         .x(event.rawX + dX)
                         .y(event.rawY + dY)
                         .setDuration(0)
                         .start()
+                    setBlurPartOfBitmap()
                 }
 
                 MotionEvent.ACTION_UP -> {
@@ -484,7 +494,8 @@ class EditFragment : Fragment(), TextureView.SurfaceTextureListener,
         }
 
         binding.blurRectangleX.setOnClickListener {
-            binding.blurSelfLayout.visibility = View.GONE
+            binding.blurSelfLayout.visibility = View.INVISIBLE
+            binding.timelineSectionIv.visibility = View.GONE
         }
 
 //        var nX: Float = 0F
