@@ -145,6 +145,7 @@ class EditFragment : Fragment(), TextureView.SurfaceTextureListener,
             py = (bitmap.height-dy).coerceAtLeast(0)
         }
 
+        Log.d("dx",dx.toString())
         val partialBitmap = Bitmap.createBitmap(
             bitmap,
             dx,
@@ -493,7 +494,7 @@ class EditFragment : Fragment(), TextureView.SurfaceTextureListener,
         }
 
         binding.blurRectangleX.setOnClickListener {
-            binding.blurSelfLayout.visibility = View.GONE
+            binding.blurSelfLayout.visibility = View.INVISIBLE
             binding.timelineSectionIv.visibility = View.GONE
         }
 
