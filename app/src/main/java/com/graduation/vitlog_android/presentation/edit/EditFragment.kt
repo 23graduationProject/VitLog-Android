@@ -134,11 +134,13 @@ class EditFragment : Fragment(), TextureView.SurfaceTextureListener,
             MediaMetadataRetriever.OPTION_CLOSEST
         )
 
+        val dx = binding.blurSelfLayout.x.coerceAtLeast(0F)
+        val dy = binding.blurSelfLayout.y.coerceAtLeast(0F)
 
         val partialBitmap = Bitmap.createBitmap(
             bitmap!!,
-            binding.blurSelfLayout.x.toInt(),
-            binding.blurSelfLayout.y.toInt(),
+            dx.toInt(),
+            dy.toInt(),
             px,
             px
         )
