@@ -125,7 +125,8 @@ class EditFragment : Fragment(), TextureView.SurfaceTextureListener,
 
         val context = this.context ?: return
         val density = context.resources.displayMetrics.density
-        val px = (70 * density).toInt()
+        var px = (70 * density).toInt()
+        var py = (70 * density).toInt()
 
         val currentVideoPosition = mediaPlayer.currentPosition.toLong()
         Log.d("current position", currentVideoPosition.toString())
@@ -134,17 +135,23 @@ class EditFragment : Fragment(), TextureView.SurfaceTextureListener,
             MediaMetadataRetriever.OPTION_CLOSEST
         )
 
-        val dx = binding.blurSelfLayout.x.coerceAtLeast(0F)
-        val dy = binding.blurSelfLayout.y.coerceAtLeast(0F)
+        val dx = binding.blurSelfLayout.x.coerceAtLeast(0F).toInt()
+        val dy = binding.blurSelfLayout.y.coerceAtLeast(0F).toInt()
+
+        if (dx >= bitmap!!.width - binding.blurSelfLayout.width) {
+            px = (bitmap.width-dx).coerceAtLeast(0)
+        }
+        if (dy >= bitmap.height - binding.blurSelfLayout.height) {
+            py = (bitmap.height-dy).coerceAtLeast(0)
+        }
 
         val partialBitmap = Bitmap.createBitmap(
-            bitmap!!,
-            dx.toInt(),
-            dy.toInt(),
+            bitmap,
+            dx,
+            dy,
             px,
-            px
+            py
         )
-
 
         val blurEffect = RenderEffect.createBlurEffect(10F, 10F, Shader.TileMode.MIRROR)
         binding.blurSelfRectangle.setRenderEffect(blurEffect)
