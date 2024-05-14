@@ -1,6 +1,7 @@
 package com.graduation.vitlog_android.data.repository
 
 import com.graduation.vitlog_android.data.api.UserApi
+import com.graduation.vitlog_android.model.entity.User
 import com.graduation.vitlog_android.model.request.RequestLoginDto
 import com.graduation.vitlog_android.model.request.RequestSignUpDto
 import com.graduation.vitlog_android.model.response.ResponseLoginDto
@@ -19,5 +20,11 @@ class UserRepository @Inject constructor(
         requestLoginDto: RequestLoginDto
     ): Result<ResponseLoginDto> = runCatching {
         api.postLogin(requestLoginDto)
+    }
+
+    suspend fun getUser(
+        uid : Int
+    ): Result<User> = runCatching {
+        api.getUser(uid).convertToUser()
     }
 }
