@@ -26,6 +26,7 @@ class MyPageFragment : Fragment() {
 
     private val binding get() = _binding!!
     private val myPageViewModel by viewModels<MyPageViewModel>()
+    private lateinit var myPageAdapter: MyPageAdapter
 
     override fun onCreateView(
         inflater: LayoutInflater,
@@ -34,6 +35,8 @@ class MyPageFragment : Fragment() {
     ): View {
         _binding = FragmentMypageBinding.inflate(layoutInflater, container, false)
         myPageViewModel.getUser()
+        myPageAdapter = MyPageAdapter()
+        binding.rvMypageFaces.adapter = myPageAdapter
         initClickListener()
         initObserver()
         return binding.root
@@ -55,6 +58,7 @@ class MyPageFragment : Fragment() {
                 when (state) {
                     is UiState.Success -> {
                         binding.data = state.data
+                        myPageAdapter.submitList(state.data.registeredFace)
                         Timber.tag("Success").d(state.data.toString())
                     }
 
