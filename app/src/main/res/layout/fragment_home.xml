@@ -68,40 +68,4 @@
         app:layoutManager="androidx.recyclerview.widget.GridLayoutManager"
         app:spanCount="3" />
 
-
-    <!--    <com.google.android.material.card.MaterialCardView-->
-<!--        android:id="@+id/cv_home_edit"-->
-<!--        android:layout_width="match_parent"-->
-<!--        android:layout_height="match_parent"-->
-<!--        app:layout_constraintTop_toTopOf="parent"-->
-<!--        app:layout_constraintBottom_toBottomOf="parent"-->
-<!--        app:layout_constraintStart_toStartOf="parent"-->
-<!--        app:layout_constraintEnd_toEndOf="parent"-->
-<!--        android:layout_marginHorizontal="30dp"-->
-<!--        android:layout_marginVertical="350dp"-->
-<!--        android:backgroundTint="#3A3939"-->
-<!--        app:cardCornerRadius="17dp"-->
-<!--        app:strokeColor="@color/main_pink">-->
-
-<!--        <androidx.constraintlayout.widget.ConstraintLayout-->
-<!--            android:layout_width="match_parent"-->
-<!--            android:layout_height="match_parent">-->
-
-<!--            <Button-->
-<!--                android:id="@+id/iv_home_edit"-->
-<!--                android:layout_width="wrap_content"-->
-<!--                android:layout_height="wrap_content"-->
-<!--                android:text="영상 편집하기"-->
-<!--                android:textAppearance="@style/TextAppearance.VitLog.Content_m_15"-->
-<!--                app:layout_constraintBottom_toBottomOf="parent"-->
-<!--                app:layout_constraintEnd_toEndOf="parent"-->
-<!--                app:layout_constraintStart_toStartOf="parent"-->
-<!--                app:layout_constraintTop_toTopOf="parent" />-->
-
-
-<!--        </androidx.constraintlayout.widget.ConstraintLayout>-->
-<!--    </com.google.android.material.card.MaterialCardView>-->
-
-
-
 </androidx.constraintlayout.widget.ConstraintLayout>
