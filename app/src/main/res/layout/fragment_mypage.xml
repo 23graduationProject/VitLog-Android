@@ -52,7 +52,7 @@
             android:layout_height="wrap_content"
             android:backgroundTint="@color/white"
             android:layout_marginTop="35dp"
-            app:dividerThickness="3dp"
+            app:dividerThickness="2dp"
             android:layout_marginHorizontal="30dp"
             app:layout_constraintTop_toBottomOf="@id/tv_mypage_nickname" />
 
@@ -68,15 +68,18 @@
             app:layout_constraintTop_toBottomOf="@id/md_mypage_1"
             app:layout_constraintStart_toStartOf="parent" />
 
-
-        <ImageView
-            android:layout_width="70dp"
-            android:layout_height="70dp"
-            android:src="@drawable/img_mypage_profile"
-            android:layout_marginStart="30dp"
-            android:layout_marginTop="30dp"
+        <androidx.recyclerview.widget.RecyclerView
+            android:id="@+id/rv_mypage_faces"
+            android:layout_width="match_parent"
+            android:layout_height="0dp"
+            android:layout_marginVertical="20dp"
+            android:layout_marginHorizontal="30dp"
+            app:layout_constraintTop_toBottomOf="@id/tv_mypage_registered"
+            app:layout_constraintBottom_toTopOf="@id/tv_mypage_signout"
+            app:layout_constraintEnd_toEndOf="parent"
             app:layout_constraintStart_toStartOf="parent"
-            app:layout_constraintTop_toBottomOf="@id/tv_mypage_registered" />
+            app:layoutManager="androidx.recyclerview.widget.GridLayoutManager"
+            app:spanCount="3" />
 
 
         <TextView
