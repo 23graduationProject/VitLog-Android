@@ -1,7 +1,6 @@
 package com.graduation.vitlog_android.presentation.edit
 
 import android.annotation.SuppressLint
-import android.content.Intent
 import android.graphics.Bitmap
 import android.graphics.RenderEffect
 import android.graphics.Shader
@@ -12,7 +11,6 @@ import android.net.Uri
 import android.os.Bundle
 import android.os.Handler
 import android.os.Looper
-import android.util.Log
 import android.view.LayoutInflater
 import android.view.MotionEvent
 import android.view.Surface
@@ -30,7 +28,6 @@ import androidx.recyclerview.widget.RecyclerView
 import com.graduation.vitlog_android.databinding.FragmentEditBinding
 import com.graduation.vitlog_android.model.entity.Subtitle
 import com.graduation.vitlog_android.model.request.RequestBlurDto
-import com.graduation.vitlog_android.presentation.MainActivity
 import com.graduation.vitlog_android.util.preference.SharedPrefManager.uid
 import com.graduation.vitlog_android.util.view.UiState
 import dagger.hilt.android.AndroidEntryPoint
@@ -52,6 +49,7 @@ class EditFragment : Fragment(), TextureView.SurfaceTextureListener,
     private val editViewModel by viewModels<EditViewModel>()
     private lateinit var mediaPlayer: MediaPlayer
     private lateinit var subtitleAdapter: SubtitleAdapter
+    private lateinit var timeLineAdapter: TimeLineAdapter
 
     private var isBlurModeSelected: Boolean = false
     private var isSubtitleModeSelected: Boolean = false
@@ -89,7 +87,8 @@ class EditFragment : Fragment(), TextureView.SurfaceTextureListener,
     }
 
     private fun initAdapter() {
-        binding.editTimelineRv.adapter = TimeLineAdapter(editViewModel.timeLineImages)
+        timeLineAdapter = TimeLineAdapter(editViewModel.timeLineImages)
+        binding.editTimelineRv.adapter = timeLineAdapter
         subtitleAdapter = SubtitleAdapter()
         binding.rvEditToolSubtitle.adapter = subtitleAdapter
     }
@@ -97,8 +96,8 @@ class EditFragment : Fragment(), TextureView.SurfaceTextureListener,
     private fun buttonActions() {
         // 수동 블러 버튼 클릭
         binding.btnEditBlurSelf.setOnClickListener {
-            binding.blurSelfLayout.visibility = View.VISIBLE
-            binding.timelineSectionIv.visibility = View.VISIBLE
+            binding.blurSelfLayout.visibility = VISIBLE
+            binding.timelineSectionIv.visibility = VISIBLE
             binding.editSaveBtn.text = "완료"
             setBlurPartOfBitmap()
         }
@@ -129,7 +128,6 @@ class EditFragment : Fragment(), TextureView.SurfaceTextureListener,
         var py = (70 * density).toInt()
 
         val currentVideoPosition = mediaPlayer.currentPosition.toLong()
-        Log.d("current position", currentVideoPosition.toString())
         val bitmap = metaDataSource.getFrameAtTime(
             currentVideoPosition * 1000,
             MediaMetadataRetriever.OPTION_CLOSEST
@@ -144,8 +142,6 @@ class EditFragment : Fragment(), TextureView.SurfaceTextureListener,
         if (dy >= bitmap.height - binding.blurSelfLayout.height) {
             py = (bitmap.height-dy).coerceAtLeast(0)
         }
-
-        Log.d("dx",dx.toString())
         val partialBitmap = Bitmap.createBitmap(
             bitmap,
             dx,
@@ -202,8 +198,41 @@ class EditFragment : Fragment(), TextureView.SurfaceTextureListener,
 
         // 재생 완료 되었을 때
         mediaPlayer.setOnCompletionListener {
+            binding.videoPlayBtn.visibility = VISIBLE
+            binding.videoPauseBtn.visibility = View.GONE
+        }
+    }
+
+    override fun onSurfaceTextureAvailable(surface: SurfaceTexture, width: Int, height: Int) {
+        try {
+            if (getUri != null) {
+                mediaPlayer.setDataSource(requireContext(), getUri!!)
+                mediaPlayer.apply {
+                    setSurface(Surface(surface))
+                    setOnPreparedListener(this@EditFragment)
+                    prepareAsync()  // mediaPlayer가 준비되었음을 알림
+                }
+            }
+        } catch (e: IOException) {
+            e.printStackTrace()
+        }
+    }
+
+    override fun onPrepared(mp: MediaPlayer?) {
+        // 재생 버튼
+        binding.videoPlayBtn.setOnClickListener {
+            mp!!.start()
+            binding.videoPlayBtn.visibility = View.GONE
+            binding.videoPauseBtn.visibility = View.VISIBLE
+            handler.post(updateUiRunnable) // 여기를 수정
+        }
+
+        // 일시정지 버튼
+        binding.videoPauseBtn.setOnClickListener {
+            mp!!.pause()
             binding.videoPlayBtn.visibility = View.VISIBLE
             binding.videoPauseBtn.visibility = View.GONE
+            handler.removeCallbacks(updateUiRunnable) // 여기를 수정
         }
     }
 
@@ -220,32 +249,24 @@ class EditFragment : Fragment(), TextureView.SurfaceTextureListener,
         binding.editTimelineRv.addOnScrollListener(object : RecyclerView.OnScrollListener() {
             override fun onScrolled(recyclerView: RecyclerView, dx: Int, dy: Int) {
                 super.onScrolled(recyclerView, dx, dy)
-                // RecyclerView가 스크롤될 때 호출됩니다.
-                // dx와 dy 매개변수는 스크롤 이동량을 나타냅니다. (가로 및 세로 방향으로의 이동량)
-
-                // 현재 스크롤 위치를 계산합니다.
+                // 타임라인(리사이클러뷰)가 스크롤됨에 따라 가로 스크롤길이를 구한다
                 val scrollY = recyclerView.computeHorizontalScrollOffset()
-
-                // 여기서 scrollY를 이용하여 mediaPlayer.seekTo(progress)와 같은 동작을 구현합니다.
-                // 예를 들어, scrollY를 시간(초)으로 변환하여 mediaPlayer를 조정할 수 있습니다.
-                // 예를 들어, 비디오의 총 길이를 알고 있다면 scrollY를 비디오의 전체 길이로 나누어 해당 위치로 이동시킬 수 있습니다.
-                // mediaPlayer.seekTo(progress)를 호출하여 재생 위치를 조정합니다.
-
-                val videoLengthInMilliseconds = mediaPlayer.duration // 밀리초 단위로 영상의 총 길이를 가져옵니다.
-
+                val videoLengthInMilliseconds = mediaPlayer.duration
+                // 전체 스크롤 가능한 범위 대비 스크롤한 비율을 구해서 이를 영상 전체 길이에 다시 대응하는 식으로 구현
                 val desiredPositionInMilliseconds =
                     (scrollY / recyclerView.computeHorizontalScrollRange()
                         .toFloat() * videoLengthInMilliseconds).toInt()
 
                 mediaPlayer.seekTo(desiredPositionInMilliseconds)
 
-                // 타임라인 이동에 따른 자막 업데이트
+                // 타임라인 이동에 따른 자막 업데이트, 시간 흐름 업데이트
                 updateSubtitle(mediaPlayer.currentPosition, editViewModel.subtitleList)
-
                 updateTimeString()
             }
         })
     }
+
+    val handler = Handler(Looper.getMainLooper())
 
     private fun updateTimeString() {
         // 영상의 분,초 00:00 형태로 저장
@@ -256,17 +277,28 @@ class EditFragment : Fragment(), TextureView.SurfaceTextureListener,
         binding.editTimeTv.text = timeString
     }
 
-    private fun updateTime() {
-        val handler = Handler(Looper.getMainLooper())
-        val updateTask = object : Runnable {
-            override fun run() {
-                if (mediaPlayer.isPlaying) {
-                    updateTimeString()
-                    handler.postDelayed(this, 1) // 1밀리초마다 업데이트
-                }
+    private val updateUiRunnable = object : Runnable {
+        override fun run() {
+            if (mediaPlayer.isPlaying) {
+                val currentPositionInMilliseconds = mediaPlayer.currentPosition
+                val videoLengthInMilliseconds = mediaPlayer.duration
+                val scrollOffset =
+                    (currentPositionInMilliseconds.toFloat() / videoLengthInMilliseconds * timeLineAdapter.itemCount)
+
+                binding.editTimelineRv.smoothScrollToPosition(scrollOffset.toInt())
+                updateTimeString(currentPositionInMilliseconds)
+
+                handler.postDelayed(this, 1)
             }
         }
-        handler.post(updateTask)
+    }
+
+    private fun updateTimeString(currentPositionInMilliseconds: Int) {
+        val minutes = (currentPositionInMilliseconds / 1000) / 60
+        val seconds = (currentPositionInMilliseconds / 1000) % 60
+        val milliseconds = (currentPositionInMilliseconds % 1000) / 10
+        val timeString = String.format("%02d:%02d:%02d", minutes, seconds, milliseconds)
+        binding.editTimeTv.text = timeString
     }
 
     fun updateSubtitle(currentPosition: Int, subtitles: List<Subtitle>) {
@@ -307,7 +339,6 @@ class EditFragment : Fragment(), TextureView.SurfaceTextureListener,
                 when (state) {
                     is UiState.Success -> {
                         Timber.tag("Success").d(state.data.data.url)
-                        Log.d("Success", "Presigned")
                         uriToRequestBody()
                         editViewModel.setVideoFileName(state.data.data.fileName)
                         editViewModel.setPresignedUrl(state.data.data.url)
@@ -315,7 +346,6 @@ class EditFragment : Fragment(), TextureView.SurfaceTextureListener,
 
                     is UiState.Failure -> {
                         Timber.tag("Failure").e(state.msg)
-                        Log.d("Failure", "Presigned${state.msg}")
                     }
 
                     is UiState.Empty -> Unit
@@ -330,7 +360,6 @@ class EditFragment : Fragment(), TextureView.SurfaceTextureListener,
                 when (state) {
                     is UiState.Success -> {
                         Timber.tag("Success").d(state.data.toString())
-                        Log.d("Success", "setPutVideoToPresignedUrlStateObserver")
                         if (isBlurModeSelected) {
                             editViewModel.videoFileName.value?.let {
                                 editViewModel.getMosaicedVideo(
@@ -377,12 +406,10 @@ class EditFragment : Fragment(), TextureView.SurfaceTextureListener,
                     }
 
                     is UiState.Failure -> {
-                        Log.d("Fail", state.msg)
                         Timber.tag("Failure").e(state.msg)
                     }
 
                     is UiState.Empty -> Unit
-                    is UiState.Loading -> Unit
                 }
             }.launchIn(viewLifecycleOwner.lifecycleScope)
     }
@@ -422,38 +449,6 @@ class EditFragment : Fragment(), TextureView.SurfaceTextureListener,
             }.launchIn(viewLifecycleOwner.lifecycleScope)
     }
 
-
-    override fun onSurfaceTextureAvailable(surface: SurfaceTexture, width: Int, height: Int) {
-        try {
-            if (getUri != null) {
-                mediaPlayer.setDataSource(requireContext(), getUri!!)
-                mediaPlayer.apply {
-                    setSurface(Surface(surface))
-                    setOnPreparedListener(this@EditFragment)
-                    prepareAsync()  // mediaPlayer가 준비되었음을 알림
-                }
-            }
-        } catch (e: IOException) {
-            e.printStackTrace()
-        }
-    }
-
-    override fun onPrepared(mp: MediaPlayer?) {
-        // 재생 버튼
-        binding.videoPlayBtn.setOnClickListener {
-            mp!!.start()
-            binding.videoPlayBtn.visibility = View.GONE
-            binding.videoPauseBtn.visibility = View.VISIBLE
-            updateTime()
-        }
-
-        // 일시정지 버튼
-        binding.videoPauseBtn.setOnClickListener {
-            mp!!.pause()
-            binding.videoPlayBtn.visibility = View.VISIBLE
-            binding.videoPauseBtn.visibility = View.GONE
-        }
-    }
 
     // 수동 블러 rectangle 드래그
     @SuppressLint("ClickableViewAccessibility")
