@@ -11,7 +11,6 @@ import android.net.Uri
 import android.os.Bundle
 import android.os.Handler
 import android.os.Looper
-import android.util.Log
 import android.view.LayoutInflater
 import android.view.MotionEvent
 import android.view.Surface
@@ -143,8 +142,6 @@ class EditFragment : Fragment(), TextureView.SurfaceTextureListener,
         if (dy >= bitmap.height - binding.blurSelfLayout.height) {
             py = (bitmap.height-dy).coerceAtLeast(0)
         }
-
-        Log.d("dx",dx.toString())
         val partialBitmap = Bitmap.createBitmap(
             bitmap,
             dx,
@@ -252,28 +249,18 @@ class EditFragment : Fragment(), TextureView.SurfaceTextureListener,
         binding.editTimelineRv.addOnScrollListener(object : RecyclerView.OnScrollListener() {
             override fun onScrolled(recyclerView: RecyclerView, dx: Int, dy: Int) {
                 super.onScrolled(recyclerView, dx, dy)
-                // RecyclerView가 스크롤될 때 호출됩니다.
-                // dx와 dy 매개변수는 스크롤 이동량을 나타냅니다. (가로 및 세로 방향으로의 이동량)
-
-                // 현재 스크롤 위치를 계산합니다.
+                // 타임라인(리사이클러뷰)가 스크롤됨에 따라 가로 스크롤길이를 구한다
                 val scrollY = recyclerView.computeHorizontalScrollOffset()
-
-                // 여기서 scrollY를 이용하여 mediaPlayer.seekTo(progress)와 같은 동작을 구현합니다.
-                // 예를 들어, scrollY를 시간(초)으로 변환하여 mediaPlayer를 조정할 수 있습니다.
-                // 예를 들어, 비디오의 총 길이를 알고 있다면 scrollY를 비디오의 전체 길이로 나누어 해당 위치로 이동시킬 수 있습니다.
-                // mediaPlayer.seekTo(progress)를 호출하여 재생 위치를 조정합니다.
-
-                val videoLengthInMilliseconds = mediaPlayer.duration // 밀리초 단위로 영상의 총 길이를 가져옵니다.
-
+                val videoLengthInMilliseconds = mediaPlayer.duration
+                // 전체 스크롤 가능한 범위 대비 스크롤한 비율을 구해서 이를 영상 전체 길이에 다시 대응하는 식으로 구현
                 val desiredPositionInMilliseconds =
                     (scrollY / recyclerView.computeHorizontalScrollRange()
                         .toFloat() * videoLengthInMilliseconds).toInt()
 
                 mediaPlayer.seekTo(desiredPositionInMilliseconds)
 
-                // 타임라인 이동에 따른 자막 업데이트
+                // 타임라인 이동에 따른 자막 업데이트, 시간 흐름 업데이트
                 updateSubtitle(mediaPlayer.currentPosition, editViewModel.subtitleList)
-
                 updateTimeString()
             }
         })
@@ -352,7 +339,6 @@ class EditFragment : Fragment(), TextureView.SurfaceTextureListener,
                 when (state) {
                     is UiState.Success -> {
                         Timber.tag("Success").d(state.data.data.url)
-                        Log.d("Success", "Presigned")
                         uriToRequestBody()
                         editViewModel.setVideoFileName(state.data.data.fileName)
                         editViewModel.setPresignedUrl(state.data.data.url)
@@ -360,7 +346,6 @@ class EditFragment : Fragment(), TextureView.SurfaceTextureListener,
 
                     is UiState.Failure -> {
                         Timber.tag("Failure").e(state.msg)
-                        Log.d("Failure", "Presigned${state.msg}")
                     }
 
                     is UiState.Empty -> Unit
@@ -375,7 +360,6 @@ class EditFragment : Fragment(), TextureView.SurfaceTextureListener,
                 when (state) {
                     is UiState.Success -> {
                         Timber.tag("Success").d(state.data.toString())
-                        Log.d("Success", "setPutVideoToPresignedUrlStateObserver")
                         if (isBlurModeSelected) {
                             editViewModel.videoFileName.value?.let {
                                 editViewModel.getMosaicedVideo(
@@ -422,12 +406,10 @@ class EditFragment : Fragment(), TextureView.SurfaceTextureListener,
                     }
 
                     is UiState.Failure -> {
-                        Log.d("Fail", state.msg)
                         Timber.tag("Failure").e(state.msg)
                     }
 
                     is UiState.Empty -> Unit
-                    is UiState.Loading -> Unit
                 }
             }.launchIn(viewLifecycleOwner.lifecycleScope)
     }
