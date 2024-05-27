@@ -10,7 +10,6 @@ import okhttp3.RequestBody
 import okio.BufferedSink
 import okio.source
 
-
 class ContentUriRequestBody(
     context: Context,
     private val uri: Uri
@@ -21,18 +20,19 @@ class ContentUriRequestBody(
     private var fileSize = -1L
 
     init {
+        val projection = arrayOf(MediaStore.Images.Media.SIZE, MediaStore.Images.Media.DISPLAY_NAME)
         contentResolver.query(
             uri,
-            arrayOf(MediaStore.Video.Media.SIZE, MediaStore.Video.Media.DISPLAY_NAME),
+            projection,
             null,
             null,
             null
         )?.use { cursor ->
             if (cursor.moveToFirst()) {
                 fileSize =
-                    cursor.getLong(cursor.getColumnIndexOrThrow(MediaStore.Video.Media.SIZE))
+                    cursor.getLong(cursor.getColumnIndexOrThrow(MediaStore.Images.Media.SIZE))
                 fileName =
-                    cursor.getString(cursor.getColumnIndexOrThrow(MediaStore.Video.Media.DISPLAY_NAME))
+                    cursor.getString(cursor.getColumnIndexOrThrow(MediaStore.Images.Media.DISPLAY_NAME))
             }
         }
     }
@@ -50,5 +50,5 @@ class ContentUriRequestBody(
         }
     }
 
-    fun toFormData() = MultipartBody.Part.createFormData("video", getFileName(), this)
+    fun toFormData() = MultipartBody.Part.createFormData("file", getFileName(), this)
 }
