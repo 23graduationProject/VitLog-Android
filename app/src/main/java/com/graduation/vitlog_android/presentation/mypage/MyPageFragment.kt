@@ -1,9 +1,12 @@
 package com.graduation.vitlog_android.presentation.mypage
 
+import android.net.Uri
 import android.os.Bundle
+import android.util.Log
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
+import androidx.activity.result.contract.ActivityResultContracts
 import androidx.fragment.app.Fragment
 import androidx.fragment.app.commit
 import androidx.fragment.app.replace
@@ -28,6 +31,7 @@ class MyPageFragment : Fragment() {
     private val myPageViewModel by viewModels<MyPageViewModel>()
     private lateinit var myPageAdapter: MyPageAdapter
 
+
     override fun onCreateView(
         inflater: LayoutInflater,
         container: ViewGroup?,
@@ -46,10 +50,26 @@ class MyPageFragment : Fragment() {
         binding.ivMypageBack.setOnClickListener {
             navigateTo<HomeFragment>()
         }
+        binding.ivMypageProfile.setOnClickListener {
+            openGallery()
+        }
+
+    }
+
+    private val getContent =
+        registerForActivityResult(ActivityResultContracts.GetContent()) { uri: Uri? ->
+            if (uri != null) {
+                myPageViewModel.updateFaceUri(uri, requireContext())
+            }
+        }
+
+    private fun openGallery() {
+        getContent.launch("image/*")
     }
 
     private fun initObserver() {
         setGetUserStateObserver()
+        setPostFaceObserver()
     }
 
     private fun setGetUserStateObserver() {
@@ -71,6 +91,27 @@ class MyPageFragment : Fragment() {
                 }
             }.launchIn(viewLifecycleOwner.lifecycleScope)
     }
+
+    private fun setPostFaceObserver() {
+        myPageViewModel.postFaceState.flowWithLifecycle(viewLifecycleOwner.lifecycle)
+            .onEach { state ->
+                when (state) {
+                    is UiState.Success -> {
+                        Log.d("Success", state.data.toString())
+                        Timber.tag("Success").d(state.data.toString())
+                    }
+
+                    is UiState.Failure -> {
+                        Log.d("Failure", state.msg)
+                        Timber.tag("Failure").e(state.msg)
+                    }
+
+                    is UiState.Empty -> Unit
+                    is UiState.Loading -> Unit
+                }
+            }.launchIn(viewLifecycleOwner.lifecycleScope)
+    }
+
 
     private inline fun <reified T : Fragment> navigateTo() {
         parentFragmentManager.commit {
