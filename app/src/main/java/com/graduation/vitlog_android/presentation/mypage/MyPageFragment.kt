@@ -16,6 +16,7 @@ import androidx.lifecycle.lifecycleScope
 import com.graduation.vitlog_android.HomeFragment
 import com.graduation.vitlog_android.R
 import com.graduation.vitlog_android.databinding.FragmentMypageBinding
+import com.graduation.vitlog_android.model.entity.Face
 import com.graduation.vitlog_android.util.view.UiState
 import dagger.hilt.android.AndroidEntryPoint
 import kotlinx.coroutines.flow.launchIn
@@ -78,7 +79,10 @@ class MyPageFragment : Fragment() {
                 when (state) {
                     is UiState.Success -> {
                         binding.data = state.data
-                        myPageAdapter.submitList(state.data.registeredFace)
+                        val originalList = state.data.registeredFace.toMutableList()
+                        originalList.add(Face(picName = "", picPath = "ic_mypage_add"))
+                        myPageAdapter.submitList(originalList)
+
                         Timber.tag("Success").d(state.data.toString())
                     }
 
