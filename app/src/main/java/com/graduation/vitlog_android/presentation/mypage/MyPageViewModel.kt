@@ -60,9 +60,9 @@ class MyPageViewModel @Inject constructor(
             val image = createRequestBody()
             val uid = uid
             val pName = "hyeseon"
-
             userRepository.postFace(uid = uid, pName = pName, file = image).onSuccess { response ->
                 _postFaceState.value = UiState.Success(response)
+                getUser()
                 Timber.d("성공 $response")
             }.onFailure { t ->
                 if (t is HttpException) {
