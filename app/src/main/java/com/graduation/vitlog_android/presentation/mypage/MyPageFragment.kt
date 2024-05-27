@@ -2,7 +2,6 @@ package com.graduation.vitlog_android.presentation.mypage
 
 import android.net.Uri
 import android.os.Bundle
-import android.util.Log
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
@@ -101,12 +100,10 @@ class MyPageFragment : Fragment() {
             .onEach { state ->
                 when (state) {
                     is UiState.Success -> {
-                        Log.d("Success", state.data.toString())
                         Timber.tag("Success").d(state.data.toString())
                     }
 
                     is UiState.Failure -> {
-                        Log.d("Failure", state.msg)
                         Timber.tag("Failure").e(state.msg)
                     }
 
