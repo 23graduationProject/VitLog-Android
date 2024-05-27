@@ -39,21 +39,27 @@ class MyPageFragment : Fragment() {
     ): View {
         _binding = FragmentMypageBinding.inflate(layoutInflater, container, false)
         myPageViewModel.getUser()
-        myPageAdapter = MyPageAdapter()
-        binding.rvMypageFaces.adapter = myPageAdapter
+        initAdapter()
         initClickListener()
         initObserver()
         return binding.root
+    }
+
+    private fun initAdapter() {
+        myPageAdapter = MyPageAdapter(
+            onAddButtonClick = { openGallery() }
+        )
+        binding.rvMypageFaces.adapter = myPageAdapter
     }
 
     private fun initClickListener() {
         binding.ivMypageBack.setOnClickListener {
             navigateTo<HomeFragment>()
         }
-        binding.ivMypageProfile.setOnClickListener {
-            openGallery()
-        }
+    }
 
+    private fun openGallery() {
+        getContent.launch("image/*")
     }
 
     private val getContent =
@@ -63,9 +69,6 @@ class MyPageFragment : Fragment() {
             }
         }
 
-    private fun openGallery() {
-        getContent.launch("image/*")
-    }
 
     private fun initObserver() {
         setGetUserStateObserver()
@@ -81,7 +84,6 @@ class MyPageFragment : Fragment() {
                         val originalList = state.data.registeredFace.toMutableList()
                         originalList.add(Face(picName = "", picPath = "ic_mypage_add"))
                         myPageAdapter.submitList(originalList)
-
                         Timber.tag("Success").d(state.data.toString())
                     }
 

@@ -8,13 +8,24 @@ import com.graduation.vitlog_android.databinding.ItemMypageRegisteredFaceBinding
 import com.graduation.vitlog_android.model.entity.Face
 import com.graduation.vitlog_android.util.view.ItemDiffCallback
 
-class MyPageAdapter() : ListAdapter<Face, MyPageAdapter.RegisteredFaceViewHolder>(diffUtil) {
+class MyPageAdapter(
+    private val onAddButtonClick: () -> Unit
+) : ListAdapter<Face, MyPageAdapter.RegisteredFaceViewHolder>(diffUtil) {
 
 
     class RegisteredFaceViewHolder(private val binding: ItemMypageRegisteredFaceBinding) :
         RecyclerView.ViewHolder(binding.root) {
-        fun bind(data: Face) {
+        fun bind(
+            data: Face,
+            position: Int,
+            itemCount: Int,
+            onAddButtonClick: () -> Unit
+        ) {
             binding.data = data
+            if (position == itemCount - 1) {
+                binding.ivMypageRegisteredFace.setOnClickListener { onAddButtonClick.invoke() }
+            }
+            binding.executePendingBindings()
         }
     }
 
@@ -29,7 +40,7 @@ class MyPageAdapter() : ListAdapter<Face, MyPageAdapter.RegisteredFaceViewHolder
     }
 
     override fun onBindViewHolder(holder: RegisteredFaceViewHolder, position: Int) {
-        holder.bind(getItem(position))
+        holder.bind(getItem(position), position, itemCount, onAddButtonClick)
     }
 
     companion object {
