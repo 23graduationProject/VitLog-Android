@@ -47,7 +47,7 @@ interface VideoApi {
     suspend fun postManualBlur(
         @Path("uid") uid: Int,
         @Path("vid") vid: String,
-        @Body requestBlurDto: RequestBlurDto
+        @Body requestBlurDto: MutableList<RequestBlurDto>
     ): ResponseBody
 
     @GET("api/subtitle/{uid}/{fileName}")

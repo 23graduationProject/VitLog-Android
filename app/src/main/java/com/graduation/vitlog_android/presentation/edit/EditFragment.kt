@@ -56,6 +56,7 @@ class EditFragment : Fragment(), TextureView.SurfaceTextureListener,
 
     private var isBlurModeSelected: Boolean = false
     private var isSubtitleModeSelected: Boolean = false
+    private var isManualBlurModeSelected: Boolean = false
 
     private var manualBlurData = mutableListOf<RequestBlurDto>()
     private var startTime: String = "00:00:00"
@@ -378,6 +379,15 @@ class EditFragment : Fragment(), TextureView.SurfaceTextureListener,
                                 editViewModel.getSubtitle(
                                     uid = uid,
                                     fileName = fileName
+                                )
+                            }
+                        }
+                        if (isManualBlurModeSelected) {
+                            editViewModel.videoFileName.value?.let {
+                                editViewModel.postManualBlur(
+                                    uid = uid,
+                                    vid = vid,
+                                    requestBlurDto = manualBlurData
                                 )
                             }
                         }
