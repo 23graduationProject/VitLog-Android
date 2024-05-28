@@ -31,7 +31,6 @@
         android:layout_height="wrap_content"
         android:text="영상 편집하기"
         android:textColor="@color/white"
-        android:textSize="20dp"
         android:textAppearance="@style/TextAppearance.VitLog.Content_m_15"
         android:layout_marginStart="50dp"
         android:layout_marginEnd="50dp"
