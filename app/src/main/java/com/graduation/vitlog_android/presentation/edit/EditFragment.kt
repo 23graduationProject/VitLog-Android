@@ -19,12 +19,14 @@ import android.view.View
 import android.view.View.INVISIBLE
 import android.view.View.VISIBLE
 import android.view.ViewGroup
+import androidx.appcompat.content.res.AppCompatResources.getDrawable
 import androidx.core.net.toUri
 import androidx.fragment.app.Fragment
 import androidx.fragment.app.viewModels
 import androidx.lifecycle.flowWithLifecycle
 import androidx.lifecycle.lifecycleScope
 import androidx.recyclerview.widget.RecyclerView
+import com.graduation.vitlog_android.R
 import com.graduation.vitlog_android.databinding.FragmentEditBinding
 import com.graduation.vitlog_android.model.entity.Subtitle
 import com.graduation.vitlog_android.model.request.RequestBlurDto
@@ -137,10 +139,10 @@ class EditFragment : Fragment(), TextureView.SurfaceTextureListener,
         val dy = binding.blurSelfLayout.y.coerceAtLeast(0F).toInt()
 
         if (dx >= bitmap!!.width - binding.blurSelfLayout.width) {
-            px = (bitmap.width-dx).coerceAtLeast(0)
+            px = (bitmap.width - dx).coerceAtLeast(0)
         }
         if (dy >= bitmap.height - binding.blurSelfLayout.height) {
-            py = (bitmap.height-dy).coerceAtLeast(0)
+            py = (bitmap.height - dy).coerceAtLeast(0)
         }
         val partialBitmap = Bitmap.createBitmap(
             bitmap,
@@ -164,9 +166,33 @@ class EditFragment : Fragment(), TextureView.SurfaceTextureListener,
 
     private fun setListener() {
         binding.btnEditBlur.setOnClickListener {
+            binding.btnEditBlur.setImageDrawable(
+                getDrawable(
+                    requireContext(),
+                    R.drawable.ic_edit_blur_clicked
+                )
+            )
+            binding.btnEditSubtitle.setImageDrawable(
+                getDrawable(
+                    requireContext(),
+                    R.drawable.ic_edit_subtitles_unclicked
+                )
+            )
             isBlurModeSelected = true
         }
         binding.btnEditSubtitle.setOnClickListener {
+            binding.btnEditBlur.setImageDrawable(
+                getDrawable(
+                    requireContext(),
+                    R.drawable.ic_edit_blur_unclicked
+                )
+            )
+            binding.btnEditSubtitle.setImageDrawable(
+                getDrawable(
+                    requireContext(),
+                    R.drawable.ic_edit_subtitles_clicked
+                )
+            )
             isSubtitleModeSelected = true
         }
         binding.editSaveBtn.setOnClickListener {
