@@ -11,6 +11,7 @@ import android.net.Uri
 import android.os.Bundle
 import android.os.Handler
 import android.os.Looper
+import android.util.Log
 import android.view.LayoutInflater
 import android.view.MotionEvent
 import android.view.Surface
@@ -28,7 +29,9 @@ import androidx.recyclerview.widget.RecyclerView
 import com.graduation.vitlog_android.databinding.FragmentEditBinding
 import com.graduation.vitlog_android.model.entity.Subtitle
 import com.graduation.vitlog_android.model.request.RequestBlurDto
+import com.graduation.vitlog_android.util.preference.SharedPrefManager
 import com.graduation.vitlog_android.util.preference.SharedPrefManager.uid
+import com.graduation.vitlog_android.util.preference.SharedPrefManager.vid
 import com.graduation.vitlog_android.util.view.UiState
 import dagger.hilt.android.AndroidEntryPoint
 import kotlinx.coroutines.flow.launchIn
@@ -160,6 +163,8 @@ class EditFragment : Fragment(), TextureView.SurfaceTextureListener,
         setGetPresignedUrlStateObserver()
         setGetMosaicedVideoStateObserver()
         setGetSubtitleStateObserver()
+        setPostManualBlurStateObserver()
+//        Log.d("vid", vid.toString())
     }
 
     private fun setListener() {
@@ -342,6 +347,7 @@ class EditFragment : Fragment(), TextureView.SurfaceTextureListener,
                         uriToRequestBody()
                         editViewModel.setVideoFileName(state.data.data.fileName)
                         editViewModel.setPresignedUrl(state.data.data.url)
+                        SharedPrefManager.save("vid", state.data.data.vid)
                     }
 
                     is UiState.Failure -> {
@@ -409,6 +415,22 @@ class EditFragment : Fragment(), TextureView.SurfaceTextureListener,
                         Timber.tag("Failure").e(state.msg)
                     }
 
+                    is UiState.Empty -> Unit
+                }
+            }.launchIn(viewLifecycleOwner.lifecycleScope)
+    }
+
+    private fun setPostManualBlurStateObserver() {
+        editViewModel.postManualBlurState.flowWithLifecycle(viewLifecycleOwner.lifecycle)
+            .onEach { state ->
+                when (state) {
+                    is UiState.Loading -> {
+                    }
+                    is UiState.Success -> {
+                    }
+                    is UiState.Failure -> {
+                        Timber.tag("Failure").e(state.msg)
+                    }
                     is UiState.Empty -> Unit
                 }
             }.launchIn(viewLifecycleOwner.lifecycleScope)
@@ -492,27 +514,6 @@ class EditFragment : Fragment(), TextureView.SurfaceTextureListener,
             binding.blurSelfLayout.visibility = View.INVISIBLE
             binding.timelineSectionIv.visibility = View.GONE
         }
-
-//        var nX: Float = 0F
-//        var nY: Float = 0F
-//        val constraintSet = ConstraintSet()
-//        binding.blurRectangleResize.setOnTouchListener { view, event ->
-//            when (event.action) {
-//                MotionEvent.ACTION_DOWN -> {
-//                    // 터치 시작 위치 저장
-//                    nX = view.x - event.rawX
-//                    nY = view.y - event.rawY
-//                }
-//                MotionEvent.ACTION_MOVE -> {
-//                    // blur_self_rectangle의 너비 제약조건을 변경합니다.
-//                    constraintSet.clone(binding.blurSelfLayout)
-//                    constraintSet.constrainWidth(R.id.blur_self_rectangle, (event.rawX - binding.blurSelfRectangle.x).toInt())
-//                    constraintSet.constrainHeight(R.id.blur_self_rectangle, (event.rawY - binding.blurSelfRectangle.y).toInt())
-//                    constraintSet.applyTo(binding.blurSelfLayout)
-//                }
-//            }
-//            true
-//        }
     }
 
     private var rectangleX = 0F
