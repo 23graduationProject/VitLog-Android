@@ -5,6 +5,7 @@ import android.os.Bundle
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
+import android.widget.Toast
 import androidx.activity.result.contract.ActivityResultContracts
 import androidx.fragment.app.Fragment
 import androidx.fragment.app.commit
@@ -102,6 +103,16 @@ class MyPageFragment : Fragment() {
             .onEach { state ->
                 when (state) {
                     is UiState.Success -> {
+                        if (state.data.status == 400) {
+                            Toast.makeText(
+                                requireContext(),
+                                "얼굴을 등록할 수 없습니다 /n 이목구비가 정면으로 나온 사진을 선택해주세요",
+                                Toast.LENGTH_SHORT
+                            ).show()
+                            return@onEach
+                        }
+                        Toast.makeText(requireContext(), "얼굴을 성공적으로 등록했습니다", Toast.LENGTH_SHORT)
+                            .show()
                         Timber.tag("Success").d(state.data.toString())
                     }
 

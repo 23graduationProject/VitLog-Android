@@ -6,6 +6,7 @@ import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.graduation.vitlog_android.data.repository.UserRepository
 import com.graduation.vitlog_android.model.entity.User
+import com.graduation.vitlog_android.model.response.ResponsePostFaceDto
 import com.graduation.vitlog_android.util.multipart.ContentUriRequestBody
 import com.graduation.vitlog_android.util.preference.SharedPrefManager.uid
 import com.graduation.vitlog_android.util.view.UiState
@@ -29,9 +30,9 @@ class MyPageViewModel @Inject constructor(
     val geUserState: StateFlow<UiState<User>> =
         _getUserState.asStateFlow()
 
-    private val _postFaceState = MutableStateFlow<UiState<Unit>>(UiState.Empty)
+    private val _postFaceState = MutableStateFlow<UiState<ResponsePostFaceDto>>(UiState.Empty)
 
-    val postFaceState: StateFlow<UiState<Unit>> get() = _postFaceState.asStateFlow()
+    val postFaceState: StateFlow<UiState<ResponsePostFaceDto>> get() = _postFaceState.asStateFlow()
 
     private var imageRequestBody: ContentUriRequestBody? = null
 
