@@ -5,6 +5,8 @@ import com.graduation.vitlog_android.model.entity.User
 import com.graduation.vitlog_android.model.request.RequestLoginDto
 import com.graduation.vitlog_android.model.request.RequestSignUpDto
 import com.graduation.vitlog_android.model.response.ResponseLoginDto
+import com.graduation.vitlog_android.model.response.ResponsePostFaceDto
+import okhttp3.MultipartBody
 import javax.inject.Inject
 
 class UserRepository @Inject constructor(
@@ -23,8 +25,16 @@ class UserRepository @Inject constructor(
     }
 
     suspend fun getUser(
-        uid : Int
+        uid: Int
     ): Result<User> = runCatching {
         api.getUser(uid).convertToUser()
+    }
+
+    suspend fun postFace(
+        uid: Int,
+        file: MultipartBody.Part?,
+        pName: String
+    ): Result<ResponsePostFaceDto> = runCatching {
+        api.postFace(uid, pName = pName, file = file)
     }
 }

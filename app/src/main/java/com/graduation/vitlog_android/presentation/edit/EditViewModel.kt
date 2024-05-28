@@ -6,16 +6,13 @@ import android.media.MediaMetadataRetriever
 import android.media.MediaScannerConnection
 import android.net.Uri
 import android.os.Environment
-import android.util.Log
 import androidx.lifecycle.MutableLiveData
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.graduation.vitlog_android.data.repository.VideoRepository
-import com.graduation.vitlog_android.model.request.RequestBlurDto
 import com.graduation.vitlog_android.model.entity.Subtitle
+import com.graduation.vitlog_android.model.request.RequestBlurDto
 import com.graduation.vitlog_android.model.response.ResponseGetPresignedUrlDto
-import com.graduation.vitlog_android.model.response.ResponseGetSubtitleDto
-import com.graduation.vitlog_android.model.response.ResponsePostVideoDto
 import com.graduation.vitlog_android.util.multipart.ContentUriRequestBody
 import com.graduation.vitlog_android.util.preference.SharedPrefManager.uid
 import com.graduation.vitlog_android.util.view.UiState
@@ -26,7 +23,6 @@ import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
-import okhttp3.MultipartBody
 import okhttp3.RequestBody
 import okhttp3.RequestBody.Companion.toRequestBody
 import okhttp3.ResponseBody
@@ -61,14 +57,16 @@ class EditViewModel @Inject constructor(
 
     var _getSubtitleState = MutableStateFlow<UiState<List<Subtitle>>>(UiState.Empty)
     val getSubtitleState: StateFlow<UiState<List<Subtitle>>> = _getSubtitleState.asStateFlow()
+
     val timeLineImages = mutableListOf<Bitmap>()
 
     var _subtitleList = listOf<Subtitle>()
     val subtitleList: List<Subtitle> = _subtitleList
 
-    fun saveSubtitleList(subtitle: List<Subtitle>){
+    fun saveSubtitleList(subtitle: List<Subtitle>) {
         _subtitleList = subtitle
     }
+
     private val _postManualBlurState = MutableStateFlow<UiState<ResponseBody>>(UiState.Loading)
     val postManualBlurState: StateFlow<UiState<ResponseBody>> = _postManualBlurState.asStateFlow()
 
@@ -76,7 +74,8 @@ class EditViewModel @Inject constructor(
         val metaDataSource = MediaMetadataRetriever()
         metaDataSource.setDataSource(context, uri)
 
-        val durationString = metaDataSource.extractMetadata(MediaMetadataRetriever.METADATA_KEY_DURATION)
+        val durationString =
+            metaDataSource.extractMetadata(MediaMetadataRetriever.METADATA_KEY_DURATION)
         val duration = durationString?.toLong() ?: 0
 
         val frameRate = 1 // 프레임 속도 (1초 당 프레임 수)
@@ -84,7 +83,8 @@ class EditViewModel @Inject constructor(
 
         for (i in 0 until numFrames) {
             val timeUs = i * 1000000 / frameRate // 프레임의 시간(마이크로초)을 계산합니다.
-            val bitmap = metaDataSource.getFrameAtTime(timeUs, MediaMetadataRetriever.OPTION_CLOSEST_SYNC)
+            val bitmap =
+                metaDataSource.getFrameAtTime(timeUs, MediaMetadataRetriever.OPTION_CLOSEST_SYNC)
             // 비트맵(bitmap)을 사용하여 작업을 수행합니다.
             // 예를 들어, 프레임을 화면에 표시하거나 파일로 저장할 수 있습니다.
             bitmap?.let { timeLineImages.add(it) }
@@ -236,14 +236,6 @@ class EditViewModel @Inject constructor(
 
     private var videoRequestBody: ContentUriRequestBody? = null
 
-    fun setVideoRequestBody(videoRequestBody: ContentUriRequestBody) {
-        this.videoRequestBody = videoRequestBody
-    }
-
-    private fun createRequestBody(): MultipartBody.Part? {
-        return videoRequestBody?.toFormData()
-    }
-
 
     fun saveFile(context: Context, body: ResponseBody?) {
         var inputStream: InputStream? = null
@@ -251,7 +243,6 @@ class EditViewModel @Inject constructor(
 
         try {
             val fileReader = ByteArray(4096)
-            val fileSize = body?.contentLength()
             var fileSizeDownloaded: Long = 0
             inputStream = body?.byteStream()
             outputStream = FileOutputStream(File("path/to/your/file"))
@@ -291,7 +282,6 @@ private fun writeResponseBodyToDisk(context: Context, body: ResponseBody?): Bool
 
         try {
             val fileReader = ByteArray(4096)
-            val fileSize = body?.contentLength()
             var fileSizeDownloaded: Long = 0
             inputStream = body?.byteStream()
             outputStream = FileOutputStream(videoFile)

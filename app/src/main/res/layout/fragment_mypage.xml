@@ -25,7 +25,7 @@
             app:layout_constraintTop_toTopOf="parent" />
 
         <ImageView
-            android:id="@+id/tv_mypage_profile"
+            android:id="@+id/iv_mypage_profile"
             android:layout_width="100dp"
             android:layout_height="100dp"
             setImageUrl="@{data.getFirstPicPath()}"
@@ -41,8 +41,8 @@
             android:text="@{data.uid}"
             android:textColor="@color/white"
             android:textAppearance="@style/TextAppearance.VitLog.Headline_b_20"
-            android:layout_marginTop="30dp"
-            app:layout_constraintTop_toBottomOf="@id/tv_mypage_profile"
+            android:layout_marginTop="15dp"
+            app:layout_constraintTop_toBottomOf="@id/iv_mypage_profile"
             app:layout_constraintStart_toStartOf="parent"
             app:layout_constraintEnd_toEndOf="parent" />
 
@@ -51,7 +51,7 @@
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
             android:backgroundTint="@color/white"
-            android:layout_marginTop="35dp"
+            android:layout_marginTop="20dp"
             app:dividerThickness="2dp"
             android:layout_marginHorizontal="30dp"
             app:layout_constraintTop_toBottomOf="@id/tv_mypage_nickname" />
@@ -62,7 +62,7 @@
             android:layout_height="wrap_content"
             android:text="등록된 얼굴들"
             android:textColor="@color/white"
-            android:textAppearance="@style/TextAppearance.VitLog.Headline_b_20"
+            android:textAppearance="@style/TextAppearance.VitLog.Headline_b_15"
             android:layout_marginTop="30dp"
             android:layout_marginStart="30dp"
             app:layout_constraintTop_toBottomOf="@id/md_mypage_1"

@@ -2,7 +2,6 @@ package com.graduation.vitlog_android.presentation.onboarding
 
 import android.content.Intent
 import android.os.Bundle
-import android.util.Log
 import androidx.activity.viewModels
 import androidx.core.widget.doAfterTextChanged
 import androidx.lifecycle.flowWithLifecycle
@@ -36,8 +35,8 @@ class LoginActivity : BindingActivity<ActivityLoginBinding>(R.layout.activity_lo
         addObserver()
     }
 
-    private fun autoLogin(){
-        if(uid != -1){
+    private fun autoLogin() {
+        if (uid != -1) {
             navigateToMain()
         }
     }
@@ -103,8 +102,7 @@ class LoginActivity : BindingActivity<ActivityLoginBinding>(R.layout.activity_lo
             .onEach { state ->
                 when (state) {
                     is UiState.Success -> {
-                        Log.d("Success", state.data.toString())
-                        SharedPrefManager.save("uid",state.data.uid)
+                        SharedPrefManager.save("uid", state.data.uid)
                         navigateToMain()
                         finish()
                     }
@@ -122,5 +120,6 @@ class LoginActivity : BindingActivity<ActivityLoginBinding>(R.layout.activity_lo
     private fun navigateToMain() {
         val intent = Intent(this, MainActivity::class.java)
         startActivity(intent)
+        finish()
     }
 }
