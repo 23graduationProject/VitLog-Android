@@ -1,11 +1,10 @@
-package com.graduation.vitlog_android
+package com.graduation.vitlog_android.presentation.home
 
 import android.content.ContentUris
 import android.content.Intent
 import android.net.Uri
 import android.os.Bundle
 import android.provider.MediaStore
-import android.util.Log
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
@@ -15,9 +14,9 @@ import androidx.fragment.app.Fragment
 import androidx.fragment.app.commit
 import androidx.fragment.app.replace
 import androidx.recyclerview.widget.GridLayoutManager
+import com.graduation.vitlog_android.R
 import com.graduation.vitlog_android.databinding.FragmentHomeBinding
 import com.graduation.vitlog_android.presentation.edit.EditActivity
-import com.graduation.vitlog_android.presentation.home.GalleryAdapter
 import com.graduation.vitlog_android.presentation.mypage.MyPageFragment
 
 class HomeFragment : Fragment() {
@@ -25,24 +24,19 @@ class HomeFragment : Fragment() {
     private var _binding: FragmentHomeBinding? = null
     private val binding get() = _binding!!
 
-    private val requestPermissionLauncher =
-        registerForActivityResult(ActivityResultContracts.RequestPermission()) { isGranted ->
-            if (isGranted) {
-                openGallery()
+    private val getContentLauncher =
+        registerForActivityResult(ActivityResultContracts.GetContent()) { uri: Uri? ->
+            // 갤러리에서 선택한 영상의 URI 가져와 편집 화면으로 넘기기
+            if (uri != null) {
+                val intent = Intent(context, EditActivity::class.java)
+                intent.data = uri
+                startActivity(intent)
             } else {
-                // 권한 거부된 상태
-                Toast.makeText(context, "갤러리 접근 권한을 허용해주세요", Toast.LENGTH_SHORT).show()
+                // URI가 null인 경우, 즉 아무것도 안골랐을때
+                Toast.makeText(context, "영상 선택이 취소되었습니다", Toast.LENGTH_SHORT).show()
             }
         }
 
-    private val getContentLauncher =
-        registerForActivityResult(ActivityResultContracts.GetContent()) { uri: Uri? ->
-            // 갤러리에서 선택한 영상의 URI 처리
-            val intent = Intent(context, EditActivity::class.java)
-            intent.data = Uri.parse(uri.toString())
-            Log.d("uri", uri.toString())
-            startActivity(intent)
-        }
 
     override fun onCreateView(
         inflater: LayoutInflater,
@@ -75,6 +69,7 @@ class HomeFragment : Fragment() {
     }
 
     private fun showRecentImages() {
+        // 갤러리최근이미지 9개 격자형태로
         val resolver = context?.contentResolver
         val uri = MediaStore.Images.Media.EXTERNAL_CONTENT_URI
         val projection = arrayOf(MediaStore.Images.ImageColumns._ID)

@@ -13,7 +13,7 @@ import androidx.fragment.app.replace
 import androidx.fragment.app.viewModels
 import androidx.lifecycle.flowWithLifecycle
 import androidx.lifecycle.lifecycleScope
-import com.graduation.vitlog_android.HomeFragment
+import com.graduation.vitlog_android.presentation.home.HomeFragment
 import com.graduation.vitlog_android.R
 import com.graduation.vitlog_android.databinding.FragmentMypageBinding
 import com.graduation.vitlog_android.model.entity.Face
