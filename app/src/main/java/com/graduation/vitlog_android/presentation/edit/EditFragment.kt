@@ -107,18 +107,6 @@ class EditFragment : Fragment(), TextureView.SurfaceTextureListener,
 
         // 수동 블러 rectangle 드래그
         dragBlurRectangle()
-
-        // 영상 -3초
-        binding.playSkipBackBtn.setOnClickListener {
-            val currentPosition = mediaPlayer.currentPosition
-            val newPosition = if ((currentPosition - 3000) > 0) currentPosition - 3000 else 0
-            mediaPlayer.seekTo(newPosition)
-        }
-        // 영상 +3초
-        binding.playSkipForwardBtn.setOnClickListener {
-            val currentPosition = mediaPlayer.currentPosition
-            mediaPlayer.seekTo(currentPosition + 3000)
-        }
     }
 
     private fun setBlurPartOfBitmap() {
@@ -164,7 +152,6 @@ class EditFragment : Fragment(), TextureView.SurfaceTextureListener,
         setGetMosaicedVideoStateObserver()
         setGetSubtitleStateObserver()
         setPostManualBlurStateObserver()
-//        Log.d("vid", vid.toString())
     }
 
     private fun setListener() {
@@ -174,13 +161,10 @@ class EditFragment : Fragment(), TextureView.SurfaceTextureListener,
         binding.btnEditSubtitle.setOnClickListener {
             isSubtitleModeSelected = true
         }
-        binding.editSaveBtn.setOnClickListener {
-            editViewModel.getPresignedUrl()
-        }
 
         binding.editSaveBtn.setOnClickListener {
             if (binding.editSaveBtn.text == "저장") {
-                editViewModel.getPresignedUrl()
+//                editViewModel.getPresignedUrl()
             } else if (binding.editSaveBtn.text == "완료") {
                 binding.editSaveBtn.text = "저장"
                 // 수동블러
@@ -224,6 +208,8 @@ class EditFragment : Fragment(), TextureView.SurfaceTextureListener,
     }
 
     override fun onPrepared(mp: MediaPlayer?) {
+        editViewModel.getPresignedUrl()
+
         // 재생 버튼
         binding.videoPlayBtn.setOnClickListener {
             mp!!.start()
@@ -238,6 +224,18 @@ class EditFragment : Fragment(), TextureView.SurfaceTextureListener,
             binding.videoPlayBtn.visibility = View.VISIBLE
             binding.videoPauseBtn.visibility = View.GONE
             handler.removeCallbacks(updateUiRunnable) // 여기를 수정
+        }
+
+        // 영상 -3초
+        binding.playSkipBackBtn.setOnClickListener {
+            val currentPosition = mediaPlayer.currentPosition
+            val newPosition = if ((currentPosition - 3000) > 0) currentPosition - 3000 else 0
+            mediaPlayer.seekTo(newPosition)
+        }
+        // 영상 +3초
+        binding.playSkipForwardBtn.setOnClickListener {
+            val currentPosition = mediaPlayer.currentPosition
+            mediaPlayer.seekTo(currentPosition + 3000)
         }
     }
 
@@ -348,6 +346,7 @@ class EditFragment : Fragment(), TextureView.SurfaceTextureListener,
                         editViewModel.setVideoFileName(state.data.data.fileName)
                         editViewModel.setPresignedUrl(state.data.data.url)
                         SharedPrefManager.save("vid", state.data.data.vid)
+                        Log.d("vid", vid.toString())
                     }
 
                     is UiState.Failure -> {
