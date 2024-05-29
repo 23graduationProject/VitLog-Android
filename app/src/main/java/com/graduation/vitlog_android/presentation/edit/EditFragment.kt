@@ -20,12 +20,14 @@ import android.view.View
 import android.view.View.INVISIBLE
 import android.view.View.VISIBLE
 import android.view.ViewGroup
+import androidx.core.content.ContextCompat
 import androidx.core.net.toUri
 import androidx.fragment.app.Fragment
 import androidx.fragment.app.viewModels
 import androidx.lifecycle.flowWithLifecycle
 import androidx.lifecycle.lifecycleScope
 import androidx.recyclerview.widget.RecyclerView
+import com.graduation.vitlog_android.R
 import com.graduation.vitlog_android.databinding.FragmentEditBinding
 import com.graduation.vitlog_android.model.entity.Subtitle
 import com.graduation.vitlog_android.model.request.RequestBlurDto
@@ -103,6 +105,7 @@ class EditFragment : Fragment(), TextureView.SurfaceTextureListener,
             binding.blurSelfLayout.visibility = VISIBLE
             binding.timelineSectionIv.visibility = VISIBLE
             binding.editSaveBtn.text = "완료"
+            binding.editSaveBtn.setTextColor(ContextCompat.getColor(requireContext(), R.color.main_pink))
             setBlurPartOfBitmap()
         }
 
@@ -168,6 +171,7 @@ class EditFragment : Fragment(), TextureView.SurfaceTextureListener,
 //                editViewModel.getPresignedUrl()
             } else if (binding.editSaveBtn.text == "완료") {
                 binding.editSaveBtn.text = "저장"
+                binding.editSaveBtn.setTextColor(ContextCompat.getColor(requireContext(), R.color.white))
                 // 수동블러
                 manualBlurData.add(
                     RequestBlurDto(
@@ -179,7 +183,7 @@ class EditFragment : Fragment(), TextureView.SurfaceTextureListener,
                         y2 = rectangleRightY
                     )
                 )
-
+                isManualBlurModeSelected = true
             }
         }
 
@@ -210,6 +214,7 @@ class EditFragment : Fragment(), TextureView.SurfaceTextureListener,
 
     override fun onPrepared(mp: MediaPlayer?) {
         editViewModel.getPresignedUrl()
+        mediaPlayer.seekTo(0)   // 재생 전 첫 번쨰 프레임 보여주기
 
         // 재생 버튼
         binding.videoPlayBtn.setOnClickListener {
@@ -386,7 +391,7 @@ class EditFragment : Fragment(), TextureView.SurfaceTextureListener,
                             editViewModel.videoFileName.value?.let {
                                 editViewModel.postManualBlur(
                                     uid = uid,
-                                    vid = vid,
+                                    vid = vid.toString(),
                                     requestBlurDto = manualBlurData
                                 )
                             }
@@ -436,6 +441,7 @@ class EditFragment : Fragment(), TextureView.SurfaceTextureListener,
                     is UiState.Loading -> {
                     }
                     is UiState.Success -> {
+                        Log.d("manual blur", "success")
                     }
                     is UiState.Failure -> {
                         Timber.tag("Failure").e(state.msg)
