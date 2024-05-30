@@ -20,6 +20,7 @@ import android.view.View
 import android.view.View.INVISIBLE
 import android.view.View.VISIBLE
 import android.view.ViewGroup
+import android.widget.FrameLayout
 import androidx.core.content.ContextCompat
 import androidx.core.net.toUri
 import androidx.fragment.app.Fragment
@@ -122,19 +123,15 @@ class EditFragment : Fragment(), TextureView.SurfaceTextureListener,
         var px = (70 * density).toInt()
         var py = (70 * density).toInt()
 
-        val currentVideoPosition = mediaPlayer.currentPosition.toLong()
-        val bitmap = metaDataSource.getFrameAtTime(
-            currentVideoPosition * 1000,
-            MediaMetadataRetriever.OPTION_CLOSEST
-        )
+        val bitmap = binding.tvVideo.getBitmap()
 
-        val dx = binding.blurSelfLayout.x.coerceAtLeast(0F).toInt()
-        val dy = binding.blurSelfLayout.y.coerceAtLeast(0F).toInt()
+        val dx = (binding.blurSelfLayout.x+binding.blurSelfRectangle.x).coerceAtLeast(0F).toInt()
+        val dy = (binding.blurSelfLayout.y+binding.blurSelfRectangle.y).coerceAtLeast(0F).toInt()
 
-        if (dx >= bitmap!!.width - binding.blurSelfLayout.width) {
+        if (dx >= bitmap!!.width - binding.blurSelfRectangle.width) {
             px = (bitmap.width-dx).coerceAtLeast(0)
         }
-        if (dy >= bitmap.height - binding.blurSelfLayout.height) {
+        if (dy >= bitmap.height - binding.blurSelfRectangle.height) {
             py = (bitmap.height-dy).coerceAtLeast(0)
         }
         val partialBitmap = Bitmap.createBitmap(
@@ -275,6 +272,7 @@ class EditFragment : Fragment(), TextureView.SurfaceTextureListener,
                 // 타임라인 이동에 따른 자막 업데이트, 시간 흐름 업데이트
                 updateSubtitle(mediaPlayer.currentPosition, editViewModel.subtitleList)
                 updateTimeString()
+//                setBlurPartOfBitmap()
             }
         })
     }
