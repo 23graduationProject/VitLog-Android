@@ -2,6 +2,7 @@ package com.graduation.vitlog_android.presentation.edit
 
 import android.annotation.SuppressLint
 import android.graphics.Bitmap
+import android.graphics.Color
 import android.graphics.RenderEffect
 import android.graphics.Shader
 import android.graphics.SurfaceTexture
@@ -157,7 +158,7 @@ class EditFragment : BindingFragment<FragmentEditBinding>(R.layout.fragment_edit
         setGetSubtitleStateObserver()
     }
 
-    private fun showEditSubtitleMode(){
+    private fun showEditSubtitleMode() {
         binding.tvEditBlurAuto.visibility = INVISIBLE
         binding.tvEditBlurSelf.visibility = INVISIBLE
         binding.btnEditBlurAuto.visibility = INVISIBLE
@@ -166,7 +167,7 @@ class EditFragment : BindingFragment<FragmentEditBinding>(R.layout.fragment_edit
         binding.tvEditSubtitleColor.visibility = VISIBLE
     }
 
-    private fun showEditBlurMode(){
+    private fun showEditBlurMode() {
         binding.tvEditBlurAuto.visibility = VISIBLE
         binding.tvEditBlurSelf.visibility = VISIBLE
         binding.btnEditBlurAuto.visibility = VISIBLE
@@ -176,7 +177,6 @@ class EditFragment : BindingFragment<FragmentEditBinding>(R.layout.fragment_edit
         binding.btnEditSubtitleToolFont.visibility = INVISIBLE
         binding.btnEditSubtitleToolColor.visibility = INVISIBLE
     }
-
 
 
     private fun setListener() {
@@ -368,27 +368,27 @@ class EditFragment : BindingFragment<FragmentEditBinding>(R.layout.fragment_edit
         handler.post(updateTask)
     }
 
-    private fun applySubtitleFont(){
-        binding.ivEditSubtitlePlayfair.setOnClickListener{
+    private fun applySubtitleFont() {
+        binding.ivEditSubtitlePlayfair.setOnClickListener {
             binding.tvSubtitle.setTextAppearance(R.style.TextAppearance_VitLog_FairDisplay_m_10)
         }
-        binding.ivEditSubtitlePretendard.setOnClickListener{
+        binding.ivEditSubtitlePretendard.setOnClickListener {
             binding.tvSubtitle.setTextAppearance(R.style.TextAppearance_VitLog_Content_m_10)
         }
     }
 
-    private fun applySubtitleColor(){
-        binding.ivEditSubtitleColorGray.setOnClickListener{
-            binding.tvSubtitle.setTextColor(R.color.light_gray)
+    private fun applySubtitleColor() {
+        binding.ivEditSubtitleColorGray.setOnClickListener {
+            binding.tvSubtitle.setTextColor(Color.parseColor("#F5F5F5"))
         }
-        binding.ivEditSubtitleColorYellow.setOnClickListener{
-            binding.tvSubtitle.setTextColor(R.color.yellow)
+        binding.ivEditSubtitleColorYellow.setOnClickListener {
+            binding.tvSubtitle.setTextColor(Color.parseColor("#FFF852"))
         }
-        binding.ivEditSubtitleColorPink.setOnClickListener{
-            binding.tvSubtitle.setTextColor(R.color.main_pink)
+        binding.ivEditSubtitleColorPink.setOnClickListener {
+            binding.tvSubtitle.setTextColor(Color.parseColor("#FF485E"))
         }
-        binding.ivEditSubtitleColorBlack.setOnClickListener{
-            binding.tvSubtitle.setTextColor(R.color.black)
+        binding.ivEditSubtitleColorBlack.setOnClickListener {
+            binding.tvSubtitle.setTextColor(Color.parseColor("#FF000000"))
         }
     }
 
@@ -491,7 +491,7 @@ class EditFragment : BindingFragment<FragmentEditBinding>(R.layout.fragment_edit
         binding.clEditToolSubtitle.visibility = VISIBLE
     }
 
-    private fun showSubtitleFontBar(){
+    private fun showSubtitleFontBar() {
         binding.clEditTool.visibility = INVISIBLE
         binding.clEditSubtitle.visibility = VISIBLE
     }
