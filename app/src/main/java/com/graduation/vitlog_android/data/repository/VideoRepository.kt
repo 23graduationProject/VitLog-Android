@@ -46,7 +46,7 @@ class VideoRepository @Inject constructor(
     suspend fun postManualBlur(
         uid: Int,
         vid: String,
-        requestBlurDto: RequestBlurDto
+        requestBlurDto: MutableList<RequestBlurDto>
     ): Result<ResponseBody> = runCatching {
         api.postManualBlur(uid = uid, vid = vid, requestBlurDto = requestBlurDto)
     }

@@ -37,4 +37,8 @@ object SharedPrefManager {
     var uid: Int
         get() = getInt("uid", -1)
         set(value) = save("uid", value)
+
+    var vid: Int
+        get() = getInt("vid", -1)
+        set(value) = save("vid", value)
 }

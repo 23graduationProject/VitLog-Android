@@ -11,6 +11,7 @@ import android.net.Uri
 import android.os.Bundle
 import android.os.Handler
 import android.os.Looper
+import android.util.Log
 import android.view.LayoutInflater
 import android.view.MotionEvent
 import android.view.Surface
@@ -19,16 +20,20 @@ import android.view.View
 import android.view.View.INVISIBLE
 import android.view.View.VISIBLE
 import android.view.ViewGroup
+import androidx.core.content.ContextCompat
 import androidx.core.net.toUri
 import androidx.fragment.app.Fragment
 import androidx.fragment.app.viewModels
 import androidx.lifecycle.flowWithLifecycle
 import androidx.lifecycle.lifecycleScope
 import androidx.recyclerview.widget.RecyclerView
+import com.graduation.vitlog_android.R
 import com.graduation.vitlog_android.databinding.FragmentEditBinding
 import com.graduation.vitlog_android.model.entity.Subtitle
 import com.graduation.vitlog_android.model.request.RequestBlurDto
+import com.graduation.vitlog_android.util.preference.SharedPrefManager
 import com.graduation.vitlog_android.util.preference.SharedPrefManager.uid
+import com.graduation.vitlog_android.util.preference.SharedPrefManager.vid
 import com.graduation.vitlog_android.util.view.UiState
 import dagger.hilt.android.AndroidEntryPoint
 import kotlinx.coroutines.flow.launchIn
@@ -53,6 +58,7 @@ class EditFragment : Fragment(), TextureView.SurfaceTextureListener,
 
     private var isBlurModeSelected: Boolean = false
     private var isSubtitleModeSelected: Boolean = false
+    private var isManualBlurModeSelected: Boolean = false
 
     private var manualBlurData = mutableListOf<RequestBlurDto>()
     private var startTime: String = "00:00:00"
@@ -99,23 +105,12 @@ class EditFragment : Fragment(), TextureView.SurfaceTextureListener,
             binding.blurSelfLayout.visibility = VISIBLE
             binding.timelineSectionIv.visibility = VISIBLE
             binding.editSaveBtn.text = "완료"
+            binding.editSaveBtn.setTextColor(ContextCompat.getColor(requireContext(), R.color.main_pink))
             setBlurPartOfBitmap()
         }
 
         // 수동 블러 rectangle 드래그
         dragBlurRectangle()
-
-        // 영상 -3초
-        binding.playSkipBackBtn.setOnClickListener {
-            val currentPosition = mediaPlayer.currentPosition
-            val newPosition = if ((currentPosition - 3000) > 0) currentPosition - 3000 else 0
-            mediaPlayer.seekTo(newPosition)
-        }
-        // 영상 +3초
-        binding.playSkipForwardBtn.setOnClickListener {
-            val currentPosition = mediaPlayer.currentPosition
-            mediaPlayer.seekTo(currentPosition + 3000)
-        }
     }
 
     private fun setBlurPartOfBitmap() {
@@ -160,6 +155,7 @@ class EditFragment : Fragment(), TextureView.SurfaceTextureListener,
         setGetPresignedUrlStateObserver()
         setGetMosaicedVideoStateObserver()
         setGetSubtitleStateObserver()
+        setPostManualBlurStateObserver()
     }
 
     private fun setListener() {
@@ -169,15 +165,17 @@ class EditFragment : Fragment(), TextureView.SurfaceTextureListener,
         binding.btnEditSubtitle.setOnClickListener {
             isSubtitleModeSelected = true
         }
-        binding.editSaveBtn.setOnClickListener {
-            editViewModel.getPresignedUrl()
-        }
 
         binding.editSaveBtn.setOnClickListener {
             if (binding.editSaveBtn.text == "저장") {
                 editViewModel.getPresignedUrl()
             } else if (binding.editSaveBtn.text == "완료") {
                 binding.editSaveBtn.text = "저장"
+                binding.editSaveBtn.setTextColor(ContextCompat.getColor(requireContext(), R.color.white))
+
+                startTime = (mediaPlayer.currentPosition/1000).toString()
+                endTime = (mediaPlayer.currentPosition/1000+2).toString()   // 끝나는 시간은 일단 2초 뒤로 고정
+
                 // 수동블러
                 manualBlurData.add(
                     RequestBlurDto(
@@ -189,7 +187,7 @@ class EditFragment : Fragment(), TextureView.SurfaceTextureListener,
                         y2 = rectangleRightY
                     )
                 )
-
+                isManualBlurModeSelected = true
             }
         }
 
@@ -219,6 +217,9 @@ class EditFragment : Fragment(), TextureView.SurfaceTextureListener,
     }
 
     override fun onPrepared(mp: MediaPlayer?) {
+//        editViewModel.getPresignedUrl()
+        mediaPlayer.seekTo(0)   // 재생 전 첫 번쨰 프레임 보여주기
+
         // 재생 버튼
         binding.videoPlayBtn.setOnClickListener {
             mp!!.start()
@@ -233,6 +234,18 @@ class EditFragment : Fragment(), TextureView.SurfaceTextureListener,
             binding.videoPlayBtn.visibility = View.VISIBLE
             binding.videoPauseBtn.visibility = View.GONE
             handler.removeCallbacks(updateUiRunnable) // 여기를 수정
+        }
+
+        // 영상 -3초
+        binding.playSkipBackBtn.setOnClickListener {
+            val currentPosition = mediaPlayer.currentPosition
+            val newPosition = if ((currentPosition - 3000) > 0) currentPosition - 3000 else 0
+            mediaPlayer.seekTo(newPosition)
+        }
+        // 영상 +3초
+        binding.playSkipForwardBtn.setOnClickListener {
+            val currentPosition = mediaPlayer.currentPosition
+            mediaPlayer.seekTo(currentPosition + 3000)
         }
     }
 
@@ -280,6 +293,7 @@ class EditFragment : Fragment(), TextureView.SurfaceTextureListener,
     private val updateUiRunnable = object : Runnable {
         override fun run() {
             if (mediaPlayer.isPlaying) {
+                setBlurPartOfBitmap()   // 재생 중일 때 수동 블러 프레임 update
                 val currentPositionInMilliseconds = mediaPlayer.currentPosition
                 val videoLengthInMilliseconds = mediaPlayer.duration
                 val scrollOffset =
@@ -342,6 +356,8 @@ class EditFragment : Fragment(), TextureView.SurfaceTextureListener,
                         uriToRequestBody()
                         editViewModel.setVideoFileName(state.data.data.fileName)
                         editViewModel.setPresignedUrl(state.data.data.url)
+                        SharedPrefManager.save("vid", state.data.data.vid)
+                        Log.d("vid", vid.toString())
                     }
 
                     is UiState.Failure -> {
@@ -373,6 +389,15 @@ class EditFragment : Fragment(), TextureView.SurfaceTextureListener,
                                 editViewModel.getSubtitle(
                                     uid = uid,
                                     fileName = fileName
+                                )
+                            }
+                        }
+                        if (isManualBlurModeSelected) {
+                            editViewModel.videoFileName.value?.let {
+                                editViewModel.postManualBlur(
+                                    uid = uid,
+                                    vid = vid.toString(),
+                                    requestBlurDto = manualBlurData
                                 )
                             }
                         }
@@ -409,6 +434,22 @@ class EditFragment : Fragment(), TextureView.SurfaceTextureListener,
                         Timber.tag("Failure").e(state.msg)
                     }
 
+                    is UiState.Empty -> Unit
+                }
+            }.launchIn(viewLifecycleOwner.lifecycleScope)
+    }
+
+    private fun setPostManualBlurStateObserver() {
+        editViewModel.postManualBlurState.flowWithLifecycle(viewLifecycleOwner.lifecycle)
+            .onEach { state ->
+                when (state) {
+                    is UiState.Loading -> {
+                    }
+                    is UiState.Success -> {
+                    }
+                    is UiState.Failure -> {
+                        Timber.tag("Failure").e(state.msg)
+                    }
                     is UiState.Empty -> Unit
                 }
             }.launchIn(viewLifecycleOwner.lifecycleScope)
@@ -492,27 +533,6 @@ class EditFragment : Fragment(), TextureView.SurfaceTextureListener,
             binding.blurSelfLayout.visibility = View.INVISIBLE
             binding.timelineSectionIv.visibility = View.GONE
         }
-
-//        var nX: Float = 0F
-//        var nY: Float = 0F
-//        val constraintSet = ConstraintSet()
-//        binding.blurRectangleResize.setOnTouchListener { view, event ->
-//            when (event.action) {
-//                MotionEvent.ACTION_DOWN -> {
-//                    // 터치 시작 위치 저장
-//                    nX = view.x - event.rawX
-//                    nY = view.y - event.rawY
-//                }
-//                MotionEvent.ACTION_MOVE -> {
-//                    // blur_self_rectangle의 너비 제약조건을 변경합니다.
-//                    constraintSet.clone(binding.blurSelfLayout)
-//                    constraintSet.constrainWidth(R.id.blur_self_rectangle, (event.rawX - binding.blurSelfRectangle.x).toInt())
-//                    constraintSet.constrainHeight(R.id.blur_self_rectangle, (event.rawY - binding.blurSelfRectangle.y).toInt())
-//                    constraintSet.applyTo(binding.blurSelfLayout)
-//                }
-//            }
-//            true
-//        }
     }
 
     private var rectangleX = 0F
