@@ -2,13 +2,13 @@ package com.graduation.vitlog_android.presentation.edit
 
 import android.os.Bundle
 import androidx.appcompat.app.AppCompatActivity
+import com.graduation.vitlog_android.R
 import com.graduation.vitlog_android.databinding.ActivityEditBinding
+import com.graduation.vitlog_android.util.binding.BindingActivity
 import dagger.hilt.android.AndroidEntryPoint
 
 @AndroidEntryPoint
-class EditActivity : AppCompatActivity() {
-
-    private lateinit var binding: ActivityEditBinding
+class EditActivity : BindingActivity<ActivityEditBinding>(R.layout.activity_edit) {
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)

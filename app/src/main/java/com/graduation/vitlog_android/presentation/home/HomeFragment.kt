@@ -18,11 +18,9 @@ import com.graduation.vitlog_android.R
 import com.graduation.vitlog_android.databinding.FragmentHomeBinding
 import com.graduation.vitlog_android.presentation.edit.EditActivity
 import com.graduation.vitlog_android.presentation.mypage.MyPageFragment
+import com.graduation.vitlog_android.util.binding.BindingFragment
 
-class HomeFragment : Fragment() {
-
-    private var _binding: FragmentHomeBinding? = null
-    private val binding get() = _binding!!
+class HomeFragment : BindingFragment<FragmentHomeBinding>(R.layout.fragment_home) {
 
     private val getContentLauncher =
         registerForActivityResult(ActivityResultContracts.GetContent()) { uri: Uri? ->
@@ -43,8 +41,6 @@ class HomeFragment : Fragment() {
         container: ViewGroup?,
         savedInstanceState: Bundle?
     ): View {
-        _binding = FragmentHomeBinding.inflate(layoutInflater, container, false)
-
         binding.ivHomeEdit.setOnClickListener {
             openGallery()
         }

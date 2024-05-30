@@ -30,6 +30,7 @@ import com.graduation.vitlog_android.R
 import com.graduation.vitlog_android.databinding.FragmentEditBinding
 import com.graduation.vitlog_android.model.entity.Subtitle
 import com.graduation.vitlog_android.model.request.RequestBlurDto
+import com.graduation.vitlog_android.util.binding.BindingFragment
 import com.graduation.vitlog_android.util.preference.SharedPrefManager.uid
 import com.graduation.vitlog_android.util.view.UiState
 import dagger.hilt.android.AndroidEntryPoint
@@ -41,12 +42,8 @@ import java.io.IOException
 
 
 @AndroidEntryPoint
-class EditFragment : Fragment(), TextureView.SurfaceTextureListener,
+class EditFragment : BindingFragment<FragmentEditBinding>(R.layout.fragment_edit), TextureView.SurfaceTextureListener,
     MediaPlayer.OnPreparedListener {
-
-
-    private var _binding: FragmentEditBinding? = null
-    private val binding get() = _binding!!
     private var getUri: Uri? = null
     private val editViewModel by viewModels<EditViewModel>()
     private lateinit var mediaPlayer: MediaPlayer
@@ -65,7 +62,6 @@ class EditFragment : Fragment(), TextureView.SurfaceTextureListener,
         container: ViewGroup?,
         savedInstanceState: Bundle?
     ): View {
-        _binding = FragmentEditBinding.inflate(layoutInflater, container, false)
         getUri = arguments?.getString("videoUri")?.toUri()
 
         activity?.runOnUiThread {

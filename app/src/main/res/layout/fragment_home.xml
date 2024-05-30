@@ -1,70 +1,77 @@
 <?xml version="1.0" encoding="utf-8"?>
-<androidx.constraintlayout.widget.ConstraintLayout xmlns:android="http://schemas.android.com/apk/res/android"
-    xmlns:app="http://schemas.android.com/apk/res-auto"
-    android:layout_width="match_parent"
-    android:layout_height="match_parent"
-    android:background="@color/main_black">
+<layout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto">
 
-    <ImageView
-        android:id="@+id/iv_home_mypage"
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:layout_marginTop="44dp"
-        android:layout_marginEnd="33dp"
-        android:src="@drawable/ic_mypage"
-        app:layout_constraintEnd_toEndOf="parent"
-        app:layout_constraintTop_toTopOf="parent" />
+    <data>
 
-    <ImageView
-        android:id="@+id/tv_home_logo"
-        android:layout_width="100dp"
-        android:layout_height="wrap_content"
-        android:layout_marginTop="20dp"
-        android:src="@drawable/app_logo_pink"
-        app:layout_constraintEnd_toEndOf="parent"
-        app:layout_constraintStart_toStartOf="parent"
-        app:layout_constraintTop_toBottomOf="@id/iv_home_mypage" />
+    </data>
 
-    <androidx.appcompat.widget.AppCompatButton
-        android:id="@+id/iv_home_edit"
+    <androidx.constraintlayout.widget.ConstraintLayout
         android:layout_width="match_parent"
-        android:layout_height="wrap_content"
-        android:text="영상 편집하기"
-        android:textColor="@color/white"
-        android:textAppearance="@style/TextAppearance.VitLog.Content_m_15"
-        android:layout_marginStart="50dp"
-        android:layout_marginEnd="50dp"
-        android:layout_marginTop="20dp"
-        android:paddingVertical="20dp"
-        android:background="@drawable/background_pink_radius_5"
-        android:backgroundTint="@color/main_pink"
-        app:layout_constraintEnd_toEndOf="parent"
-        app:layout_constraintStart_toStartOf="parent"
-        app:layout_constraintTop_toBottomOf="@id/tv_home_logo" />
+        android:layout_height="match_parent"
+        android:background="@color/main_black">
 
-    <TextView
-        android:id="@+id/tv_home_gallery"
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:text="최근 갤러리 불러오기"
-        android:textColor="@color/white"
-        android:textAppearance="@style/TextAppearance.VitLog.Content_m_15"
-        android:layout_marginStart="20dp"
-        android:layout_marginTop="50dp"
-        app:layout_constraintTop_toBottomOf="@id/iv_home_edit"
-        app:layout_constraintStart_toStartOf="parent"/>
+        <ImageView
+            android:id="@+id/iv_home_mypage"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_marginTop="44dp"
+            android:layout_marginEnd="33dp"
+            android:src="@drawable/ic_mypage"
+            app:layout_constraintEnd_toEndOf="parent"
+            app:layout_constraintTop_toTopOf="parent" />
 
-    <androidx.recyclerview.widget.RecyclerView
-        android:id="@+id/rv_home_gallery"
-        android:layout_width="match_parent"
-        android:layout_height="400dp"
-        android:layout_marginVertical="10dp"
-        android:layout_marginHorizontal="20dp"
-        app:layout_constraintTop_toBottomOf="@id/tv_home_gallery"
-        app:layout_constraintBottom_toBottomOf="parent"
-        app:layout_constraintEnd_toEndOf="parent"
-        app:layout_constraintStart_toStartOf="parent"
-        app:layoutManager="androidx.recyclerview.widget.GridLayoutManager"
-        app:spanCount="3" />
+        <ImageView
+            android:id="@+id/tv_home_logo"
+            android:layout_width="100dp"
+            android:layout_height="wrap_content"
+            android:layout_marginTop="20dp"
+            android:src="@drawable/app_logo_pink"
+            app:layout_constraintEnd_toEndOf="parent"
+            app:layout_constraintStart_toStartOf="parent"
+            app:layout_constraintTop_toBottomOf="@id/iv_home_mypage" />
 
-</androidx.constraintlayout.widget.ConstraintLayout>
+        <androidx.appcompat.widget.AppCompatButton
+            android:id="@+id/iv_home_edit"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:text="영상 편집하기"
+            android:textColor="@color/white"
+            android:textAppearance="@style/TextAppearance.VitLog.Content_m_15"
+            android:layout_marginStart="50dp"
+            android:layout_marginEnd="50dp"
+            android:layout_marginTop="20dp"
+            android:paddingVertical="20dp"
+            android:background="@drawable/background_pink_radius_5"
+            android:backgroundTint="@color/main_pink"
+            app:layout_constraintEnd_toEndOf="parent"
+            app:layout_constraintStart_toStartOf="parent"
+            app:layout_constraintTop_toBottomOf="@id/tv_home_logo" />
+
+        <TextView
+            android:id="@+id/tv_home_gallery"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="최근 갤러리 불러오기"
+            android:textColor="@color/white"
+            android:textAppearance="@style/TextAppearance.VitLog.Content_m_15"
+            android:layout_marginStart="20dp"
+            android:layout_marginTop="50dp"
+            app:layout_constraintTop_toBottomOf="@id/iv_home_edit"
+            app:layout_constraintStart_toStartOf="parent" />
+
+        <androidx.recyclerview.widget.RecyclerView
+            android:id="@+id/rv_home_gallery"
+            android:layout_width="match_parent"
+            android:layout_height="400dp"
+            android:layout_marginVertical="10dp"
+            android:layout_marginHorizontal="20dp"
+            app:layout_constraintTop_toBottomOf="@id/tv_home_gallery"
+            app:layout_constraintBottom_toBottomOf="parent"
+            app:layout_constraintEnd_toEndOf="parent"
+            app:layout_constraintStart_toStartOf="parent"
+            app:layoutManager="androidx.recyclerview.widget.GridLayoutManager"
+            app:spanCount="3" />
+
+    </androidx.constraintlayout.widget.ConstraintLayout>
+</layout>
