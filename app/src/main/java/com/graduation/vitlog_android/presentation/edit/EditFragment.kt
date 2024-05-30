@@ -60,6 +60,7 @@ class EditFragment : Fragment(), TextureView.SurfaceTextureListener,
     private var isBlurModeSelected: Boolean = false
     private var isSubtitleModeSelected: Boolean = false
     private var isManualBlurModeSelected: Boolean = false
+    private var mediaPlayerOnPrepared: Boolean = false
 
     private var manualBlurData = mutableListOf<RequestBlurDto>()
     private var startTime: String = "00:00:00"
@@ -214,6 +215,7 @@ class EditFragment : Fragment(), TextureView.SurfaceTextureListener,
     }
 
     override fun onPrepared(mp: MediaPlayer?) {
+        mediaPlayerOnPrepared = true
 //        editViewModel.getPresignedUrl()
         mediaPlayer.seekTo(0)   // 재생 전 첫 번쨰 프레임 보여주기
 
@@ -272,7 +274,9 @@ class EditFragment : Fragment(), TextureView.SurfaceTextureListener,
                 // 타임라인 이동에 따른 자막 업데이트, 시간 흐름 업데이트
                 updateSubtitle(mediaPlayer.currentPosition, editViewModel.subtitleList)
                 updateTimeString()
-//                setBlurPartOfBitmap()
+                if (mediaPlayerOnPrepared) {
+                    setBlurPartOfBitmap()
+                }
             }
         })
     }
