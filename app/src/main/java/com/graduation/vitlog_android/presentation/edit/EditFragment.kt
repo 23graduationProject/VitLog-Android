@@ -11,17 +11,14 @@ import android.net.Uri
 import android.os.Bundle
 import android.os.Handler
 import android.os.Looper
-import android.view.LayoutInflater
 import android.view.MotionEvent
 import android.view.Surface
 import android.view.TextureView
 import android.view.View
 import android.view.View.INVISIBLE
 import android.view.View.VISIBLE
-import android.view.ViewGroup
 import androidx.appcompat.content.res.AppCompatResources.getDrawable
 import androidx.core.net.toUri
-import androidx.fragment.app.Fragment
 import androidx.fragment.app.viewModels
 import androidx.lifecycle.flowWithLifecycle
 import androidx.lifecycle.lifecycleScope
@@ -42,7 +39,8 @@ import java.io.IOException
 
 
 @AndroidEntryPoint
-class EditFragment : BindingFragment<FragmentEditBinding>(R.layout.fragment_edit), TextureView.SurfaceTextureListener,
+class EditFragment : BindingFragment<FragmentEditBinding>(R.layout.fragment_edit),
+    TextureView.SurfaceTextureListener,
     MediaPlayer.OnPreparedListener {
     private var getUri: Uri? = null
     private val editViewModel by viewModels<EditViewModel>()
@@ -57,11 +55,9 @@ class EditFragment : BindingFragment<FragmentEditBinding>(R.layout.fragment_edit
     private var startTime: String = "00:00:00"
     private var endTime: String = "00:00:00"
 
-    override fun onCreateView(
-        inflater: LayoutInflater,
-        container: ViewGroup?,
-        savedInstanceState: Bundle?
-    ): View {
+    override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
+        super.onViewCreated(view, savedInstanceState)
+
         getUri = arguments?.getString("videoUri")?.toUri()
 
         activity?.runOnUiThread {
@@ -81,7 +77,6 @@ class EditFragment : BindingFragment<FragmentEditBinding>(R.layout.fragment_edit
             setupMediaRetrieverAndSeekBar(it)
         }
 
-        return binding.root
     }
 
     private fun initAdapter() {
@@ -301,18 +296,17 @@ class EditFragment : BindingFragment<FragmentEditBinding>(R.layout.fragment_edit
 
     private val updateUiRunnable = object : Runnable {
         override fun run() {
-            if (mediaPlayer.isPlaying) {
-                val currentPositionInMilliseconds = mediaPlayer.currentPosition
-                val videoLengthInMilliseconds = mediaPlayer.duration
-                val scrollOffset =
-                    (currentPositionInMilliseconds.toFloat() / videoLengthInMilliseconds * timeLineAdapter.itemCount)
+            val currentPositionInMilliseconds = mediaPlayer.currentPosition
+            val videoLengthInMilliseconds = mediaPlayer.duration
+            val scrollOffset =
+                (currentPositionInMilliseconds.toFloat() / videoLengthInMilliseconds * timeLineAdapter.itemCount)
 
-                binding.editTimelineRv.smoothScrollToPosition(scrollOffset.toInt())
-                updateTimeString(currentPositionInMilliseconds)
+            binding.editTimelineRv.smoothScrollToPosition(scrollOffset.toInt())
+            updateTimeString(currentPositionInMilliseconds)
 
-                handler.postDelayed(this, 1)
-            }
+            handler.postDelayed(this, 1)
         }
+
     }
 
     private fun updateTimeString(currentPositionInMilliseconds: Int) {
@@ -337,11 +331,9 @@ class EditFragment : BindingFragment<FragmentEditBinding>(R.layout.fragment_edit
         val handler = Handler(Looper.getMainLooper())
         val updateTask = object : Runnable {
             override fun run() {
-                if (mediaPlayer.isPlaying) {
-                    val currentPosition = mediaPlayer.currentPosition
-                    updateSubtitle(currentPosition, subtitle)
-                    handler.postDelayed(this, 1000) // 1초마다 업데이트
-                }
+                val currentPosition = mediaPlayer.currentPosition
+                updateSubtitle(currentPosition, subtitle)
+                handler.postDelayed(this, 1000) // 1초마다 업데이트
             }
         }
         handler.post(updateTask)

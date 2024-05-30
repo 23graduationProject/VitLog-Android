@@ -31,18 +31,13 @@ class MyPageFragment : BindingFragment<FragmentMypageBinding>(R.layout.fragment_
     private lateinit var myPageAdapter: MyPageAdapter
 
 
-    override fun onCreateView(
-        inflater: LayoutInflater,
-        container: ViewGroup?,
-        savedInstanceState: Bundle?
-    ): View {
+    override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
+        super.onViewCreated(view, savedInstanceState)
         myPageViewModel.getUser()
         initAdapter()
         initClickListener()
         initObserver()
-        return binding.root
     }
-
     private fun initAdapter() {
         myPageAdapter = MyPageAdapter(
             onAddButtonClick = { openGallery() }
