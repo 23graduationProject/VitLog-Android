@@ -10,28 +10,37 @@
     </style>
     <!-- headline -->
     <style name="TextAppearance.VitLog.Headline_b_20">
-        <item name="android:fontFamily">@font/gdsc_pretendard_bold</item>
+        <item name="android:fontFamily">@font/vitlog_pretendard_bold</item>
         <item name="android:textSize">20dp</item>
     </style>
 
     <style name="TextAppearance.VitLog.Headline_b_15">
-        <item name="android:fontFamily">@font/gdsc_pretendard_bold</item>
+        <item name="android:fontFamily">@font/vitlog_pretendard_bold</item>
         <item name="android:textSize">15dp</item>
     </style>
 
     <style name="TextAppearance.VitLog.Content_m_20">
-        <item name="android:fontFamily">@font/gdsc_pretendard_medium</item>
+        <item name="android:fontFamily">@font/vitlog_pretendard_medium</item>
         <item name="android:textSize">20dp</item>
     </style>
 
     <style name="TextAppearance.VitLog.Content_m_15">
-        <item name="android:fontFamily">@font/gdsc_pretendard_medium</item>
+        <item name="android:fontFamily">@font/vitlog_pretendard_medium</item>
         <item name="android:textSize">15dp</item>
     </style>
 
-
     <style name="TextAppearance.VitLog.Content_m_10">
-        <item name="android:fontFamily">@font/gdsc_pretendard_medium</item>
+        <item name="android:fontFamily">@font/vitlog_pretendard_medium</item>
         <item name="android:textSize">10dp</item>
+    </style>
+
+    <style name="TextAppearance.VitLog.FairDisplay_m_10">
+        <item name="android:fontFamily">@font/vitlog_pretendard_medium</item>
+        <item name="android:textSize">10dp</item>
+    </style>
+
+    <style name="TextAppearance.VitLog.FairDisplay_m_15">
+        <item name="android:fontFamily">@font/vitlog_pretendard_medium</item>
+        <item name="android:textSize">15dp</item>
     </style>
 </resources>

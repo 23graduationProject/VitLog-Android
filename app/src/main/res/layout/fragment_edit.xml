@@ -320,8 +320,6 @@
                 app:layout_constraintEnd_toEndOf="parent"
                 app:layout_constraintTop_toTopOf="@id/tv_edit_blur" />
 
-
-
             <ImageView
                 android:id="@+id/btn_edit_subtitle_font"
                 android:layout_width="wrap_content"
@@ -421,6 +419,35 @@
         </androidx.constraintlayout.widget.ConstraintLayout>
 
 
+    <androidx.constraintlayout.widget.ConstraintLayout
+        android:id="@+id/cl_edit_subtitle"
+        android:layout_width="match_parent"
+        android:layout_height="0dp"
+        android:visibility="invisible"
+        app:layout_constraintBottom_toBottomOf="parent"
+        app:layout_constraintTop_toBottomOf="@id/edit_seekbar_layout">
+        <ImageView
+            android:id="@+id/tv_edit_subtitle_pretendard"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:src="@drawable/img_edit_font_pretendard"
+            android:layout_marginTop="30dp"
+            android:layout_marginStart="20dp"
+            app:layout_constraintTop_toTopOf="parent"
+            app:layout_constraintStart_toStartOf="parent"/>
+
+        <ImageView
+            android:id="@+id/tv_edit_subtitle_playfair"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_marginTop="10dp"
+            android:src="@drawable/img_edit_font_playfair"
+            app:layout_constraintStart_toStartOf="@id/tv_edit_subtitle_pretendard"
+            app:layout_constraintTop_toBottomOf="@id/tv_edit_subtitle_pretendard" />
+
+    </androidx.constraintlayout.widget.ConstraintLayout>
+
+
         <ProgressBar
             android:id="@+id/edit_progressbar"
             android:layout_width="wrap_content"
@@ -430,6 +457,8 @@
             app:layout_constraintEnd_toEndOf="parent"
             app:layout_constraintStart_toStartOf="parent"
             app:layout_constraintTop_toTopOf="parent" />
+
+
 
     </androidx.constraintlayout.widget.ConstraintLayout>
 </layout>
