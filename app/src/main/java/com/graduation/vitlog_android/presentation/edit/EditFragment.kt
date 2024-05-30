@@ -77,6 +77,8 @@ class EditFragment : BindingFragment<FragmentEditBinding>(R.layout.fragment_edit
             setupMediaRetrieverAndSeekBar(it)
         }
 
+        applySubtitleFont()
+        applySubtitleColor()
     }
 
     private fun initAdapter() {
@@ -155,8 +157,31 @@ class EditFragment : BindingFragment<FragmentEditBinding>(R.layout.fragment_edit
         setGetSubtitleStateObserver()
     }
 
+    private fun showEditSubtitleMode(){
+        binding.tvEditBlurAuto.visibility = INVISIBLE
+        binding.tvEditBlurSelf.visibility = INVISIBLE
+        binding.btnEditBlurAuto.visibility = INVISIBLE
+        binding.btnEditBlurSelf.visibility = INVISIBLE
+        binding.tvEditSubtitleFont.visibility = VISIBLE
+        binding.tvEditSubtitleColor.visibility = VISIBLE
+    }
+
+    private fun showEditBlurMode(){
+        binding.tvEditBlurAuto.visibility = VISIBLE
+        binding.tvEditBlurSelf.visibility = VISIBLE
+        binding.btnEditBlurAuto.visibility = VISIBLE
+        binding.btnEditBlurSelf.visibility = VISIBLE
+        binding.tvEditSubtitleFont.visibility = INVISIBLE
+        binding.tvEditSubtitleColor.visibility = INVISIBLE
+        binding.btnEditSubtitleToolFont.visibility = INVISIBLE
+        binding.btnEditSubtitleToolColor.visibility = INVISIBLE
+    }
+
+
+
     private fun setListener() {
         binding.btnEditBlur.setOnClickListener {
+            showEditBlurMode()
             binding.btnEditBlur.setImageDrawable(
                 getDrawable(
                     requireContext(),
@@ -172,6 +197,7 @@ class EditFragment : BindingFragment<FragmentEditBinding>(R.layout.fragment_edit
             isBlurModeSelected = true
         }
         binding.btnEditSubtitle.setOnClickListener {
+            showEditSubtitleMode()
             binding.btnEditBlur.setImageDrawable(
                 getDrawable(
                     requireContext(),
@@ -208,6 +234,10 @@ class EditFragment : BindingFragment<FragmentEditBinding>(R.layout.fragment_edit
                 )
 
             }
+        }
+
+        binding.btnEditSubtitleToolFont.setOnClickListener {
+            showSubtitleFontBar()
         }
 
         subtitleCompleteButtonListener()
@@ -303,7 +333,6 @@ class EditFragment : BindingFragment<FragmentEditBinding>(R.layout.fragment_edit
 
             binding.editTimelineRv.smoothScrollToPosition(scrollOffset.toInt())
             updateTimeString(currentPositionInMilliseconds)
-
             handler.postDelayed(this, 1)
         }
 
@@ -337,6 +366,30 @@ class EditFragment : BindingFragment<FragmentEditBinding>(R.layout.fragment_edit
             }
         }
         handler.post(updateTask)
+    }
+
+    private fun applySubtitleFont(){
+        binding.ivEditSubtitlePlayfair.setOnClickListener{
+            binding.tvSubtitle.setTextAppearance(R.style.TextAppearance_VitLog_FairDisplay_m_10)
+        }
+        binding.ivEditSubtitlePretendard.setOnClickListener{
+            binding.tvSubtitle.setTextAppearance(R.style.TextAppearance_VitLog_Content_m_10)
+        }
+    }
+
+    private fun applySubtitleColor(){
+        binding.ivEditSubtitleColorGray.setOnClickListener{
+            binding.tvSubtitle.setTextColor(R.color.light_gray)
+        }
+        binding.ivEditSubtitleColorYellow.setOnClickListener{
+            binding.tvSubtitle.setTextColor(R.color.yellow)
+        }
+        binding.ivEditSubtitleColorPink.setOnClickListener{
+            binding.tvSubtitle.setTextColor(R.color.main_pink)
+        }
+        binding.ivEditSubtitleColorBlack.setOnClickListener{
+            binding.tvSubtitle.setTextColor(R.color.black)
+        }
     }
 
 
@@ -436,6 +489,11 @@ class EditFragment : BindingFragment<FragmentEditBinding>(R.layout.fragment_edit
     private fun showSubtitleEditBar() {
         binding.clEditTool.visibility = INVISIBLE
         binding.clEditToolSubtitle.visibility = VISIBLE
+    }
+
+    private fun showSubtitleFontBar(){
+        binding.clEditTool.visibility = INVISIBLE
+        binding.clEditSubtitle.visibility = VISIBLE
     }
 
     private fun subtitleCompleteButtonListener() {
