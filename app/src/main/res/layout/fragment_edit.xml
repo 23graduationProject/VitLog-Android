@@ -212,7 +212,6 @@
             android:id="@+id/cl_edit_tool"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
-            android:visibility="invisible"
             app:layout_constraintBottom_toBottomOf="parent"
             app:layout_constraintTop_toBottomOf="@id/edit_seekbar_layout">
 
@@ -320,6 +319,56 @@
                 app:layout_constraintBottom_toBottomOf="@id/tv_edit_blur"
                 app:layout_constraintEnd_toEndOf="parent"
                 app:layout_constraintTop_toTopOf="@id/tv_edit_blur" />
+
+
+
+            <ImageView
+                android:id="@+id/btn_edit_subtitle_font"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:paddingTop="20dp"
+                android:paddingHorizontal="20dp"
+                android:src="@drawable/ic_edit_font"
+                app:layout_constraintBottom_toBottomOf="@id/btn_edit_subtitle"
+                app:layout_constraintEnd_toEndOf="@id/tv_edit_blur_auto"
+                app:layout_constraintStart_toStartOf="@id/tv_edit_blur_auto"
+                app:layout_constraintTop_toTopOf="@id/btn_edit_subtitle" />
+
+            <TextView
+                android:id="@+id/tv_edit_subtitle_font"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_marginStart="50dp"
+                android:text="폰트 설정"
+                android:textAppearance="@style/TextAppearance.VitLog.Content_m_15"
+                android:textColor="@color/white"
+                app:layout_constraintBottom_toBottomOf="@id/tv_edit_subtitle"
+                app:layout_constraintStart_toEndOf="@id/v_edit_line"
+                app:layout_constraintTop_toTopOf="@id/tv_edit_subtitle" />
+
+            <ImageView
+                android:id="@+id/btn_edit_subtitle_color"
+                android:layout_width="0dp"
+                android:layout_height="0dp"
+                android:src="@drawable/ic_edit_color"
+                android:paddingTop="17dp"
+                android:paddingHorizontal="17dp"
+                app:layout_constraintBottom_toBottomOf="@id/btn_edit_subtitle"
+                app:layout_constraintEnd_toEndOf="@id/tv_edit_blur_self"
+                app:layout_constraintStart_toStartOf="@id/tv_edit_blur_self"
+                app:layout_constraintTop_toTopOf="@id/btn_edit_subtitle" />
+
+            <TextView
+                android:id="@+id/tv_edit_subtitle_color"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_marginEnd="50dp"
+                android:text="색상 설정"
+                android:textAppearance="@style/TextAppearance.VitLog.Content_m_15"
+                android:textColor="@color/white"
+                app:layout_constraintBottom_toBottomOf="@id/tv_edit_subtitle"
+                app:layout_constraintEnd_toEndOf="parent"
+                app:layout_constraintTop_toTopOf="@id/tv_edit_subtitle" />
 
 
         </androidx.constraintlayout.widget.ConstraintLayout>
