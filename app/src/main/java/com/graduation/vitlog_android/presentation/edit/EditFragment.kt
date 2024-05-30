@@ -168,10 +168,14 @@ class EditFragment : Fragment(), TextureView.SurfaceTextureListener,
 
         binding.editSaveBtn.setOnClickListener {
             if (binding.editSaveBtn.text == "저장") {
-//                editViewModel.getPresignedUrl()
+                editViewModel.getPresignedUrl()
             } else if (binding.editSaveBtn.text == "완료") {
                 binding.editSaveBtn.text = "저장"
                 binding.editSaveBtn.setTextColor(ContextCompat.getColor(requireContext(), R.color.white))
+
+                startTime = (mediaPlayer.currentPosition/1000).toString()
+                endTime = (mediaPlayer.currentPosition/1000+2).toString()   // 끝나는 시간은 일단 2초 뒤로 고정
+
                 // 수동블러
                 manualBlurData.add(
                     RequestBlurDto(
@@ -213,7 +217,7 @@ class EditFragment : Fragment(), TextureView.SurfaceTextureListener,
     }
 
     override fun onPrepared(mp: MediaPlayer?) {
-        editViewModel.getPresignedUrl()
+//        editViewModel.getPresignedUrl()
         mediaPlayer.seekTo(0)   // 재생 전 첫 번쨰 프레임 보여주기
 
         // 재생 버튼
@@ -289,6 +293,7 @@ class EditFragment : Fragment(), TextureView.SurfaceTextureListener,
     private val updateUiRunnable = object : Runnable {
         override fun run() {
             if (mediaPlayer.isPlaying) {
+                setBlurPartOfBitmap()   // 재생 중일 때 수동 블러 프레임 update
                 val currentPositionInMilliseconds = mediaPlayer.currentPosition
                 val videoLengthInMilliseconds = mediaPlayer.duration
                 val scrollOffset =
@@ -441,7 +446,6 @@ class EditFragment : Fragment(), TextureView.SurfaceTextureListener,
                     is UiState.Loading -> {
                     }
                     is UiState.Success -> {
-                        Log.d("manual blur", "success")
                     }
                     is UiState.Failure -> {
                         Timber.tag("Failure").e(state.msg)
