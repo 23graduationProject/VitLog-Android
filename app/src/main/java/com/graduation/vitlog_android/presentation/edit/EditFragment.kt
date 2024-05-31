@@ -82,6 +82,8 @@ class EditFragment : BindingFragment<FragmentEditBinding>(R.layout.fragment_edit
             setupMediaRetrieverAndSeekBar(it)
         }
         manageSubtitle()
+        applySubtitleFont()
+        applySubtitleColor()
     }
 
     private fun initAdapter() {
