@@ -165,6 +165,8 @@ class EditFragment : BindingFragment<FragmentEditBinding>(R.layout.fragment_edit
         binding.btnEditBlurSelf.visibility = INVISIBLE
         binding.tvEditSubtitleFont.visibility = VISIBLE
         binding.tvEditSubtitleColor.visibility = VISIBLE
+        binding.btnEditSubtitleToolFont.visibility = VISIBLE
+        binding.btnEditSubtitleToolColor.visibility = VISIBLE
     }
 
     private fun showEditBlurMode() {
