@@ -1,11 +1,13 @@
 package com.graduation.vitlog_android.presentation.edit
 
+import android.content.ContentValues
 import android.content.Context
 import android.graphics.Bitmap
 import android.media.MediaMetadataRetriever
 import android.media.MediaScannerConnection
 import android.net.Uri
 import android.os.Environment
+import android.provider.MediaStore
 import android.util.Log
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
@@ -275,6 +277,29 @@ class EditViewModel @Inject constructor(
         } catch (e: Exception) {
             e.printStackTrace()
             null
+        }
+    }
+
+    fun saveVideoToGallery(context: Context, videoUri: Uri) {
+        val contentValues = ContentValues().apply {
+            put(MediaStore.MediaColumns.DISPLAY_NAME, "your_video_name") // 파일 제목
+            put(MediaStore.MediaColumns.MIME_TYPE, "video/mp4") // 파일 형식
+            put(MediaStore.MediaColumns.RELATIVE_PATH, Environment.DIRECTORY_DCIM) // 저장될 경로
+        }
+
+        val resolver = context.contentResolver
+        val uri = resolver.insert(MediaStore.Video.Media.EXTERNAL_CONTENT_URI, contentValues)
+        uri?.let {
+            resolver.openOutputStream(it).use { outputStream ->
+                // 비디오 파일의 내용을 새 위치로 복사
+                context.contentResolver.openInputStream(videoUri)?.use { inputStream ->
+                    val buffer = ByteArray(1024)
+                    var read: Int
+                    while (inputStream.read(buffer).also { read = it } != -1) {
+                        outputStream?.write(buffer, 0, read)
+                    }
+                }
+            }
         }
     }
 

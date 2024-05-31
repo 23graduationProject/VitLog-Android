@@ -233,7 +233,7 @@ class EditFragment : BindingFragment<FragmentEditBinding>(R.layout.fragment_edit
 
         binding.editSaveBtn.setOnClickListener {
             if (binding.editSaveBtn.text == "저장") {
-//                editViewModel.getPresignedUrl()
+                editViewModel.saveVideoToGallery(requireContext(), getUri!!)
             } else if (binding.editSaveBtn.text == "완료") {
                 binding.editSaveBtn.text = "저장"
                 binding.editSaveBtn.setTextColor(
