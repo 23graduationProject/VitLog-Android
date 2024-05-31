@@ -211,6 +211,7 @@ class EditFragment : BindingFragment<FragmentEditBinding>(R.layout.fragment_edit
         }
         binding.btnEditBlurAuto.setOnClickListener {
             isBlurModeSelected = true
+            uriToRequestBody()
         }
         binding.btnEditSubtitle.setOnClickListener {
             showEditSubtitleMode()
@@ -227,11 +228,12 @@ class EditFragment : BindingFragment<FragmentEditBinding>(R.layout.fragment_edit
                 )
             )
             isSubtitleModeSelected = true
+            uriToRequestBody()
         }
 
         binding.editSaveBtn.setOnClickListener {
             if (binding.editSaveBtn.text == "저장") {
-                editViewModel.getPresignedUrl()
+//                editViewModel.getPresignedUrl()
             } else if (binding.editSaveBtn.text == "완료") {
                 binding.editSaveBtn.text = "저장"
                 binding.editSaveBtn.setTextColor(
@@ -258,6 +260,7 @@ class EditFragment : BindingFragment<FragmentEditBinding>(R.layout.fragment_edit
                     )
                 )
                 isManualBlurModeSelected = true
+                uriToRequestBody()
             }
         }
 
@@ -292,7 +295,7 @@ class EditFragment : BindingFragment<FragmentEditBinding>(R.layout.fragment_edit
 
     override fun onPrepared(mp: MediaPlayer?) {
         mediaPlayerOnPrepared = true
-//        editViewModel.getPresignedUrl()
+        editViewModel.getPresignedUrl()
         mediaPlayer.seekTo(0)   // 재생 전 첫 번쨰 프레임 보여주기
 
         // 재생 버튼
@@ -488,7 +491,7 @@ class EditFragment : BindingFragment<FragmentEditBinding>(R.layout.fragment_edit
                 when (state) {
                     is UiState.Success -> {
                         Timber.tag("Success").d(state.data.data.url)
-                        uriToRequestBody()
+//                        uriToRequestBody()
                         editViewModel.setVideoFileName(state.data.data.fileName)
                         editViewModel.setPresignedUrl(state.data.data.url)
                         SharedPrefManager.save("vid", state.data.data.vid)
@@ -563,6 +566,7 @@ class EditFragment : BindingFragment<FragmentEditBinding>(R.layout.fragment_edit
                         startSubtitleUpdater(editViewModel.subtitleList)
                         subtitleAdapter.submitList(state.data)
                         editViewModel._getSubtitleState.value = UiState.Empty
+                        isSubtitleModeSelected = false
                     }
 
                     is UiState.Failure -> {
@@ -583,6 +587,7 @@ class EditFragment : BindingFragment<FragmentEditBinding>(R.layout.fragment_edit
 
                     is UiState.Success -> {
 //                        editViewModel.saveFile(requireContext(), state.data)
+                        isManualBlurModeSelected = false
                     }
 
                     is UiState.Failure -> {
@@ -621,8 +626,9 @@ class EditFragment : BindingFragment<FragmentEditBinding>(R.layout.fragment_edit
                 when (state) {
                     is UiState.Success -> {
                         binding.editProgressbar.visibility = INVISIBLE
-                        val newUri = editViewModel.updateVideoUri(requireContext(), state.data)
-                        updateVideo(newUri!!)
+                        getUri = editViewModel.updateVideoUri(requireContext(), state.data)
+                        updateVideo(getUri!!)
+                        isBlurModeSelected = false
                         Timber.tag("Success").d(state.data.toString())
                     }
 
