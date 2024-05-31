@@ -68,6 +68,7 @@ class EditFragment : BindingFragment<FragmentEditBinding>(R.layout.fragment_edit
         initAdapter()
         setListener()
         setObserver()
+        showEditDefaultMode()
 
         binding.tvVideo.surfaceTextureListener = this
         binding.backBtn.setOnClickListener {
@@ -158,13 +159,24 @@ class EditFragment : BindingFragment<FragmentEditBinding>(R.layout.fragment_edit
         setGetSubtitleStateObserver()
     }
 
+    private fun showEditDefaultMode(){
+        binding.tvEditBlurAuto.visibility = INVISIBLE
+        binding.tvEditBlurSelf.visibility = INVISIBLE
+        binding.btnEditBlurAuto.visibility = INVISIBLE
+        binding.btnEditBlurSelf.visibility = INVISIBLE
+        binding.tvEditSubtitleToolFont.visibility = INVISIBLE
+        binding.tvEditSubtitleToolColor.visibility = INVISIBLE
+        binding.btnEditSubtitleToolFont.visibility = INVISIBLE
+        binding.btnEditSubtitleToolColor.visibility = INVISIBLE
+    }
+
     private fun showEditSubtitleMode() {
         binding.tvEditBlurAuto.visibility = INVISIBLE
         binding.tvEditBlurSelf.visibility = INVISIBLE
         binding.btnEditBlurAuto.visibility = INVISIBLE
         binding.btnEditBlurSelf.visibility = INVISIBLE
-        binding.tvEditSubtitleFont.visibility = VISIBLE
-        binding.tvEditSubtitleColor.visibility = VISIBLE
+        binding.tvEditSubtitleToolFont.visibility = VISIBLE
+        binding.tvEditSubtitleToolColor.visibility = VISIBLE
         binding.btnEditSubtitleToolFont.visibility = VISIBLE
         binding.btnEditSubtitleToolColor.visibility = VISIBLE
     }
@@ -174,8 +186,8 @@ class EditFragment : BindingFragment<FragmentEditBinding>(R.layout.fragment_edit
         binding.tvEditBlurSelf.visibility = VISIBLE
         binding.btnEditBlurAuto.visibility = VISIBLE
         binding.btnEditBlurSelf.visibility = VISIBLE
-        binding.tvEditSubtitleFont.visibility = INVISIBLE
-        binding.tvEditSubtitleColor.visibility = INVISIBLE
+        binding.tvEditSubtitleToolFont.visibility = INVISIBLE
+        binding.tvEditSubtitleToolColor.visibility = INVISIBLE
         binding.btnEditSubtitleToolFont.visibility = INVISIBLE
         binding.btnEditSubtitleToolColor.visibility = INVISIBLE
     }
