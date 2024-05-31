@@ -52,7 +52,7 @@
             android:id="@+id/tv_home_gallery"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
-            android:text="최근 갤러리 불러오기"
+            android:text="최근 영상 불러오기"
             android:textColor="@color/white"
             android:textAppearance="@style/TextAppearance.VitLog.Content_m_15"
             android:layout_marginStart="20dp"
