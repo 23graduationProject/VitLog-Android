@@ -46,7 +46,7 @@ interface VideoApi {
     @POST("api/coord/{uid}/{vid}")
     suspend fun postManualBlur(
         @Path("uid") uid: Int,
-        @Path("vid") vid: String,
+        @Path("vid") vid: Int,
         @Body requestBlurDto: MutableList<RequestBlurDto>
     ): ResponseBody
 

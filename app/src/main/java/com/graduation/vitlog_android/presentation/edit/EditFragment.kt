@@ -208,6 +208,8 @@ class EditFragment : BindingFragment<FragmentEditBinding>(R.layout.fragment_edit
                     R.drawable.ic_edit_subtitles_unclicked
                 )
             )
+        }
+        binding.btnEditBlurAuto.setOnClickListener {
             isBlurModeSelected = true
         }
         binding.btnEditSubtitle.setOnClickListener {
@@ -242,6 +244,7 @@ class EditFragment : BindingFragment<FragmentEditBinding>(R.layout.fragment_edit
                 startTime = (mediaPlayer.currentPosition / 1000).toString()
                 endTime =
                     (mediaPlayer.currentPosition / 1000 + 2).toString()   // 끝나는 시간은 일단 2초 뒤로 고정
+                getCoordinates()
 
                 // 수동블러
                 manualBlurData.add(
@@ -528,7 +531,7 @@ class EditFragment : BindingFragment<FragmentEditBinding>(R.layout.fragment_edit
                             editViewModel.videoFileName.value?.let {
                                 editViewModel.postManualBlur(
                                     uid = uid,
-                                    vid = vid.toString(),
+                                    vid = vid,
                                     requestBlurDto = manualBlurData
                                 )
                             }
@@ -579,6 +582,7 @@ class EditFragment : BindingFragment<FragmentEditBinding>(R.layout.fragment_edit
                     }
 
                     is UiState.Success -> {
+//                        editViewModel.saveFile(requireContext(), state.data)
                     }
 
                     is UiState.Failure -> {
@@ -657,7 +661,6 @@ class EditFragment : BindingFragment<FragmentEditBinding>(R.layout.fragment_edit
                 MotionEvent.ACTION_UP -> {
                     // 사용자가 뷰를 눌렀다가 뗐을 때 performClick() 메서드 호출
                     view.performClick()
-                    getCoordinates()
                 }
 
                 else -> return@setOnTouchListener false
@@ -688,8 +691,6 @@ class EditFragment : BindingFragment<FragmentEditBinding>(R.layout.fragment_edit
         rectangleY = binding.blurSelfLayout.y + paddingInPx
         rectangleRightX = rectangleX + binding.blurSelfRectangle.width
         rectangleRightY = rectangleX + binding.blurSelfRectangle.height
-//        Log.d("blur rectangle width", binding.blurSelfRectangle.width.toString())
-//        Log.d("blur rectangle height", binding.blurSelfRectangle.height.toString())
     }
 
     override fun onSurfaceTextureSizeChanged(surface: SurfaceTexture, width: Int, height: Int) {

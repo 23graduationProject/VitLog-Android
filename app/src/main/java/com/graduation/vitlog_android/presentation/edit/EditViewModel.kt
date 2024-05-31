@@ -6,6 +6,7 @@ import android.media.MediaMetadataRetriever
 import android.media.MediaScannerConnection
 import android.net.Uri
 import android.os.Environment
+import android.util.Log
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.graduation.vitlog_android.data.repository.VideoRepository
@@ -152,7 +153,7 @@ class EditViewModel @Inject constructor(
 
     fun postManualBlur(
         uid: Int,
-        vid: String,
+        vid: Int,
         requestBlurDto: MutableList<RequestBlurDto>
     ) {
         viewModelScope.launch {
