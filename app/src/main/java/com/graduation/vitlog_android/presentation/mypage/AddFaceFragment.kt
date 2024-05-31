@@ -133,7 +133,7 @@ class AddFaceFragment : BindingFragment<FragmentAddfaceBinding>(R.layout.fragmen
                         Timber.tag("Success").d(state.data.toString())
                     }
 
-                    is UiState.Failure -> {o
+                    is UiState.Failure -> {
                         Timber.tag("Failure").e(state.msg)
                     }
 
