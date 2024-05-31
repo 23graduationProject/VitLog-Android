@@ -244,6 +244,39 @@ class EditViewModel @Inject constructor(
 
     private var videoRequestBody: ContentUriRequestBody? = null
 
+    fun updateVideoUri(context: Context, body: ResponseBody?): Uri? {
+        return try {
+            // 비디오 파일을 저장할 디렉토리
+            val videoDir =
+                File(context.getExternalFilesDir(Environment.DIRECTORY_MOVIES), "MyVideos")
+            if (!videoDir.exists()) {
+                videoDir.mkdirs()
+            }
+
+            // 저장할 파일 이름
+            val videoFile = File(videoDir, "downloaded_video.mp4")
+
+            // 파일 출력 스트림을 생성하고 responseBody를 파일에 씁니다.
+            val inputStream: InputStream? = body?.byteStream()
+            val outputStream = FileOutputStream(videoFile)
+            val buffer = ByteArray(4096)
+            var bytesRead: Int
+
+            while (inputStream?.read(buffer).also { bytesRead = it!! } != -1) {
+                outputStream.write(buffer, 0, bytesRead)
+            }
+
+            outputStream.flush()
+            inputStream?.close()
+            outputStream.close()
+
+            // 파일의 URI를 얻음
+            Uri.fromFile(videoFile)
+        } catch (e: Exception) {
+            e.printStackTrace()
+            null
+        }
+    }
 
     fun saveFile(context: Context, body: ResponseBody?) {
         var inputStream: InputStream? = null

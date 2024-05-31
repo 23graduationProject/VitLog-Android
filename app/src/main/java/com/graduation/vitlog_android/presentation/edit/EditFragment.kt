@@ -620,7 +620,9 @@ class EditFragment : BindingFragment<FragmentEditBinding>(R.layout.fragment_edit
             .onEach { state ->
                 when (state) {
                     is UiState.Success -> {
-                        editViewModel.saveFile(requireContext(), state.data)
+                        binding.editProgressbar.visibility = INVISIBLE
+                        val newUri = editViewModel.updateVideoUri(requireContext(), state.data)
+                        updateVideo(newUri!!)
                         Timber.tag("Success").d(state.data.toString())
                     }
 
@@ -629,11 +631,22 @@ class EditFragment : BindingFragment<FragmentEditBinding>(R.layout.fragment_edit
                     }
 
                     is UiState.Empty -> Unit
-                    is UiState.Loading -> Unit
+                    is UiState.Loading -> {
+                        binding.editProgressbar.visibility = VISIBLE
+                    }
                 }
             }.launchIn(viewLifecycleOwner.lifecycleScope)
     }
 
+    private fun updateVideo(uri: Uri) {
+        mediaPlayer.release()
+        mediaPlayer = MediaPlayer().apply {
+            setDataSource(requireContext(), uri)
+            setSurface(Surface(binding.tvVideo.surfaceTexture))
+            setOnPreparedListener(this@EditFragment)
+            prepareAsync()
+        }
+    }
 
     // 수동 블러 rectangle 드래그
     @SuppressLint("ClickableViewAccessibility")
