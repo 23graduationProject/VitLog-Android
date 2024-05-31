@@ -14,6 +14,8 @@ import android.os.Bundle
 import android.os.Handler
 import android.os.Looper
 import android.util.Log
+import android.util.Log
+import android.view.LayoutInflater
 import android.view.MotionEvent
 import android.view.Surface
 import android.view.TextureView
@@ -22,6 +24,9 @@ import android.view.View.INVISIBLE
 import android.view.View.VISIBLE
 import android.view.inputmethod.InputMethodManager
 import androidx.appcompat.content.res.AppCompatResources.getDrawable
+import android.view.ViewGroup
+import android.widget.FrameLayout
+import androidx.core.content.ContextCompat
 import androidx.core.net.toUri
 import androidx.fragment.app.viewModels
 import androidx.lifecycle.flowWithLifecycle
@@ -32,7 +37,9 @@ import com.graduation.vitlog_android.databinding.FragmentEditBinding
 import com.graduation.vitlog_android.model.entity.Subtitle
 import com.graduation.vitlog_android.model.request.RequestBlurDto
 import com.graduation.vitlog_android.util.binding.BindingFragment
+import com.graduation.vitlog_android.util.preference.SharedPrefManager
 import com.graduation.vitlog_android.util.preference.SharedPrefManager.uid
+import com.graduation.vitlog_android.util.preference.SharedPrefManager.vid
 import com.graduation.vitlog_android.util.view.UiState
 import dagger.hilt.android.AndroidEntryPoint
 import kotlinx.coroutines.flow.launchIn
@@ -54,6 +61,8 @@ class EditFragment : BindingFragment<FragmentEditBinding>(R.layout.fragment_edit
 
     private var isBlurModeSelected: Boolean = false
     private var isSubtitleModeSelected: Boolean = false
+    private var isManualBlurModeSelected: Boolean = false
+    private var mediaPlayerOnPrepared: Boolean = false
 
     private var manualBlurData = mutableListOf<RequestBlurDto>()
     private var startTime: String = "00:00:00"
@@ -99,23 +108,12 @@ class EditFragment : BindingFragment<FragmentEditBinding>(R.layout.fragment_edit
             binding.blurSelfLayout.visibility = VISIBLE
             binding.timelineSectionIv.visibility = VISIBLE
             binding.editSaveBtn.text = "완료"
+            binding.editSaveBtn.setTextColor(ContextCompat.getColor(requireContext(), R.color.main_pink))
             setBlurPartOfBitmap()
         }
 
         // 수동 블러 rectangle 드래그
         dragBlurRectangle()
-
-        // 영상 -3초
-        binding.playSkipBackBtn.setOnClickListener {
-            val currentPosition = mediaPlayer.currentPosition
-            val newPosition = if ((currentPosition - 3000) > 0) currentPosition - 3000 else 0
-            mediaPlayer.seekTo(newPosition)
-        }
-        // 영상 +3초
-        binding.playSkipForwardBtn.setOnClickListener {
-            val currentPosition = mediaPlayer.currentPosition
-            mediaPlayer.seekTo(currentPosition + 3000)
-        }
     }
 
     private fun setBlurPartOfBitmap() {
@@ -127,20 +125,16 @@ class EditFragment : BindingFragment<FragmentEditBinding>(R.layout.fragment_edit
         var px = (70 * density).toInt()
         var py = (70 * density).toInt()
 
-        val currentVideoPosition = mediaPlayer.currentPosition.toLong()
-        val bitmap = metaDataSource.getFrameAtTime(
-            currentVideoPosition * 1000,
-            MediaMetadataRetriever.OPTION_CLOSEST
-        )
+        val bitmap = binding.tvVideo.getBitmap()
 
-        val dx = binding.blurSelfLayout.x.coerceAtLeast(0F).toInt()
-        val dy = binding.blurSelfLayout.y.coerceAtLeast(0F).toInt()
+        val dx = (binding.blurSelfLayout.x+binding.blurSelfRectangle.x).coerceAtLeast(0F).toInt()
+        val dy = (binding.blurSelfLayout.y+binding.blurSelfRectangle.y).coerceAtLeast(0F).toInt()
 
-        if (dx >= bitmap!!.width - binding.blurSelfLayout.width) {
-            px = (bitmap.width - dx).coerceAtLeast(0)
+        if (dx >= bitmap!!.width - binding.blurSelfRectangle.width) {
+            px = (bitmap.width-dx).coerceAtLeast(0)
         }
-        if (dy >= bitmap.height - binding.blurSelfLayout.height) {
-            py = (bitmap.height - dy).coerceAtLeast(0)
+        if (dy >= bitmap.height - binding.blurSelfRectangle.height) {
+            py = (bitmap.height-dy).coerceAtLeast(0)
         }
         val partialBitmap = Bitmap.createBitmap(
             bitmap,
@@ -160,6 +154,7 @@ class EditFragment : BindingFragment<FragmentEditBinding>(R.layout.fragment_edit
         setGetPresignedUrlStateObserver()
         setGetMosaicedVideoStateObserver()
         setGetSubtitleStateObserver()
+        setPostManualBlurStateObserver()
     }
 
 
@@ -230,15 +225,17 @@ class EditFragment : BindingFragment<FragmentEditBinding>(R.layout.fragment_edit
             )
             isSubtitleModeSelected = true
         }
-        binding.editSaveBtn.setOnClickListener {
-            editViewModel.getPresignedUrl()
-        }
 
         binding.editSaveBtn.setOnClickListener {
             if (binding.editSaveBtn.text == "저장") {
                 editViewModel.getPresignedUrl()
             } else if (binding.editSaveBtn.text == "완료") {
                 binding.editSaveBtn.text = "저장"
+                binding.editSaveBtn.setTextColor(ContextCompat.getColor(requireContext(), R.color.white))
+
+                startTime = (mediaPlayer.currentPosition/1000).toString()
+                endTime = (mediaPlayer.currentPosition/1000+2).toString()   // 끝나는 시간은 일단 2초 뒤로 고정
+
                 // 수동블러
                 manualBlurData.add(
                     RequestBlurDto(
@@ -250,7 +247,7 @@ class EditFragment : BindingFragment<FragmentEditBinding>(R.layout.fragment_edit
                         y2 = rectangleRightY
                     )
                 )
-
+                isManualBlurModeSelected = true
             }
         }
 
@@ -284,6 +281,10 @@ class EditFragment : BindingFragment<FragmentEditBinding>(R.layout.fragment_edit
     }
 
     override fun onPrepared(mp: MediaPlayer?) {
+        mediaPlayerOnPrepared = true
+//        editViewModel.getPresignedUrl()
+        mediaPlayer.seekTo(0)   // 재생 전 첫 번쨰 프레임 보여주기
+
         // 재생 버튼
         binding.videoPlayBtn.setOnClickListener {
             mp!!.start()
@@ -298,6 +299,18 @@ class EditFragment : BindingFragment<FragmentEditBinding>(R.layout.fragment_edit
             binding.videoPlayBtn.visibility = VISIBLE
             binding.videoPauseBtn.visibility = View.GONE
             handler.removeCallbacks(updateUiRunnable) // 여기를 수정
+        }
+
+        // 영상 -3초
+        binding.playSkipBackBtn.setOnClickListener {
+            val currentPosition = mediaPlayer.currentPosition
+            val newPosition = if ((currentPosition - 3000) > 0) currentPosition - 3000 else 0
+            mediaPlayer.seekTo(newPosition)
+        }
+        // 영상 +3초
+        binding.playSkipForwardBtn.setOnClickListener {
+            val currentPosition = mediaPlayer.currentPosition
+            mediaPlayer.seekTo(currentPosition + 3000)
         }
     }
 
@@ -327,6 +340,9 @@ class EditFragment : BindingFragment<FragmentEditBinding>(R.layout.fragment_edit
                 // 타임라인 이동에 따른 자막 업데이트, 시간 흐름 업데이트
                 updateSubtitle(mediaPlayer.currentPosition, editViewModel.subtitleList)
                 updateTimeString()
+                if (mediaPlayerOnPrepared) {
+                    setBlurPartOfBitmap()
+                }
             }
         })
     }
@@ -344,6 +360,7 @@ class EditFragment : BindingFragment<FragmentEditBinding>(R.layout.fragment_edit
 
     private val updateUiRunnable = object : Runnable {
         override fun run() {
+            setBlurPartOfBitmap()
             val currentPositionInMilliseconds = mediaPlayer.currentPosition
             val videoLengthInMilliseconds = mediaPlayer.duration
             val scrollOffset =
@@ -464,6 +481,8 @@ class EditFragment : BindingFragment<FragmentEditBinding>(R.layout.fragment_edit
                         uriToRequestBody()
                         editViewModel.setVideoFileName(state.data.data.fileName)
                         editViewModel.setPresignedUrl(state.data.data.url)
+                        SharedPrefManager.save("vid", state.data.data.vid)
+                        Log.d("vid", vid.toString())
                     }
 
                     is UiState.Failure -> {
@@ -495,6 +514,15 @@ class EditFragment : BindingFragment<FragmentEditBinding>(R.layout.fragment_edit
                                 editViewModel.getSubtitle(
                                     uid = uid,
                                     fileName = fileName
+                                )
+                            }
+                        }
+                        if (isManualBlurModeSelected) {
+                            editViewModel.videoFileName.value?.let {
+                                editViewModel.postManualBlur(
+                                    uid = uid,
+                                    vid = vid.toString(),
+                                    requestBlurDto = manualBlurData
                                 )
                             }
                         }
@@ -531,6 +559,22 @@ class EditFragment : BindingFragment<FragmentEditBinding>(R.layout.fragment_edit
                         Timber.tag("Failure").e(state.msg)
                     }
 
+                    is UiState.Empty -> Unit
+                }
+            }.launchIn(viewLifecycleOwner.lifecycleScope)
+    }
+
+    private fun setPostManualBlurStateObserver() {
+        editViewModel.postManualBlurState.flowWithLifecycle(viewLifecycleOwner.lifecycle)
+            .onEach { state ->
+                when (state) {
+                    is UiState.Loading -> {
+                    }
+                    is UiState.Success -> {
+                    }
+                    is UiState.Failure -> {
+                        Timber.tag("Failure").e(state.msg)
+                    }
                     is UiState.Empty -> Unit
                 }
             }.launchIn(viewLifecycleOwner.lifecycleScope)
@@ -619,27 +663,6 @@ class EditFragment : BindingFragment<FragmentEditBinding>(R.layout.fragment_edit
             binding.blurSelfLayout.visibility = View.INVISIBLE
             binding.timelineSectionIv.visibility = View.GONE
         }
-
-//        var nX: Float = 0F
-//        var nY: Float = 0F
-//        val constraintSet = ConstraintSet()
-//        binding.blurRectangleResize.setOnTouchListener { view, event ->
-//            when (event.action) {
-//                MotionEvent.ACTION_DOWN -> {
-//                    // 터치 시작 위치 저장
-//                    nX = view.x - event.rawX
-//                    nY = view.y - event.rawY
-//                }
-//                MotionEvent.ACTION_MOVE -> {
-//                    // blur_self_rectangle의 너비 제약조건을 변경합니다.
-//                    constraintSet.clone(binding.blurSelfLayout)
-//                    constraintSet.constrainWidth(R.id.blur_self_rectangle, (event.rawX - binding.blurSelfRectangle.x).toInt())
-//                    constraintSet.constrainHeight(R.id.blur_self_rectangle, (event.rawY - binding.blurSelfRectangle.y).toInt())
-//                    constraintSet.applyTo(binding.blurSelfLayout)
-//                }
-//            }
-//            true
-//        }
     }
 
     private var rectangleX = 0F

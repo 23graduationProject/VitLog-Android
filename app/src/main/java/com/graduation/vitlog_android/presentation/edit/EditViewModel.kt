@@ -153,7 +153,7 @@ class EditViewModel @Inject constructor(
     fun postManualBlur(
         uid: Int,
         vid: String,
-        requestBlurDto: RequestBlurDto
+        requestBlurDto: MutableList<RequestBlurDto>
     ) {
         viewModelScope.launch {
             _postManualBlurState.value = UiState.Loading
