@@ -14,8 +14,6 @@ import android.os.Bundle
 import android.os.Handler
 import android.os.Looper
 import android.util.Log
-import android.util.Log
-import android.view.LayoutInflater
 import android.view.MotionEvent
 import android.view.Surface
 import android.view.TextureView
@@ -24,8 +22,6 @@ import android.view.View.INVISIBLE
 import android.view.View.VISIBLE
 import android.view.inputmethod.InputMethodManager
 import androidx.appcompat.content.res.AppCompatResources.getDrawable
-import android.view.ViewGroup
-import android.widget.FrameLayout
 import androidx.core.content.ContextCompat
 import androidx.core.net.toUri
 import androidx.fragment.app.viewModels
@@ -108,7 +104,12 @@ class EditFragment : BindingFragment<FragmentEditBinding>(R.layout.fragment_edit
             binding.blurSelfLayout.visibility = VISIBLE
             binding.timelineSectionIv.visibility = VISIBLE
             binding.editSaveBtn.text = "완료"
-            binding.editSaveBtn.setTextColor(ContextCompat.getColor(requireContext(), R.color.main_pink))
+            binding.editSaveBtn.setTextColor(
+                ContextCompat.getColor(
+                    requireContext(),
+                    R.color.main_pink
+                )
+            )
             setBlurPartOfBitmap()
         }
 
@@ -127,14 +128,14 @@ class EditFragment : BindingFragment<FragmentEditBinding>(R.layout.fragment_edit
 
         val bitmap = binding.tvVideo.getBitmap()
 
-        val dx = (binding.blurSelfLayout.x+binding.blurSelfRectangle.x).coerceAtLeast(0F).toInt()
-        val dy = (binding.blurSelfLayout.y+binding.blurSelfRectangle.y).coerceAtLeast(0F).toInt()
+        val dx = (binding.blurSelfLayout.x + binding.blurSelfRectangle.x).coerceAtLeast(0F).toInt()
+        val dy = (binding.blurSelfLayout.y + binding.blurSelfRectangle.y).coerceAtLeast(0F).toInt()
 
         if (dx >= bitmap!!.width - binding.blurSelfRectangle.width) {
-            px = (bitmap.width-dx).coerceAtLeast(0)
+            px = (bitmap.width - dx).coerceAtLeast(0)
         }
         if (dy >= bitmap.height - binding.blurSelfRectangle.height) {
-            py = (bitmap.height-dy).coerceAtLeast(0)
+            py = (bitmap.height - dy).coerceAtLeast(0)
         }
         val partialBitmap = Bitmap.createBitmap(
             bitmap,
@@ -231,10 +232,16 @@ class EditFragment : BindingFragment<FragmentEditBinding>(R.layout.fragment_edit
                 editViewModel.getPresignedUrl()
             } else if (binding.editSaveBtn.text == "완료") {
                 binding.editSaveBtn.text = "저장"
-                binding.editSaveBtn.setTextColor(ContextCompat.getColor(requireContext(), R.color.white))
+                binding.editSaveBtn.setTextColor(
+                    ContextCompat.getColor(
+                        requireContext(),
+                        R.color.white
+                    )
+                )
 
-                startTime = (mediaPlayer.currentPosition/1000).toString()
-                endTime = (mediaPlayer.currentPosition/1000+2).toString()   // 끝나는 시간은 일단 2초 뒤로 고정
+                startTime = (mediaPlayer.currentPosition / 1000).toString()
+                endTime =
+                    (mediaPlayer.currentPosition / 1000 + 2).toString()   // 끝나는 시간은 일단 2초 뒤로 고정
 
                 // 수동블러
                 manualBlurData.add(
@@ -570,11 +577,14 @@ class EditFragment : BindingFragment<FragmentEditBinding>(R.layout.fragment_edit
                 when (state) {
                     is UiState.Loading -> {
                     }
+
                     is UiState.Success -> {
                     }
+
                     is UiState.Failure -> {
                         Timber.tag("Failure").e(state.msg)
                     }
+
                     is UiState.Empty -> Unit
                 }
             }.launchIn(viewLifecycleOwner.lifecycleScope)
