@@ -1,7 +1,9 @@
 package com.graduation.vitlog_android.presentation.edit
 
 import android.annotation.SuppressLint
+import android.content.Context
 import android.graphics.Bitmap
+import android.graphics.Color
 import android.graphics.RenderEffect
 import android.graphics.Shader
 import android.graphics.SurfaceTexture
@@ -12,18 +14,16 @@ import android.os.Bundle
 import android.os.Handler
 import android.os.Looper
 import android.util.Log
-import android.view.LayoutInflater
 import android.view.MotionEvent
 import android.view.Surface
 import android.view.TextureView
 import android.view.View
 import android.view.View.INVISIBLE
 import android.view.View.VISIBLE
-import android.view.ViewGroup
-import android.widget.FrameLayout
+import android.view.inputmethod.InputMethodManager
+import androidx.appcompat.content.res.AppCompatResources.getDrawable
 import androidx.core.content.ContextCompat
 import androidx.core.net.toUri
-import androidx.fragment.app.Fragment
 import androidx.fragment.app.viewModels
 import androidx.lifecycle.flowWithLifecycle
 import androidx.lifecycle.lifecycleScope
@@ -32,6 +32,7 @@ import com.graduation.vitlog_android.R
 import com.graduation.vitlog_android.databinding.FragmentEditBinding
 import com.graduation.vitlog_android.model.entity.Subtitle
 import com.graduation.vitlog_android.model.request.RequestBlurDto
+import com.graduation.vitlog_android.util.binding.BindingFragment
 import com.graduation.vitlog_android.util.preference.SharedPrefManager
 import com.graduation.vitlog_android.util.preference.SharedPrefManager.uid
 import com.graduation.vitlog_android.util.preference.SharedPrefManager.vid
@@ -45,12 +46,9 @@ import java.io.IOException
 
 
 @AndroidEntryPoint
-class EditFragment : Fragment(), TextureView.SurfaceTextureListener,
+class EditFragment : BindingFragment<FragmentEditBinding>(R.layout.fragment_edit),
+    TextureView.SurfaceTextureListener,
     MediaPlayer.OnPreparedListener {
-
-
-    private var _binding: FragmentEditBinding? = null
-    private val binding get() = _binding!!
     private var getUri: Uri? = null
     private val editViewModel by viewModels<EditViewModel>()
     private lateinit var mediaPlayer: MediaPlayer
@@ -66,12 +64,9 @@ class EditFragment : Fragment(), TextureView.SurfaceTextureListener,
     private var startTime: String = "00:00:00"
     private var endTime: String = "00:00:00"
 
-    override fun onCreateView(
-        inflater: LayoutInflater,
-        container: ViewGroup?,
-        savedInstanceState: Bundle?
-    ): View {
-        _binding = FragmentEditBinding.inflate(layoutInflater, container, false)
+    override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
+        super.onViewCreated(view, savedInstanceState)
+
         getUri = arguments?.getString("videoUri")?.toUri()
 
         activity?.runOnUiThread {
@@ -81,6 +76,7 @@ class EditFragment : Fragment(), TextureView.SurfaceTextureListener,
         initAdapter()
         setListener()
         setObserver()
+        showEditDefaultMode()
 
         binding.tvVideo.surfaceTextureListener = this
         binding.backBtn.setOnClickListener {
@@ -90,8 +86,9 @@ class EditFragment : Fragment(), TextureView.SurfaceTextureListener,
         getUri?.let {
             setupMediaRetrieverAndSeekBar(it)
         }
-
-        return binding.root
+        manageSubtitle()
+        applySubtitleFont()
+        applySubtitleColor()
     }
 
     private fun initAdapter() {
@@ -107,7 +104,12 @@ class EditFragment : Fragment(), TextureView.SurfaceTextureListener,
             binding.blurSelfLayout.visibility = VISIBLE
             binding.timelineSectionIv.visibility = VISIBLE
             binding.editSaveBtn.text = "완료"
-            binding.editSaveBtn.setTextColor(ContextCompat.getColor(requireContext(), R.color.main_pink))
+            binding.editSaveBtn.setTextColor(
+                ContextCompat.getColor(
+                    requireContext(),
+                    R.color.main_pink
+                )
+            )
             setBlurPartOfBitmap()
         }
 
@@ -126,14 +128,14 @@ class EditFragment : Fragment(), TextureView.SurfaceTextureListener,
 
         val bitmap = binding.tvVideo.getBitmap()
 
-        val dx = (binding.blurSelfLayout.x+binding.blurSelfRectangle.x).coerceAtLeast(0F).toInt()
-        val dy = (binding.blurSelfLayout.y+binding.blurSelfRectangle.y).coerceAtLeast(0F).toInt()
+        val dx = (binding.blurSelfLayout.x + binding.blurSelfRectangle.x).coerceAtLeast(0F).toInt()
+        val dy = (binding.blurSelfLayout.y + binding.blurSelfRectangle.y).coerceAtLeast(0F).toInt()
 
         if (dx >= bitmap!!.width - binding.blurSelfRectangle.width) {
-            px = (bitmap.width-dx).coerceAtLeast(0)
+            px = (bitmap.width - dx).coerceAtLeast(0)
         }
         if (dy >= bitmap.height - binding.blurSelfRectangle.height) {
-            py = (bitmap.height-dy).coerceAtLeast(0)
+            py = (bitmap.height - dy).coerceAtLeast(0)
         }
         val partialBitmap = Bitmap.createBitmap(
             bitmap,
@@ -156,11 +158,72 @@ class EditFragment : Fragment(), TextureView.SurfaceTextureListener,
         setPostManualBlurStateObserver()
     }
 
+
+    private fun showEditDefaultMode() {
+        binding.tvEditBlurAuto.visibility = INVISIBLE
+        binding.tvEditBlurSelf.visibility = INVISIBLE
+        binding.btnEditBlurAuto.visibility = INVISIBLE
+        binding.btnEditBlurSelf.visibility = INVISIBLE
+        binding.tvEditSubtitleToolFont.visibility = INVISIBLE
+        binding.tvEditSubtitleToolColor.visibility = INVISIBLE
+        binding.btnEditSubtitleToolFont.visibility = INVISIBLE
+        binding.btnEditSubtitleToolColor.visibility = INVISIBLE
+    }
+
+    private fun showEditSubtitleMode() {
+        binding.tvEditBlurAuto.visibility = INVISIBLE
+        binding.tvEditBlurSelf.visibility = INVISIBLE
+        binding.btnEditBlurAuto.visibility = INVISIBLE
+        binding.btnEditBlurSelf.visibility = INVISIBLE
+        binding.tvEditSubtitleToolFont.visibility = VISIBLE
+        binding.tvEditSubtitleToolColor.visibility = VISIBLE
+        binding.btnEditSubtitleToolFont.visibility = VISIBLE
+        binding.btnEditSubtitleToolColor.visibility = VISIBLE
+    }
+
+    private fun showEditBlurMode() {
+        binding.tvEditBlurAuto.visibility = VISIBLE
+        binding.tvEditBlurSelf.visibility = VISIBLE
+        binding.btnEditBlurAuto.visibility = VISIBLE
+        binding.btnEditBlurSelf.visibility = VISIBLE
+        binding.tvEditSubtitleToolFont.visibility = INVISIBLE
+        binding.tvEditSubtitleToolColor.visibility = INVISIBLE
+        binding.btnEditSubtitleToolFont.visibility = INVISIBLE
+        binding.btnEditSubtitleToolColor.visibility = INVISIBLE
+    }
+
+
     private fun setListener() {
         binding.btnEditBlur.setOnClickListener {
+            showEditBlurMode()
+            binding.btnEditBlur.setImageDrawable(
+                getDrawable(
+                    requireContext(),
+                    R.drawable.ic_edit_blur_clicked
+                )
+            )
+            binding.btnEditSubtitle.setImageDrawable(
+                getDrawable(
+                    requireContext(),
+                    R.drawable.ic_edit_subtitles_unclicked
+                )
+            )
             isBlurModeSelected = true
         }
         binding.btnEditSubtitle.setOnClickListener {
+            showEditSubtitleMode()
+            binding.btnEditBlur.setImageDrawable(
+                getDrawable(
+                    requireContext(),
+                    R.drawable.ic_edit_blur_unclicked
+                )
+            )
+            binding.btnEditSubtitle.setImageDrawable(
+                getDrawable(
+                    requireContext(),
+                    R.drawable.ic_edit_subtitles_clicked
+                )
+            )
             isSubtitleModeSelected = true
         }
 
@@ -169,10 +232,16 @@ class EditFragment : Fragment(), TextureView.SurfaceTextureListener,
                 editViewModel.getPresignedUrl()
             } else if (binding.editSaveBtn.text == "완료") {
                 binding.editSaveBtn.text = "저장"
-                binding.editSaveBtn.setTextColor(ContextCompat.getColor(requireContext(), R.color.white))
+                binding.editSaveBtn.setTextColor(
+                    ContextCompat.getColor(
+                        requireContext(),
+                        R.color.white
+                    )
+                )
 
-                startTime = (mediaPlayer.currentPosition/1000).toString()
-                endTime = (mediaPlayer.currentPosition/1000+2).toString()   // 끝나는 시간은 일단 2초 뒤로 고정
+                startTime = (mediaPlayer.currentPosition / 1000).toString()
+                endTime =
+                    (mediaPlayer.currentPosition / 1000 + 2).toString()   // 끝나는 시간은 일단 2초 뒤로 고정
 
                 // 수동블러
                 manualBlurData.add(
@@ -187,6 +256,10 @@ class EditFragment : Fragment(), TextureView.SurfaceTextureListener,
                 )
                 isManualBlurModeSelected = true
             }
+        }
+
+        binding.btnEditSubtitleToolFont.setOnClickListener {
+            showSubtitleFontBar()
         }
 
         subtitleCompleteButtonListener()
@@ -223,14 +296,14 @@ class EditFragment : Fragment(), TextureView.SurfaceTextureListener,
         binding.videoPlayBtn.setOnClickListener {
             mp!!.start()
             binding.videoPlayBtn.visibility = View.GONE
-            binding.videoPauseBtn.visibility = View.VISIBLE
+            binding.videoPauseBtn.visibility = VISIBLE
             handler.post(updateUiRunnable) // 여기를 수정
         }
 
         // 일시정지 버튼
         binding.videoPauseBtn.setOnClickListener {
             mp!!.pause()
-            binding.videoPlayBtn.visibility = View.VISIBLE
+            binding.videoPlayBtn.visibility = VISIBLE
             binding.videoPauseBtn.visibility = View.GONE
             handler.removeCallbacks(updateUiRunnable) // 여기를 수정
         }
@@ -294,18 +367,15 @@ class EditFragment : Fragment(), TextureView.SurfaceTextureListener,
 
     private val updateUiRunnable = object : Runnable {
         override fun run() {
-            if (mediaPlayer.isPlaying) {
-                setBlurPartOfBitmap()   // 재생 중일 때 수동 블러 프레임 update
-                val currentPositionInMilliseconds = mediaPlayer.currentPosition
-                val videoLengthInMilliseconds = mediaPlayer.duration
-                val scrollOffset =
-                    (currentPositionInMilliseconds.toFloat() / videoLengthInMilliseconds * timeLineAdapter.itemCount)
-
-                binding.editTimelineRv.smoothScrollToPosition(scrollOffset.toInt())
-                updateTimeString(currentPositionInMilliseconds)
-
-                handler.postDelayed(this, 1)
-            }
+            setBlurPartOfBitmap()
+            val currentPositionInMilliseconds = mediaPlayer.currentPosition
+            val videoLengthInMilliseconds = mediaPlayer.duration
+            val scrollOffset =
+                (currentPositionInMilliseconds.toFloat() / videoLengthInMilliseconds * timeLineAdapter.itemCount)
+            Log.d("subtitle", editViewModel.subtitleList.toString())
+            binding.editTimelineRv.smoothScrollToPosition(scrollOffset.toInt())
+            updateTimeString(currentPositionInMilliseconds)
+            handler.postDelayed(this, 1)
         }
     }
 
@@ -325,20 +395,80 @@ class EditFragment : Fragment(), TextureView.SurfaceTextureListener,
         binding.tvSubtitle.text = currentSubtitle?.text ?: ""
     }
 
-
     // MediaPlayer가 재생 중일 때 currentPosition에 맞게 자막 업데이트
     private fun startSubtitleUpdater(subtitle: List<Subtitle>) {
         val handler = Handler(Looper.getMainLooper())
         val updateTask = object : Runnable {
             override fun run() {
-                if (mediaPlayer.isPlaying) {
-                    val currentPosition = mediaPlayer.currentPosition
-                    updateSubtitle(currentPosition, subtitle)
-                    handler.postDelayed(this, 1000) // 1초마다 업데이트
-                }
+                val currentPosition = mediaPlayer.currentPosition
+                updateSubtitle(currentPosition, subtitle)
+                handler.postDelayed(this, 1) // 1초마다 업데이트
             }
         }
         handler.post(updateTask)
+    }
+
+    private fun applyEditedSubtitle() {
+        binding.tvSubtitle.setOnClickListener {
+            it.visibility = View.GONE
+            binding.etSubtitle.setText(binding.tvSubtitle.text)
+            binding.etSubtitle.visibility = VISIBLE
+            binding.etSubtitle.requestFocus()
+            val imm =
+                requireContext().getSystemService(Context.INPUT_METHOD_SERVICE) as InputMethodManager
+            imm.showSoftInput(binding.etSubtitle, InputMethodManager.SHOW_IMPLICIT)
+        }
+    }
+
+    private fun saveAndSwitchToTextView() {
+        binding.tvSubtitle.text = binding.etSubtitle.text
+        editViewModel.updateSubtitleText(
+            mediaPlayer.currentPosition,
+            binding.etSubtitle.text.toString()
+        )
+        binding.etSubtitle.visibility = View.GONE
+        binding.tvSubtitle.visibility = VISIBLE
+        val imm = context?.getSystemService(Context.INPUT_METHOD_SERVICE) as InputMethodManager
+        imm.hideSoftInputFromWindow(binding.etSubtitle.windowToken, 0)
+    }
+
+    private fun manageSubtitle() {
+        applyEditedSubtitle()
+        binding.root.setOnClickListener {
+            if (binding.etSubtitle.visibility == VISIBLE) {
+                saveAndSwitchToTextView()
+            }
+        }
+
+        binding.etSubtitle.setOnFocusChangeListener { _, hasFocus ->
+            if (!hasFocus) {
+                saveAndSwitchToTextView()
+            }
+        }
+    }
+
+    private fun applySubtitleFont() {
+        binding.ivEditSubtitlePlayfair.setOnClickListener {
+            binding.tvSubtitle.setTextAppearance(R.style.TextAppearance_VitLog_FairDisplay_m_10)
+        }
+        binding.ivEditSubtitlePretendard.setOnClickListener {
+            binding.tvSubtitle.setTextAppearance(R.style.TextAppearance_VitLog_Content_m_10)
+        }
+    }
+
+    private fun applySubtitleColor() {
+        binding.ivEditSubtitleColorGray.setOnClickListener {
+            binding.tvSubtitle.setTextColor(Color.parseColor("#F5F5F5"))
+        }
+        binding.ivEditSubtitleColorYellow.setOnClickListener {
+            binding.tvSubtitle.setTextColor(Color.parseColor("#FFF852"))
+        }
+        binding.ivEditSubtitleColorPink.setOnClickListener {
+            binding.tvSubtitle.setTextColor(Color.parseColor("#FF485E"))
+        }
+        binding.ivEditSubtitleColorBlack.setOnClickListener {
+            binding.tvSubtitle.setTextColor(Color.parseColor("#FF000000"))
+        }
     }
 
 
@@ -426,8 +556,8 @@ class EditFragment : Fragment(), TextureView.SurfaceTextureListener,
                     is UiState.Success -> {
                         binding.editProgressbar.visibility = INVISIBLE
                         showSubtitleEditBar()
-                        startSubtitleUpdater(state.data)
                         editViewModel.saveSubtitleList(state.data)
+                        startSubtitleUpdater(editViewModel.subtitleList)
                         subtitleAdapter.submitList(state.data)
                         editViewModel._getSubtitleState.value = UiState.Empty
                     }
@@ -447,11 +577,14 @@ class EditFragment : Fragment(), TextureView.SurfaceTextureListener,
                 when (state) {
                     is UiState.Loading -> {
                     }
+
                     is UiState.Success -> {
                     }
+
                     is UiState.Failure -> {
                         Timber.tag("Failure").e(state.msg)
                     }
+
                     is UiState.Empty -> Unit
                 }
             }.launchIn(viewLifecycleOwner.lifecycleScope)
@@ -465,6 +598,11 @@ class EditFragment : Fragment(), TextureView.SurfaceTextureListener,
     private fun showSubtitleEditBar() {
         binding.clEditTool.visibility = INVISIBLE
         binding.clEditToolSubtitle.visibility = VISIBLE
+    }
+
+    private fun showSubtitleFontBar() {
+        binding.clEditTool.visibility = INVISIBLE
+        binding.clEditSubtitle.visibility = VISIBLE
     }
 
     private fun subtitleCompleteButtonListener() {

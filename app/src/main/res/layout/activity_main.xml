@@ -8,7 +8,7 @@
 
     <androidx.fragment.app.FragmentContainerView
         android:id="@+id/home_fragment_view"
-        android:name="com.graduation.vitlog_android.HomeFragment"
+        android:name="com.graduation.vitlog_android.presentation.home.HomeFragment"
         android:layout_width="match_parent"
         android:layout_height="match_parent"
         app:layout_constraintBottom_toBottomOf="parent"

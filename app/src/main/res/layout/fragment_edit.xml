@@ -1,337 +1,592 @@
 <?xml version="1.0" encoding="utf-8"?>
-<androidx.constraintlayout.widget.ConstraintLayout xmlns:android="http://schemas.android.com/apk/res/android"
+<layout xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:app="http://schemas.android.com/apk/res-auto"
-    xmlns:tools="http://schemas.android.com/tools"
-    android:layout_width="match_parent"
-    android:layout_height="match_parent"
-    android:background="@color/main_black">
+    xmlns:tools="http://schemas.android.com/tools">
 
+    <data>
 
-    <ImageView
-        android:id="@+id/back_btn"
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:layout_marginStart="10dp"
-        android:layout_marginTop="10dp"
-        android:padding="5dp"
-        android:src="@drawable/ic_edit_x"
-        app:layout_constraintStart_toStartOf="parent"
-        app:layout_constraintTop_toTopOf="parent" />
-
-    <ImageView
-        android:id="@+id/edit_user_btn"
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:layout_marginTop="10dp"
-        android:src="@drawable/ic_user"
-        app:layout_constraintEnd_toEndOf="parent"
-        app:layout_constraintStart_toStartOf="parent"
-        app:layout_constraintTop_toTopOf="parent" />
-
-    <TextView
-        android:id="@+id/edit_save_btn"
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:layout_marginEnd="10dp"
-        android:background="@color/transparent"
-        android:gravity="center"
-        android:padding="10dp"
-        android:text="저장"
-        android:textColor="@color/white"
-        android:textSize="15dp"
-        app:layout_constraintBottom_toBottomOf="@id/back_btn"
-        app:layout_constraintEnd_toEndOf="parent"
-        app:layout_constraintTop_toTopOf="@id/back_btn" />
+    </data>
 
     <androidx.constraintlayout.widget.ConstraintLayout
-        android:id="@+id/cl_video_player"
         android:layout_width="match_parent"
-        android:layout_height="0dp"
-        android:layout_marginTop="10dp"
-        app:layout_constraintBottom_toTopOf="@id/video_play_bar_layout"
-        app:layout_constraintDimensionRatio="16:9"
-        app:layout_constraintTop_toBottomOf="@id/back_btn">
+        android:layout_height="match_parent"
+        android:background="@color/main_black">
 
-        <FrameLayout
-            android:id="@+id/video_framelayout"
-            android:layout_width="match_parent"
-            android:layout_height="match_parent"
-            app:layout_constraintTop_toTopOf="parent">
-
-            <TextureView
-                android:id="@+id/tv_video"
-                android:layout_width="match_parent"
-                android:layout_height="match_parent" />
-
-            <TextView
-                android:id="@+id/tv_subtitle"
-                android:layout_width="wrap_content"
-                android:layout_height="wrap_content"
-                android:layout_gravity="bottom|center"
-                android:padding="16dp"
-                android:textAlignment="center"
-                android:textColor="@android:color/white" />
-
-            <androidx.constraintlayout.widget.ConstraintLayout
-                android:id="@+id/blur_self_layout"
-                android:layout_width="wrap_content"
-                android:layout_height="wrap_content"
-                android:visibility="invisible"
-                android:layout_gravity="center">
-
-                <ImageView
-                    android:id="@+id/blur_self_rectangle"
-                    android:layout_width="70dp"
-                    android:layout_height="70dp"
-                    android:src="@drawable/rectangle_blur_self"
-                    app:layout_constraintBottom_toBottomOf="parent"
-                    app:layout_constraintEnd_toEndOf="parent"
-                    app:layout_constraintStart_toStartOf="parent"
-                    app:layout_constraintTop_toTopOf="parent" />
-
-                <ImageView
-                    android:id="@+id/blur_rectangle_x"
-                    android:layout_width="20dp"
-                    android:layout_height="20dp"
-                    android:layout_marginStart="-10dp"
-                    android:layout_marginTop="-10dp"
-                    android:src="@drawable/ic_x_circle"
-                    app:layout_constraintStart_toStartOf="@id/blur_self_rectangle"
-                    app:layout_constraintTop_toTopOf="@id/blur_self_rectangle" />
-
-                <ImageView
-                    android:id="@+id/blur_rectangle_resize"
-                    android:layout_width="20dp"
-                    android:layout_height="20dp"
-                    android:layout_marginStart="-10dp"
-                    android:layout_marginTop="-10dp"
-                    android:src="@drawable/ic_resize"
-                    app:layout_constraintStart_toEndOf="@id/blur_self_rectangle"
-                    app:layout_constraintTop_toBottomOf="@id/blur_self_rectangle" />
-            </androidx.constraintlayout.widget.ConstraintLayout>
-        </FrameLayout>
-    </androidx.constraintlayout.widget.ConstraintLayout>
-
-    <LinearLayout
-        android:id="@+id/video_play_bar_layout"
-        android:layout_width="match_parent"
-        android:layout_height="wrap_content"
-        android:layout_marginTop="10dp"
-        android:gravity="center"
-        android:orientation="horizontal"
-        app:layout_constraintBottom_toTopOf="@id/edit_seekbar_layout"
-        app:layout_constraintTop_toBottomOf="@id/cl_video_player">
 
         <ImageView
-            android:id="@+id/play_skip_back_btn"
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:padding="5dp"
-            android:src="@drawable/ic_edit_play_skip_back" />
-
-        <ImageView
-            android:id="@+id/video_play_btn"
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:layout_gravity="center"
-            android:layout_marginStart="20dp"
-            android:layout_marginEnd="20dp"
-            android:padding="5dp"
-            android:src="@drawable/ic_edit_play_fill" />
-
-        <ImageView
-            android:id="@+id/video_pause_btn"
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:layout_gravity="center"
-            android:layout_marginStart="20dp"
-            android:layout_marginEnd="20dp"
-            android:padding="5dp"
-            android:src="@drawable/ic_edit_pause_fill"
-            android:visibility="gone" />
-
-        <ImageView
-            android:id="@+id/play_skip_forward_btn"
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:padding="5dp"
-            android:src="@drawable/ic_edit_play_skip_forward" />
-    </LinearLayout>
-
-    <LinearLayout
-        android:id="@+id/edit_seekbar_layout"
-        android:layout_width="match_parent"
-        android:layout_height="wrap_content"
-        android:orientation="vertical"
-        app:layout_constraintBottom_toTopOf="@id/cl_edit_tool"
-        app:layout_constraintTop_toBottomOf="@id/video_play_bar_layout">
-
-        <TextView
-            android:id="@+id/edit_time_tv"
+            android:id="@+id/back_btn"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
             android:layout_marginStart="10dp"
-            android:layout_marginEnd="5dp"
-            android:text="00:00:00"
-            android:textColor="@color/white" />
-
-        <FrameLayout
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:layout_marginTop="10dp">
-
-            <androidx.recyclerview.widget.RecyclerView
-                android:id="@+id/edit_timeline_rv"
-                android:layout_width="match_parent"
-                android:layout_height="match_parent"
-                android:background="@color/black"
-                android:orientation="horizontal"
-                android:paddingVertical="10dp"
-                android:paddingStart="100dp"
-                app:layoutManager="androidx.recyclerview.widget.LinearLayoutManager" />
-
-            <ImageView
-                android:id="@+id/timeline_section_iv"
-                android:layout_width="wrap_content"
-                android:layout_height="match_parent"
-                android:paddingStart="100dp"
-                android:visibility="gone"
-                android:src="@drawable/ic_timeline_section"
-                app:layout_constraintTop_toBottomOf="@id/edit_seekbar_layout" />
-        </FrameLayout>
-    </LinearLayout>
-
-
-    <androidx.constraintlayout.widget.ConstraintLayout
-        android:id="@+id/cl_edit_tool"
-        android:layout_width="match_parent"
-        android:layout_height="wrap_content"
-        app:layout_constraintBottom_toBottomOf="parent"
-        app:layout_constraintTop_toBottomOf="@id/edit_seekbar_layout">
-
-        <Button
-            android:id="@+id/btn_edit_blur"
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:layout_marginTop="50dp"
-            android:background="@color/transparent"
-            android:drawableTop="@drawable/ic_edit_blur"
-            android:text="얼굴 블러"
-            android:textColor="@color/white"
-            app:layout_constraintEnd_toStartOf="@id/v_edit_line"
+            android:layout_marginTop="10dp"
+            android:padding="5dp"
+            android:src="@drawable/ic_edit_x"
             app:layout_constraintStart_toStartOf="parent"
             app:layout_constraintTop_toTopOf="parent" />
 
-        <Button
-            android:id="@+id/btn_edit_subtitle"
+        <ImageView
+            android:id="@+id/edit_user_btn"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
-            android:layout_gravity="center"
-            android:layout_marginVertical="50dp"
-            android:background="@color/transparent"
-            android:drawableTop="@drawable/ic_edit_subtitles"
-            android:text="AI 자막 생성"
-            android:textColor="@color/white"
-            app:layout_constraintBottom_toBottomOf="parent"
-            app:layout_constraintEnd_toStartOf="@id/v_edit_line"
-            app:layout_constraintStart_toStartOf="@id/btn_edit_blur"
-            app:layout_constraintTop_toBottomOf="@id/btn_edit_blur" />
-
-        <View
-            android:id="@+id/v_edit_line"
-            android:layout_width="1dp"
-            android:layout_height="0dp"
-            android:background="@color/white_opacity_80"
-            android:paddingHorizontal="10dp"
-            app:layout_constraintBottom_toBottomOf="parent"
-            app:layout_constraintStart_toEndOf="@id/btn_edit_blur"
-            app:layout_constraintTop_toTopOf="parent" />
-
-        <Button
-            android:id="@+id/btn_edit_blur_auto"
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:layout_marginStart="30dp"
-            android:layout_marginTop="50dp"
-            android:background="@color/transparent"
-            android:drawableTop="@drawable/ic_edit_blur_auto"
-            android:text="전체 블러"
-            android:textColor="@color/white"
-            app:layout_constraintStart_toEndOf="@id/v_edit_line"
-            app:layout_constraintTop_toTopOf="parent" />
-
-
-        <Button
-            android:id="@+id/btn_edit_blur_self"
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:layout_marginTop="50dp"
-            android:layout_marginEnd="30dp"
-            android:background="@color/transparent"
-            android:drawableTop="@drawable/ic_edit_blur_self"
-            android:text="수동 블러"
-            android:textColor="@color/white"
+            android:layout_marginTop="10dp"
+            android:src="@drawable/ic_user"
             app:layout_constraintEnd_toEndOf="parent"
+            app:layout_constraintStart_toStartOf="parent"
             app:layout_constraintTop_toTopOf="parent" />
-
-    </androidx.constraintlayout.widget.ConstraintLayout>
-
-    <androidx.constraintlayout.widget.ConstraintLayout
-        android:id="@+id/cl_edit_tool_subtitle"
-        android:layout_width="match_parent"
-        android:layout_height="0dp"
-        android:visibility="invisible"
-        app:layout_constraintBottom_toBottomOf="parent"
-        app:layout_constraintTop_toBottomOf="@id/edit_seekbar_layout">
 
         <TextView
-            android:id="@+id/tv_edit_tool_subtitle"
+            android:id="@+id/edit_save_btn"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
-            android:layout_marginTop="20dp"
-            android:text="Vitlog에서 생성한 자막입니다"
+            android:layout_marginEnd="10dp"
+            android:background="@color/transparent"
+            android:gravity="center"
+            android:padding="10dp"
+            android:text="저장"
             android:textColor="@color/white"
+            android:textSize="15dp"
+            app:layout_constraintBottom_toBottomOf="@id/back_btn"
             app:layout_constraintEnd_toEndOf="parent"
-            app:layout_constraintStart_toStartOf="parent"
-            app:layout_constraintTop_toTopOf="parent" />
+            app:layout_constraintTop_toTopOf="@id/back_btn" />
 
-        <androidx.recyclerview.widget.RecyclerView
-            android:id="@+id/rv_edit_tool_subtitle"
+        <androidx.constraintlayout.widget.ConstraintLayout
+            android:id="@+id/cl_video_player"
             android:layout_width="match_parent"
             android:layout_height="0dp"
             android:layout_marginTop="10dp"
-            android:orientation="vertical"
-            app:layoutManager="androidx.recyclerview.widget.LinearLayoutManager"
-            app:layout_constraintBottom_toTopOf="@id/tv_edit_tool_complete"
-            app:layout_constraintTop_toBottomOf="@id/tv_edit_tool_subtitle"
-            tools:listitem="@layout/item_edit_subtitle" />
+            app:layout_constraintBottom_toTopOf="@id/video_play_bar_layout"
+            app:layout_constraintDimensionRatio="16:9"
+            app:layout_constraintTop_toBottomOf="@id/back_btn">
 
-        <TextView
-            android:id="@+id/tv_edit_tool_complete"
+            <FrameLayout
+                android:id="@+id/video_framelayout"
+                android:layout_width="match_parent"
+                android:layout_height="match_parent"
+                app:layout_constraintTop_toTopOf="parent">
+
+                <TextureView
+                    android:id="@+id/tv_video"
+                    android:layout_width="match_parent"
+                    android:layout_height="match_parent" />
+
+                <TextView
+                    android:id="@+id/tv_subtitle"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:layout_gravity="bottom|center"
+                    android:padding="16dp"
+                    android:textAlignment="center" />
+
+                <EditText
+                    android:id="@+id/et_subtitle"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:layout_gravity="bottom|center"
+                    android:padding="16dp"
+                    android:visibility="gone"
+                    android:textAlignment="center" />
+
+                <androidx.constraintlayout.widget.ConstraintLayout
+                    android:id="@+id/blur_self_layout"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:layout_gravity="center"
+                    android:visibility="invisible">
+
+                    <ImageView
+                        android:id="@+id/blur_self_rectangle"
+                        android:layout_width="70dp"
+                        android:layout_height="70dp"
+                        android:src="@drawable/rectangle_blur_self"
+                        app:layout_constraintBottom_toBottomOf="parent"
+                        app:layout_constraintEnd_toEndOf="parent"
+                        app:layout_constraintStart_toStartOf="parent"
+                        app:layout_constraintTop_toTopOf="parent" />
+
+                    <ImageView
+                        android:id="@+id/blur_rectangle_x"
+                        android:layout_width="20dp"
+                        android:layout_height="20dp"
+                        android:layout_marginStart="-10dp"
+                        android:layout_marginTop="-10dp"
+                        android:src="@drawable/ic_x_circle"
+                        app:layout_constraintStart_toStartOf="@id/blur_self_rectangle"
+                        app:layout_constraintTop_toTopOf="@id/blur_self_rectangle" />
+
+                    <ImageView
+                        android:id="@+id/blur_rectangle_resize"
+                        android:layout_width="20dp"
+                        android:layout_height="20dp"
+                        android:layout_marginStart="-10dp"
+                        android:layout_marginTop="-10dp"
+                        android:src="@drawable/ic_resize"
+                        app:layout_constraintStart_toEndOf="@id/blur_self_rectangle"
+                        app:layout_constraintTop_toBottomOf="@id/blur_self_rectangle" />
+                </androidx.constraintlayout.widget.ConstraintLayout>
+            </FrameLayout>
+        </androidx.constraintlayout.widget.ConstraintLayout>
+
+        <LinearLayout
+            android:id="@+id/video_play_bar_layout"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_marginTop="10dp"
+            android:gravity="center"
+            android:orientation="horizontal"
+            app:layout_constraintBottom_toTopOf="@id/edit_seekbar_layout"
+            app:layout_constraintTop_toBottomOf="@id/cl_video_player">
+
+            <ImageView
+                android:id="@+id/play_skip_back_btn"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:padding="5dp"
+                android:src="@drawable/ic_edit_play_skip_back" />
+
+            <ImageView
+                android:id="@+id/video_play_btn"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_gravity="center"
+                android:layout_marginStart="20dp"
+                android:layout_marginEnd="20dp"
+                android:padding="5dp"
+                android:src="@drawable/ic_edit_play_fill" />
+
+            <ImageView
+                android:id="@+id/video_pause_btn"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_gravity="center"
+                android:layout_marginStart="20dp"
+                android:layout_marginEnd="20dp"
+                android:padding="5dp"
+                android:src="@drawable/ic_edit_pause_fill"
+                android:visibility="gone" />
+
+            <ImageView
+                android:id="@+id/play_skip_forward_btn"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:padding="5dp"
+                android:src="@drawable/ic_edit_play_skip_forward" />
+        </LinearLayout>
+
+        <LinearLayout
+            android:id="@+id/edit_seekbar_layout"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:orientation="vertical"
+            app:layout_constraintBottom_toTopOf="@id/cl_edit_tool"
+            app:layout_constraintTop_toBottomOf="@id/video_play_bar_layout">
+
+            <TextView
+                android:id="@+id/edit_time_tv"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_marginStart="10dp"
+                android:layout_marginEnd="5dp"
+                android:text="00:00:00"
+                android:textColor="@color/white" />
+
+            <FrameLayout
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_marginTop="10dp">
+
+                <androidx.recyclerview.widget.RecyclerView
+                    android:id="@+id/edit_timeline_rv"
+                    android:layout_width="match_parent"
+                    android:layout_height="match_parent"
+                    android:background="@color/black"
+                    android:orientation="horizontal"
+                    android:paddingVertical="10dp"
+                    android:paddingStart="100dp"
+                    app:layoutManager="androidx.recyclerview.widget.LinearLayoutManager" />
+
+                <ImageView
+                    android:id="@+id/timeline_section_iv"
+                    android:layout_width="wrap_content"
+                    android:layout_height="match_parent"
+                    android:paddingStart="100dp"
+                    android:src="@drawable/ic_timeline_section"
+                    android:visibility="gone"
+                    app:layout_constraintTop_toBottomOf="@id/edit_seekbar_layout" />
+            </FrameLayout>
+        </LinearLayout>
+
+
+        <androidx.constraintlayout.widget.ConstraintLayout
+            android:id="@+id/cl_edit_tool"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            app:layout_constraintBottom_toBottomOf="parent"
+            app:layout_constraintTop_toBottomOf="@id/edit_seekbar_layout">
+
+            <ImageView
+                android:id="@+id/btn_edit_blur"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_marginTop="20dp"
+                android:paddingHorizontal="20dp"
+                android:paddingTop="20dp"
+                android:src="@drawable/ic_edit_blur_unclicked"
+                app:layout_constraintEnd_toEndOf="@id/tv_edit_blur"
+                app:layout_constraintStart_toStartOf="@id/tv_edit_blur"
+                app:layout_constraintTop_toTopOf="parent" />
+
+            <TextView
+                android:id="@+id/tv_edit_blur"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_marginTop="7dp"
+                android:text="얼굴 블러"
+                android:textAppearance="@style/TextAppearance.VitLog.Content_m_15"
+                android:textColor="@color/white"
+                app:layout_constraintEnd_toStartOf="@+id/v_edit_line"
+                app:layout_constraintStart_toStartOf="parent"
+                app:layout_constraintTop_toBottomOf="@id/btn_edit_blur" />
+
+            <ImageView
+                android:id="@+id/btn_edit_subtitle"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_marginTop="10dp"
+                android:paddingHorizontal="20dp"
+                android:paddingTop="20dp"
+                android:src="@drawable/ic_edit_subtitles_unclicked"
+                app:layout_constraintBottom_toBottomOf="parent"
+                app:layout_constraintEnd_toEndOf="@id/tv_edit_subtitle"
+                app:layout_constraintStart_toStartOf="@id/tv_edit_subtitle"
+                app:layout_constraintTop_toBottomOf="@id/btn_edit_blur" />
+
+            <TextView
+                android:id="@+id/tv_edit_subtitle"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_marginTop="7dp"
+                android:layout_marginBottom="40dp"
+                android:text="AI 자막 생성"
+                android:textAppearance="@style/TextAppearance.VitLog.Content_m_15"
+                android:textColor="@color/white"
+                app:layout_constraintBottom_toBottomOf="parent"
+                app:layout_constraintEnd_toEndOf="@+id/tv_edit_blur"
+                app:layout_constraintStart_toStartOf="@id/tv_edit_blur"
+                app:layout_constraintTop_toBottomOf="@id/btn_edit_subtitle" />
+
+            <View
+                android:id="@+id/v_edit_line"
+                android:layout_width="1dp"
+                android:layout_height="0dp"
+                android:layout_marginStart="30dp"
+                android:background="@color/white_opacity_80"
+                app:layout_constraintBottom_toBottomOf="parent"
+                app:layout_constraintStart_toEndOf="@id/tv_edit_subtitle"
+                app:layout_constraintTop_toTopOf="parent" />
+
+            <ImageView
+                android:id="@+id/btn_edit_blur_auto"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:src="@drawable/ic_edit_blur_auto"
+                app:layout_constraintBottom_toBottomOf="@id/btn_edit_blur"
+                app:layout_constraintEnd_toEndOf="@id/tv_edit_blur_auto"
+                app:layout_constraintStart_toStartOf="@id/tv_edit_blur_auto"
+                app:layout_constraintTop_toTopOf="@id/btn_edit_blur" />
+
+            <TextView
+                android:id="@+id/tv_edit_blur_auto"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_marginStart="50dp"
+                android:text="전체 블러"
+                android:textAppearance="@style/TextAppearance.VitLog.Content_m_15"
+                android:textColor="@color/white"
+                app:layout_constraintBottom_toBottomOf="@id/tv_edit_blur"
+                app:layout_constraintStart_toEndOf="@id/v_edit_line"
+                app:layout_constraintTop_toTopOf="@id/tv_edit_blur" />
+
+            <ImageView
+                android:id="@+id/btn_edit_blur_self"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:src="@drawable/ic_edit_blur_self"
+                app:layout_constraintBottom_toBottomOf="@id/btn_edit_blur"
+                app:layout_constraintEnd_toEndOf="@id/tv_edit_blur_self"
+                app:layout_constraintStart_toStartOf="@id/tv_edit_blur_self"
+                app:layout_constraintTop_toTopOf="@id/btn_edit_blur" />
+
+            <TextView
+                android:id="@+id/tv_edit_blur_self"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_marginEnd="50dp"
+                android:text="수동 블러"
+                android:textAppearance="@style/TextAppearance.VitLog.Content_m_15"
+                android:textColor="@color/white"
+                app:layout_constraintBottom_toBottomOf="@id/tv_edit_blur"
+                app:layout_constraintEnd_toEndOf="parent"
+                app:layout_constraintTop_toTopOf="@id/tv_edit_blur" />
+
+            <ImageView
+                android:id="@+id/btn_edit_subtitle_tool_font"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:paddingHorizontal="20dp"
+                android:paddingTop="20dp"
+                android:src="@drawable/ic_edit_font"
+                app:layout_constraintBottom_toBottomOf="@id/btn_edit_subtitle"
+                app:layout_constraintEnd_toEndOf="@id/tv_edit_blur_auto"
+                app:layout_constraintStart_toStartOf="@id/tv_edit_blur_auto"
+                app:layout_constraintTop_toTopOf="@id/btn_edit_subtitle" />
+
+            <TextView
+                android:id="@+id/tv_edit_subtitle_tool_font"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_marginStart="50dp"
+                android:text="폰트 설정"
+                android:textAppearance="@style/TextAppearance.VitLog.Content_m_15"
+                android:textColor="@color/white"
+                app:layout_constraintBottom_toBottomOf="@id/tv_edit_subtitle"
+                app:layout_constraintStart_toEndOf="@id/v_edit_line"
+                app:layout_constraintTop_toTopOf="@id/tv_edit_subtitle" />
+
+            <ImageView
+                android:id="@+id/btn_edit_subtitle_tool_color"
+                android:layout_width="0dp"
+                android:layout_height="0dp"
+                android:paddingHorizontal="17dp"
+                android:paddingTop="17dp"
+                android:src="@drawable/ic_edit_color"
+                app:layout_constraintBottom_toBottomOf="@id/btn_edit_subtitle"
+                app:layout_constraintEnd_toEndOf="@id/tv_edit_blur_self"
+                app:layout_constraintStart_toStartOf="@id/tv_edit_blur_self"
+                app:layout_constraintTop_toTopOf="@id/btn_edit_subtitle" />
+
+            <TextView
+                android:id="@+id/tv_edit_subtitle_tool_color"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_marginEnd="50dp"
+                android:text="색상 설정"
+                android:textAppearance="@style/TextAppearance.VitLog.Content_m_15"
+                android:textColor="@color/white"
+                app:layout_constraintBottom_toBottomOf="@id/tv_edit_subtitle"
+                app:layout_constraintEnd_toEndOf="parent"
+                app:layout_constraintTop_toTopOf="@id/tv_edit_subtitle" />
+
+
+        </androidx.constraintlayout.widget.ConstraintLayout>
+
+        <androidx.constraintlayout.widget.ConstraintLayout
+            android:id="@+id/cl_edit_tool_subtitle"
+            android:layout_width="match_parent"
+            android:layout_height="0dp"
+            android:visibility="invisible"
+            app:layout_constraintBottom_toBottomOf="parent"
+            app:layout_constraintTop_toBottomOf="@id/edit_seekbar_layout">
+
+            <TextView
+                android:id="@+id/tv_edit_tool_subtitle"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_marginTop="20dp"
+                android:text="Vitlog에서 생성한 자막입니다"
+                android:textColor="@color/white"
+                app:layout_constraintEnd_toEndOf="parent"
+                app:layout_constraintStart_toStartOf="parent"
+                app:layout_constraintTop_toTopOf="parent" />
+
+            <androidx.recyclerview.widget.RecyclerView
+                android:id="@+id/rv_edit_tool_subtitle"
+                android:layout_width="match_parent"
+                android:layout_height="0dp"
+                android:layout_marginTop="10dp"
+                android:orientation="vertical"
+                app:layoutManager="androidx.recyclerview.widget.LinearLayoutManager"
+                app:layout_constraintBottom_toTopOf="@id/tv_edit_tool_complete"
+                app:layout_constraintTop_toBottomOf="@id/tv_edit_tool_subtitle"
+                tools:listitem="@layout/item_edit_subtitle" />
+
+            <TextView
+                android:id="@+id/tv_edit_tool_complete"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_marginBottom="10dp"
+                android:paddingHorizontal="30dp"
+                android:paddingVertical="10dp"
+                android:text="완료"
+                android:textAppearance="@style/TextAppearance.VitLog.Content_m_15"
+                android:textColor="@color/white"
+                app:layout_constraintBottom_toBottomOf="parent"
+                app:layout_constraintEnd_toEndOf="parent"
+                app:layout_constraintStart_toStartOf="parent"
+                app:layout_constraintTop_toBottomOf="@id/rv_edit_tool_subtitle" />
+
+        </androidx.constraintlayout.widget.ConstraintLayout>
+
+
+        <androidx.constraintlayout.widget.ConstraintLayout
+            android:id="@+id/cl_edit_subtitle"
+            android:layout_width="match_parent"
+            android:layout_height="0dp"
+            android:padding="30dp"
+            android:visibility="invisible"
+            app:layout_constraintBottom_toBottomOf="parent"
+            app:layout_constraintTop_toBottomOf="@id/edit_seekbar_layout">
+
+            <TextView
+                android:id="@+id/tv_edit_subtitle_font"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_marginTop="30dp"
+                android:text="폰트"
+                android:textAppearance="@style/TextAppearance.VitLog.Headline_b_15"
+                android:textColor="@color/white"
+                app:layout_constraintStart_toStartOf="parent"
+                app:layout_constraintTop_toTopOf="parent" />
+
+            <TextView
+                android:id="@+id/tv_edit_subtitle_color"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_marginTop="40dp"
+                android:text="컬러"
+                android:textAppearance="@style/TextAppearance.VitLog.Headline_b_15"
+                android:textColor="@color/white"
+                app:layout_constraintStart_toStartOf="parent"
+                app:layout_constraintTop_toBottomOf="@id/tv_edit_subtitle_font" />
+
+            <TextView
+                android:id="@+id/tv_edit_subtitle_background"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_marginTop="40dp"
+                android:text="배경"
+                android:textAppearance="@style/TextAppearance.VitLog.Headline_b_15"
+                android:textColor="@color/white"
+                app:layout_constraintStart_toStartOf="parent"
+                app:layout_constraintTop_toBottomOf="@id/tv_edit_subtitle_color" />
+
+            <View
+                android:id="@+id/v_edit_line2"
+                android:layout_width="1dp"
+                android:layout_height="0dp"
+                android:layout_marginStart="30dp"
+                android:background="@color/white_opacity_80"
+                app:layout_constraintBottom_toBottomOf="parent"
+                app:layout_constraintStart_toEndOf="@id/tv_edit_subtitle_font"
+                app:layout_constraintTop_toTopOf="parent" />
+
+            <ImageView
+                android:id="@+id/iv_edit_subtitle_pretendard"
+                android:layout_width="wrap_content"
+                android:layout_height="0dp"
+                android:layout_marginStart="20dp"
+                android:src="@drawable/img_edit_font_pretendard"
+                app:layout_constraintBottom_toBottomOf="@id/tv_edit_subtitle_font"
+                app:layout_constraintStart_toEndOf="@id/v_edit_line2"
+                app:layout_constraintTop_toTopOf="@id/tv_edit_subtitle_font" />
+
+            <ImageView
+                android:id="@+id/iv_edit_subtitle_playfair"
+                android:layout_width="wrap_content"
+                android:layout_height="0dp"
+                android:layout_marginStart="20dp"
+                android:src="@drawable/img_edit_font_playfair"
+                app:layout_constraintBottom_toBottomOf="@id/tv_edit_subtitle_font"
+                app:layout_constraintStart_toEndOf="@id/iv_edit_subtitle_pretendard"
+                app:layout_constraintTop_toTopOf="@id/tv_edit_subtitle_font" />
+
+
+            <ImageView
+                android:id="@+id/iv_edit_subtitle_color_black"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_marginStart="30dp"
+                android:padding="10dp"
+                android:src="@drawable/ic_edit_color_black"
+                app:layout_constraintBottom_toBottomOf="@id/tv_edit_subtitle_color"
+                app:layout_constraintStart_toEndOf="@id/v_edit_line2"
+                app:layout_constraintTop_toTopOf="@id/tv_edit_subtitle_color" />
+
+            <ImageView
+                android:id="@+id/iv_edit_subtitle_color_gray"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_marginStart="30dp"
+                android:padding="10dp"
+                android:src="@drawable/ic_edit_color_gray"
+                app:layout_constraintBottom_toBottomOf="@id/tv_edit_subtitle_color"
+                app:layout_constraintStart_toEndOf="@id/iv_edit_subtitle_color_black"
+                app:layout_constraintTop_toTopOf="@id/tv_edit_subtitle_color" />
+
+            <ImageView
+                android:id="@+id/iv_edit_subtitle_color_yellow"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_marginStart="30dp"
+                android:padding="10dp"
+                android:src="@drawable/ic_edit_color_yellow"
+                app:layout_constraintBottom_toBottomOf="@id/tv_edit_subtitle_color"
+                app:layout_constraintStart_toEndOf="@id/iv_edit_subtitle_color_gray"
+                app:layout_constraintTop_toTopOf="@id/tv_edit_subtitle_color" />
+
+            <ImageView
+                android:id="@+id/iv_edit_subtitle_color_pink"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_marginStart="30dp"
+                android:padding="10dp"
+                android:src="@drawable/ic_edit_color_pink"
+                app:layout_constraintBottom_toBottomOf="@id/tv_edit_subtitle_color"
+                app:layout_constraintEnd_toEndOf="parent"
+                app:layout_constraintStart_toEndOf="@id/iv_edit_subtitle_color_yellow"
+                app:layout_constraintTop_toTopOf="@id/tv_edit_subtitle_color" />
+
+            <ImageView
+                android:id="@+id/iv_edit_subtitle_background_rectangle"
+                android:layout_width="wrap_content"
+                android:layout_height="0dp"
+                android:layout_marginStart="30dp"
+                android:src="@drawable/ic_edit_background_rectangle"
+                app:layout_constraintBottom_toBottomOf="@id/tv_edit_subtitle_background"
+                app:layout_constraintStart_toEndOf="@id/v_edit_line2"
+                app:layout_constraintTop_toTopOf="@id/tv_edit_subtitle_background" />
+
+            <ImageView
+                android:id="@+id/iv_edit_subtitle_background_gray"
+                android:layout_width="wrap_content"
+                android:layout_height="0dp"
+                android:layout_marginStart="20dp"
+                android:src="@drawable/ic_edit_background_gray"
+                app:layout_constraintBottom_toBottomOf="@id/tv_edit_subtitle_background"
+                app:layout_constraintStart_toEndOf="@id/iv_edit_subtitle_background_rectangle"
+                app:layout_constraintTop_toTopOf="@id/tv_edit_subtitle_background" />
+
+            <ImageView
+                android:id="@+id/iv_edit_subtitle_background_round"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_marginStart="20dp"
+                android:src="@drawable/ic_edit_background_round"
+                app:layout_constraintBottom_toBottomOf="@id/tv_edit_subtitle_background"
+                app:layout_constraintStart_toEndOf="@id/iv_edit_subtitle_background_gray"
+                app:layout_constraintTop_toTopOf="@id/tv_edit_subtitle_background" />
+        </androidx.constraintlayout.widget.ConstraintLayout>
+
+
+        <ProgressBar
+            android:id="@+id/edit_progressbar"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
-            android:layout_marginBottom="10dp"
-            android:paddingHorizontal="30dp"
-            android:paddingVertical="10dp"
-            android:text="완료"
-            android:textColor="@color/white"
-            android:textSize="16dp"
-            android:textStyle="bold"
+            android:indeterminate="true"
             app:layout_constraintBottom_toBottomOf="parent"
             app:layout_constraintEnd_toEndOf="parent"
             app:layout_constraintStart_toStartOf="parent"
-            app:layout_constraintTop_toBottomOf="@id/rv_edit_tool_subtitle" />
+            app:layout_constraintTop_toTopOf="parent" />
+
 
     </androidx.constraintlayout.widget.ConstraintLayout>
-
-    <ProgressBar
-        android:id="@+id/edit_progressbar"
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:indeterminate="true"
-        app:layout_constraintBottom_toBottomOf="parent"
-        app:layout_constraintEnd_toEndOf="parent"
-        app:layout_constraintStart_toStartOf="parent"
-        app:layout_constraintTop_toTopOf="parent" />
-
-</androidx.constraintlayout.widget.ConstraintLayout>
+</layout>

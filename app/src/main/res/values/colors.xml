@@ -10,4 +10,6 @@
     <color name="main_pink_opacity_80">#CCFF485E</color>
     <color name="main_black">#221F1F</color>
     <color name="main_gray">#8A8A8A</color>
+    <color name="yellow">#FFF852</color>
+    <color name="light_gray">#F5F5F5</color>
 </resources>

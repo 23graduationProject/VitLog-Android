@@ -6,7 +6,6 @@ import android.media.MediaMetadataRetriever
 import android.media.MediaScannerConnection
 import android.net.Uri
 import android.os.Environment
-import androidx.lifecycle.MutableLiveData
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.graduation.vitlog_android.data.repository.VideoRepository
@@ -39,7 +38,6 @@ import javax.inject.Inject
 class EditViewModel @Inject constructor(
     private val videoRepository: VideoRepository
 ) : ViewModel() {
-    val frames = MutableLiveData<List<Bitmap>>()
 
     private val _putVideoToPresignedUrlState =
         MutableStateFlow<UiState<ResponseBody>>(UiState.Empty)
@@ -60,11 +58,21 @@ class EditViewModel @Inject constructor(
 
     val timeLineImages = mutableListOf<Bitmap>()
 
-    var _subtitleList = listOf<Subtitle>()
-    val subtitleList: List<Subtitle> = _subtitleList
+    private var _subtitleList = mutableListOf<Subtitle>()
+    val subtitleList: List<Subtitle> get() = _subtitleList
+
+    fun updateSubtitleText(currentPosition: Int, newText: String) {
+        val subtitleIndex = _subtitleList.indexOfFirst { subtitle ->
+            subtitle.startMill <= currentPosition && currentPosition < subtitle.endMill
+        }
+        if (subtitleIndex != -1) {
+            val updatedSubtitle = _subtitleList[subtitleIndex].copy(text = newText)
+            _subtitleList[subtitleIndex] = updatedSubtitle
+        }
+    }
 
     fun saveSubtitleList(subtitle: List<Subtitle>) {
-        _subtitleList = subtitle
+        _subtitleList = subtitle.toMutableList()
     }
 
     private val _postManualBlurState = MutableStateFlow<UiState<ResponseBody>>(UiState.Loading)
@@ -103,7 +111,6 @@ class EditViewModel @Inject constructor(
     init {
         _imageUri.value = null
     }
-
 
     fun getPresignedUrl() {
         viewModelScope.launch {

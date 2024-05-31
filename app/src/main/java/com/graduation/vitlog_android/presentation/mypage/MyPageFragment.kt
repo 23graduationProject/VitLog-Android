@@ -13,10 +13,12 @@ import androidx.fragment.app.replace
 import androidx.fragment.app.viewModels
 import androidx.lifecycle.flowWithLifecycle
 import androidx.lifecycle.lifecycleScope
-import com.graduation.vitlog_android.HomeFragment
+import com.graduation.vitlog_android.presentation.home.HomeFragment
 import com.graduation.vitlog_android.R
 import com.graduation.vitlog_android.databinding.FragmentMypageBinding
+import com.graduation.vitlog_android.databinding.FragmentToolBinding
 import com.graduation.vitlog_android.model.entity.Face
+import com.graduation.vitlog_android.util.binding.BindingFragment
 import com.graduation.vitlog_android.util.view.UiState
 import dagger.hilt.android.AndroidEntryPoint
 import kotlinx.coroutines.flow.launchIn
@@ -24,28 +26,18 @@ import kotlinx.coroutines.flow.onEach
 import timber.log.Timber
 
 @AndroidEntryPoint
-class MyPageFragment : Fragment() {
-
-    private var _binding: FragmentMypageBinding? = null
-
-    private val binding get() = _binding!!
+class MyPageFragment : BindingFragment<FragmentMypageBinding>(R.layout.fragment_mypage) {
     private val myPageViewModel by viewModels<MyPageViewModel>()
     private lateinit var myPageAdapter: MyPageAdapter
 
 
-    override fun onCreateView(
-        inflater: LayoutInflater,
-        container: ViewGroup?,
-        savedInstanceState: Bundle?
-    ): View {
-        _binding = FragmentMypageBinding.inflate(layoutInflater, container, false)
+    override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
+        super.onViewCreated(view, savedInstanceState)
         myPageViewModel.getUser()
         initAdapter()
         initClickListener()
         initObserver()
-        return binding.root
     }
-
     private fun initAdapter() {
         myPageAdapter = MyPageAdapter(
             onAddButtonClick = { openGallery() }
