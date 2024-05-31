@@ -263,6 +263,7 @@ class EditFragment : BindingFragment<FragmentEditBinding>(R.layout.fragment_edit
         }
 
         subtitleCompleteButtonListener()
+        subtitleEditCompleteButtonListener()
         buttonActions()
 
         // 재생 완료 되었을 때
@@ -593,11 +594,13 @@ class EditFragment : BindingFragment<FragmentEditBinding>(R.layout.fragment_edit
     private fun showEditToolBar() {
         binding.clEditTool.visibility = VISIBLE
         binding.clEditToolSubtitle.visibility = INVISIBLE
+        binding.clEditSubtitle.visibility = INVISIBLE
     }
 
     private fun showSubtitleEditBar() {
         binding.clEditTool.visibility = INVISIBLE
         binding.clEditToolSubtitle.visibility = VISIBLE
+        binding.clEditSubtitle.visibility = INVISIBLE
     }
 
     private fun showSubtitleFontBar() {
@@ -607,6 +610,12 @@ class EditFragment : BindingFragment<FragmentEditBinding>(R.layout.fragment_edit
 
     private fun subtitleCompleteButtonListener() {
         binding.tvEditToolComplete.setOnClickListener {
+            showEditToolBar()
+        }
+    }
+
+    private fun subtitleEditCompleteButtonListener() {
+        binding.tvEditSubtitleComplete.setOnClickListener {
             showEditToolBar()
         }
     }

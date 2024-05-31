@@ -25,12 +25,12 @@ class MyPageViewModel @Inject constructor(
     private val userRepository: UserRepository
 ) : ViewModel() {
 
-    private val _getUserState =
+    val _getUserState =
         MutableStateFlow<UiState<User>>(UiState.Empty)
     val geUserState: StateFlow<UiState<User>> =
         _getUserState.asStateFlow()
 
-    private val _postFaceState = MutableStateFlow<UiState<ResponsePostFaceDto>>(UiState.Empty)
+    val _postFaceState = MutableStateFlow<UiState<ResponsePostFaceDto>>(UiState.Empty)
 
     val postFaceState: StateFlow<UiState<ResponsePostFaceDto>> get() = _postFaceState.asStateFlow()
 
@@ -44,33 +44,47 @@ class MyPageViewModel @Inject constructor(
         this.imageRequestBody = requestBody
     }
 
-    private val _faceUri = MutableStateFlow<Uri?>(null)
+    val _faceUri = MutableStateFlow<Uri?>(null)
     val faceUri: StateFlow<Uri?> = _faceUri.asStateFlow()
 
-    fun updateFaceUri(uri: Uri, context: Context) = viewModelScope.launch {
+    fun updateFaceUri(uri: Uri) {
         _faceUri.value = uri
-        val uri = faceUri.value ?: return@launch
-        val requestBody = ContentUriRequestBody(context, uri)
-        updateRequestBody(requestBody)
+    }
+
+    val _faceName = MutableStateFlow<String?>("")
+    val faceName: StateFlow<String?> = _faceName.asStateFlow()
+
+    fun updateFaceName(name: String) {
+        _faceName.value = name
+    }
+
+    fun registerFace(context: Context) {
+        val requestBody = faceUri.value?.let { ContentUriRequestBody(context, it) }
+        if (requestBody != null) {
+            updateRequestBody(requestBody)
+        }
         postFace()
     }
 
     private fun postFace() {
         viewModelScope.launch {
             _postFaceState.value = UiState.Loading
+
             val image = createRequestBody()
             val uid = uid
-            val pName = "hyeseon"
-            userRepository.postFace(uid = uid, pName = pName, file = image).onSuccess { response ->
-                _postFaceState.value = UiState.Success(response)
-                getUser()
-                Timber.d("성공 $response")
-            }.onFailure { t ->
-                if (t is HttpException) {
-                    val errorResponse = t.response()?.errorBody()?.string()
-                    Timber.e("HTTP 실패: $errorResponse")
+            val pName = faceName.value
+            if (pName != null) {
+                userRepository.postFace(uid = uid, pName = pName, file = image)
+                    .onSuccess { response ->
+                        _postFaceState.value = UiState.Success(response)
+                        Timber.d("성공 $response")
+                    }.onFailure { t ->
+                    if (t is HttpException) {
+                        val errorResponse = t.response()?.errorBody()?.string()
+                        Timber.e("HTTP 실패: $errorResponse")
+                    }
+                    _postFaceState.value = UiState.Failure("${t.message}")
                 }
-                _postFaceState.value = UiState.Failure("${t.message}")
             }
         }
     }

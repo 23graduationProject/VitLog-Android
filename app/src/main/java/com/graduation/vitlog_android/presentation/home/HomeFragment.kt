@@ -43,9 +43,14 @@ class HomeFragment : BindingFragment<FragmentHomeBinding>(R.layout.fragment_home
         binding.ivHomeMypage.setOnClickListener {
             navigateTo<MyPageFragment>()
         }
-        showRecentImages()
+        showRecentVideos()
     }
 
+    private fun navigateToEditWithUri(uri: Uri) {
+        val intent = Intent(context, EditActivity::class.java)
+        intent.data = uri
+        startActivity(intent)
+    }
 
     private fun openGallery() {
         getContentLauncher.launch("video/*")
@@ -58,33 +63,32 @@ class HomeFragment : BindingFragment<FragmentHomeBinding>(R.layout.fragment_home
         }
     }
 
-    private fun showRecentImages() {
-        // 갤러리최근이미지 9개 격자형태로
+    private fun showRecentVideos() {
         val resolver = context?.contentResolver
-        val uri = MediaStore.Images.Media.EXTERNAL_CONTENT_URI
-        val projection = arrayOf(MediaStore.Images.ImageColumns._ID)
-        val sortOrder = "${MediaStore.Images.ImageColumns.DATE_ADDED} DESC"
+        val uri = MediaStore.Video.Media.EXTERNAL_CONTENT_URI
+        val projection = arrayOf(MediaStore.Video.VideoColumns._ID)
+        val sortOrder = "${MediaStore.Video.VideoColumns.DATE_ADDED} DESC"
 
         val cursor = resolver?.query(uri, projection, null, null, sortOrder)
 
-
-        val imageUris = mutableListOf<Uri>()
+        val videoUris = mutableListOf<Uri>()
         if (cursor != null) {
-            val idColumn = cursor.getColumnIndexOrThrow(MediaStore.Images.ImageColumns._ID)
+            val idColumn = cursor.getColumnIndexOrThrow(MediaStore.Video.VideoColumns._ID)
             while (cursor.moveToNext()) {
                 val id = cursor.getLong(idColumn)
                 val contentUri =
-                    ContentUris.withAppendedId(MediaStore.Images.Media.EXTERNAL_CONTENT_URI, id)
-                imageUris.add(contentUri)
+                    ContentUris.withAppendedId(MediaStore.Video.Media.EXTERNAL_CONTENT_URI, id)
+                videoUris.add(contentUri)
             }
             cursor.close()
         }
 
-        val recentImageUris = imageUris.take(9)
+        val recentVideoUris = videoUris.take(9)
 
-        binding.rvHomeGallery.layoutManager = GridLayoutManager(context, 3) // 3 columns
-        binding.rvHomeGallery.adapter = GalleryAdapter(recentImageUris)
-
+        binding.rvHomeGallery.layoutManager = GridLayoutManager(context, 3)
+        binding.rvHomeGallery.adapter = GalleryAdapter(requireContext(), recentVideoUris) { uri ->
+            navigateToEditWithUri(uri)
+        }
     }
 
 }
