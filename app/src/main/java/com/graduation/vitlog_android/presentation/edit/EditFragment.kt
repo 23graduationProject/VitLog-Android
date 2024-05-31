@@ -1,6 +1,7 @@
 package com.graduation.vitlog_android.presentation.edit
 
 import android.annotation.SuppressLint
+import android.content.Context
 import android.graphics.Bitmap
 import android.graphics.Color
 import android.graphics.RenderEffect
@@ -12,12 +13,14 @@ import android.net.Uri
 import android.os.Bundle
 import android.os.Handler
 import android.os.Looper
+import android.util.Log
 import android.view.MotionEvent
 import android.view.Surface
 import android.view.TextureView
 import android.view.View
 import android.view.View.INVISIBLE
 import android.view.View.VISIBLE
+import android.view.inputmethod.InputMethodManager
 import androidx.appcompat.content.res.AppCompatResources.getDrawable
 import androidx.core.net.toUri
 import androidx.fragment.app.viewModels
@@ -78,9 +81,7 @@ class EditFragment : BindingFragment<FragmentEditBinding>(R.layout.fragment_edit
         getUri?.let {
             setupMediaRetrieverAndSeekBar(it)
         }
-
-        applySubtitleFont()
-        applySubtitleColor()
+        manageSubtitle()
     }
 
     private fun initAdapter() {
@@ -159,7 +160,8 @@ class EditFragment : BindingFragment<FragmentEditBinding>(R.layout.fragment_edit
         setGetSubtitleStateObserver()
     }
 
-    private fun showEditDefaultMode(){
+
+    private fun showEditDefaultMode() {
         binding.tvEditBlurAuto.visibility = INVISIBLE
         binding.tvEditBlurSelf.visibility = INVISIBLE
         binding.btnEditBlurAuto.visibility = INVISIBLE
@@ -284,14 +286,14 @@ class EditFragment : BindingFragment<FragmentEditBinding>(R.layout.fragment_edit
         binding.videoPlayBtn.setOnClickListener {
             mp!!.start()
             binding.videoPlayBtn.visibility = View.GONE
-            binding.videoPauseBtn.visibility = View.VISIBLE
+            binding.videoPauseBtn.visibility = VISIBLE
             handler.post(updateUiRunnable) // 여기를 수정
         }
 
         // 일시정지 버튼
         binding.videoPauseBtn.setOnClickListener {
             mp!!.pause()
-            binding.videoPlayBtn.visibility = View.VISIBLE
+            binding.videoPlayBtn.visibility = VISIBLE
             binding.videoPauseBtn.visibility = View.GONE
             handler.removeCallbacks(updateUiRunnable) // 여기를 수정
         }
@@ -344,12 +346,11 @@ class EditFragment : BindingFragment<FragmentEditBinding>(R.layout.fragment_edit
             val videoLengthInMilliseconds = mediaPlayer.duration
             val scrollOffset =
                 (currentPositionInMilliseconds.toFloat() / videoLengthInMilliseconds * timeLineAdapter.itemCount)
-
+            Log.d("subtitle", editViewModel.subtitleList.toString())
             binding.editTimelineRv.smoothScrollToPosition(scrollOffset.toInt())
             updateTimeString(currentPositionInMilliseconds)
             handler.postDelayed(this, 1)
         }
-
     }
 
     private fun updateTimeString(currentPositionInMilliseconds: Int) {
@@ -368,7 +369,6 @@ class EditFragment : BindingFragment<FragmentEditBinding>(R.layout.fragment_edit
         binding.tvSubtitle.text = currentSubtitle?.text ?: ""
     }
 
-
     // MediaPlayer가 재생 중일 때 currentPosition에 맞게 자막 업데이트
     private fun startSubtitleUpdater(subtitle: List<Subtitle>) {
         val handler = Handler(Looper.getMainLooper())
@@ -376,10 +376,49 @@ class EditFragment : BindingFragment<FragmentEditBinding>(R.layout.fragment_edit
             override fun run() {
                 val currentPosition = mediaPlayer.currentPosition
                 updateSubtitle(currentPosition, subtitle)
-                handler.postDelayed(this, 1000) // 1초마다 업데이트
+                handler.postDelayed(this, 1) // 1초마다 업데이트
             }
         }
         handler.post(updateTask)
+    }
+
+    private fun applyEditedSubtitle() {
+        binding.tvSubtitle.setOnClickListener {
+            it.visibility = View.GONE
+            binding.etSubtitle.setText(binding.tvSubtitle.text)
+            binding.etSubtitle.visibility = VISIBLE
+            binding.etSubtitle.requestFocus()
+            val imm =
+                requireContext().getSystemService(Context.INPUT_METHOD_SERVICE) as InputMethodManager
+            imm.showSoftInput(binding.etSubtitle, InputMethodManager.SHOW_IMPLICIT)
+        }
+    }
+
+    private fun saveAndSwitchToTextView() {
+        binding.tvSubtitle.text = binding.etSubtitle.text
+        editViewModel.updateSubtitleText(
+            mediaPlayer.currentPosition,
+            binding.etSubtitle.text.toString()
+        )
+        binding.etSubtitle.visibility = View.GONE
+        binding.tvSubtitle.visibility = VISIBLE
+        val imm = context?.getSystemService(Context.INPUT_METHOD_SERVICE) as InputMethodManager
+        imm.hideSoftInputFromWindow(binding.etSubtitle.windowToken, 0)
+    }
+
+    private fun manageSubtitle() {
+        applyEditedSubtitle()
+        binding.root.setOnClickListener {
+            if (binding.etSubtitle.visibility == VISIBLE) {
+                saveAndSwitchToTextView()
+            }
+        }
+
+        binding.etSubtitle.setOnFocusChangeListener { _, hasFocus ->
+            if (!hasFocus) {
+                saveAndSwitchToTextView()
+            }
+        }
     }
 
     private fun applySubtitleFont() {
@@ -480,8 +519,8 @@ class EditFragment : BindingFragment<FragmentEditBinding>(R.layout.fragment_edit
                     is UiState.Success -> {
                         binding.editProgressbar.visibility = INVISIBLE
                         showSubtitleEditBar()
-                        startSubtitleUpdater(state.data)
                         editViewModel.saveSubtitleList(state.data)
+                        startSubtitleUpdater(editViewModel.subtitleList)
                         subtitleAdapter.submitList(state.data)
                         editViewModel._getSubtitleState.value = UiState.Empty
                     }
