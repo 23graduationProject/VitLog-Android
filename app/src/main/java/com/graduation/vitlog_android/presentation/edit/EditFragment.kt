@@ -13,7 +13,6 @@ import android.net.Uri
 import android.os.Bundle
 import android.os.Handler
 import android.os.Looper
-import android.util.Log
 import android.view.MotionEvent
 import android.view.Surface
 import android.view.TextureView
@@ -55,9 +54,6 @@ class EditFragment : BindingFragment<FragmentEditBinding>(R.layout.fragment_edit
     private lateinit var subtitleAdapter: SubtitleAdapter
     private lateinit var timeLineAdapter: TimeLineAdapter
 
-    private var isBlurModeSelected: Boolean = false
-    private var isSubtitleModeSelected: Boolean = false
-    private var isManualBlurModeSelected: Boolean = false
     private var mediaPlayerOnPrepared: Boolean = false
 
     private var manualBlurData = mutableListOf<RequestBlurDto>()
@@ -156,6 +152,7 @@ class EditFragment : BindingFragment<FragmentEditBinding>(R.layout.fragment_edit
         setGetMosaicedVideoStateObserver()
         setGetSubtitleStateObserver()
         setPostManualBlurStateObserver()
+        setPostEditedSubtitleStateObserver()
     }
 
 
@@ -194,6 +191,9 @@ class EditFragment : BindingFragment<FragmentEditBinding>(R.layout.fragment_edit
 
 
     private fun setListener() {
+        binding.tvEditSubtitleToolFont.setOnClickListener {
+            editViewModel.updateSubtitleEditMode(true)
+        }
         binding.btnEditBlur.setOnClickListener {
             showEditBlurMode()
             binding.btnEditBlur.setImageDrawable(
@@ -208,9 +208,10 @@ class EditFragment : BindingFragment<FragmentEditBinding>(R.layout.fragment_edit
                     R.drawable.ic_edit_subtitles_unclicked
                 )
             )
+            editViewModel.updateBlurMode(true)
         }
         binding.btnEditBlurAuto.setOnClickListener {
-            isBlurModeSelected = true
+            editViewModel.updateBlurMode(true)
             uriToRequestBody()
         }
         binding.btnEditSubtitle.setOnClickListener {
@@ -227,7 +228,7 @@ class EditFragment : BindingFragment<FragmentEditBinding>(R.layout.fragment_edit
                     R.drawable.ic_edit_subtitles_clicked
                 )
             )
-            isSubtitleModeSelected = true
+            editViewModel.updateSubtitleMode(true)
             uriToRequestBody()
         }
 
@@ -259,7 +260,7 @@ class EditFragment : BindingFragment<FragmentEditBinding>(R.layout.fragment_edit
                         y2 = rectangleRightY
                     )
                 )
-                isManualBlurModeSelected = true
+                editViewModel.updateManualBlurMode(true)
                 uriToRequestBody()
             }
         }
@@ -379,7 +380,6 @@ class EditFragment : BindingFragment<FragmentEditBinding>(R.layout.fragment_edit
             val videoLengthInMilliseconds = mediaPlayer.duration
             val scrollOffset =
                 (currentPositionInMilliseconds.toFloat() / videoLengthInMilliseconds * timeLineAdapter.itemCount)
-            Log.d("subtitle", editViewModel.subtitleList.toString())
             binding.editTimelineRv.smoothScrollToPosition(scrollOffset.toInt())
             updateTimeString(currentPositionInMilliseconds)
             handler.postDelayed(this, 1)
@@ -496,7 +496,6 @@ class EditFragment : BindingFragment<FragmentEditBinding>(R.layout.fragment_edit
                         editViewModel.setVideoFileName(state.data.data.fileName)
                         editViewModel.setPresignedUrl(state.data.data.url)
                         SharedPrefManager.save("vid", state.data.data.vid)
-                        Log.d("vid", vid.toString())
                     }
 
                     is UiState.Failure -> {
@@ -515,31 +514,7 @@ class EditFragment : BindingFragment<FragmentEditBinding>(R.layout.fragment_edit
                 when (state) {
                     is UiState.Success -> {
                         Timber.tag("Success").d(state.data.toString())
-                        if (isBlurModeSelected) {
-                            editViewModel.videoFileName.value?.let {
-                                editViewModel.getMosaicedVideo(
-                                    uid,
-                                    it
-                                )
-                            }
-                        }
-                        if (isSubtitleModeSelected) {
-                            editViewModel.videoFileName.value?.let { fileName ->
-                                editViewModel.getSubtitle(
-                                    uid = uid,
-                                    fileName = fileName
-                                )
-                            }
-                        }
-                        if (isManualBlurModeSelected) {
-                            editViewModel.videoFileName.value?.let {
-                                editViewModel.postManualBlur(
-                                    uid = uid,
-                                    vid = vid,
-                                    requestBlurDto = manualBlurData
-                                )
-                            }
-                        }
+                        observeEditMode()
                     }
 
                     is UiState.Failure -> {
@@ -551,6 +526,50 @@ class EditFragment : BindingFragment<FragmentEditBinding>(R.layout.fragment_edit
                 }
             }.launchIn(viewLifecycleOwner.lifecycleScope)
     }
+
+    private fun observeEditMode() {
+        lifecycleScope.launch {
+            editViewModel.modeStates.collect {
+                if (it.isBlurModeSelected) {
+                    editViewModel.videoFileName.value?.let { fileName ->
+                        editViewModel.getMosaicedVideo(
+                            uid,
+                            fileName = fileName
+                        )
+                    }
+                }
+                if (it.isSubtitleModeSelected) {
+                    editViewModel.videoFileName.value?.let { fileName ->
+                        editViewModel.getSubtitle(
+                            uid = uid,
+                            fileName = fileName
+                        )
+                    }
+                }
+
+                if (it.isManualBlurModeSelected) {
+                    editViewModel.videoFileName.value?.let {
+                        editViewModel.postManualBlur(
+                            uid = uid,
+                            vid = vid,
+                            requestBlurDto = manualBlurData
+                        )
+                    }
+                }
+
+
+                if (it.isSubtitleEditModeSelected) {
+                    editViewModel.videoFileName.value?.let { fileName ->
+                        editViewModel.postEditedSubtitle(
+                            uid = uid,
+                            fileName = fileName
+                        )
+                    }
+                }
+            }
+        }
+    }
+
 
     private fun setGetSubtitleStateObserver() {
         editViewModel.getSubtitleState.flowWithLifecycle(viewLifecycleOwner.lifecycle)
@@ -566,8 +585,8 @@ class EditFragment : BindingFragment<FragmentEditBinding>(R.layout.fragment_edit
                         editViewModel.saveSubtitleList(state.data)
                         startSubtitleUpdater(editViewModel.subtitleList)
                         subtitleAdapter.submitList(state.data)
+                        editViewModel.updateSubtitleMode(false)
                         editViewModel._getSubtitleState.value = UiState.Empty
-                        isSubtitleModeSelected = false
                     }
 
                     is UiState.Failure -> {
@@ -578,6 +597,36 @@ class EditFragment : BindingFragment<FragmentEditBinding>(R.layout.fragment_edit
                 }
             }.launchIn(viewLifecycleOwner.lifecycleScope)
     }
+
+    private fun setGetMosaicedVideoStateObserver() {
+        editViewModel.getMosaicedVideoState.flowWithLifecycle(viewLifecycleOwner.lifecycle)
+            .onEach { state ->
+                when (state) {
+                    is UiState.Success -> {
+                        binding.editProgressbar.visibility = INVISIBLE
+                        getUri = editViewModel.updateVideoUri(requireContext(), state.data)
+                        updateVideo(getUri!!)
+                        editViewModel._getMosaicedVideoState.value = UiState.Empty
+                        editViewModel.updateBlurMode(false)
+                        Timber.tag("Success").d(state.data.toString())
+                    }
+
+                    is UiState.Failure -> {
+                        Timber.tag("Failure").d(state.msg)
+                    }
+
+                    is UiState.Empty -> Unit
+                    is UiState.Loading -> {
+                        binding.editProgressbar.visibility = VISIBLE
+                    }
+
+                    is UiState.Loading -> {
+                        binding.editProgressbar.visibility = VISIBLE
+                    }
+                }
+            }.launchIn(viewLifecycleOwner.lifecycleScope)
+    }
+
 
     private fun setPostManualBlurStateObserver() {
         editViewModel.postManualBlurState.flowWithLifecycle(viewLifecycleOwner.lifecycle)
@@ -592,7 +641,7 @@ class EditFragment : BindingFragment<FragmentEditBinding>(R.layout.fragment_edit
                         getUri = editViewModel.updateVideoUri(requireContext(), state.data)
                         updateVideo(getUri!!)
                         editViewModel._postManualBlurState.value = UiState.Empty
-                        isManualBlurModeSelected = false
+                        editViewModel.updateManualBlurMode(false)
                     }
 
                     is UiState.Failure -> {
@@ -603,6 +652,33 @@ class EditFragment : BindingFragment<FragmentEditBinding>(R.layout.fragment_edit
                 }
             }.launchIn(viewLifecycleOwner.lifecycleScope)
     }
+
+    private fun setPostEditedSubtitleStateObserver() {
+        editViewModel.postEditedSubtitle.flowWithLifecycle(viewLifecycleOwner.lifecycle)
+            .onEach { state ->
+                when (state) {
+                    is UiState.Loading -> {
+                        binding.editProgressbar.visibility = VISIBLE
+                    }
+
+                    is UiState.Success -> {
+                        binding.editProgressbar.visibility = INVISIBLE
+                        getUri = editViewModel.updateVideoUri(requireContext(), state.data)
+                        updateVideo(getUri!!)
+                        editViewModel.updateSubtitleEditMode(false)
+                        binding.tvSubtitle.text = ""
+                        editViewModel._postEditedSubtitle.value = UiState.Empty
+                    }
+
+                    is UiState.Failure -> {
+                        Timber.tag("Failure").e(state.msg)
+                    }
+
+                    is UiState.Empty -> Unit
+                }
+            }.launchIn(viewLifecycleOwner.lifecycleScope)
+    }
+
 
     private fun showEditToolBar() {
         binding.clEditTool.visibility = VISIBLE
@@ -633,29 +709,6 @@ class EditFragment : BindingFragment<FragmentEditBinding>(R.layout.fragment_edit
         }
     }
 
-    private fun setGetMosaicedVideoStateObserver() {
-        editViewModel.getMosaicedVideoState.flowWithLifecycle(viewLifecycleOwner.lifecycle)
-            .onEach { state ->
-                when (state) {
-                    is UiState.Success -> {
-                        binding.editProgressbar.visibility = INVISIBLE
-                        getUri = editViewModel.updateVideoUri(requireContext(), state.data)
-                        updateVideo(getUri!!)
-                        isBlurModeSelected = false
-                        Timber.tag("Success").d(state.data.toString())
-                    }
-
-                    is UiState.Failure -> {
-                        Timber.tag("Failure").d(state.msg)
-                    }
-
-                    is UiState.Empty -> Unit
-                    is UiState.Loading -> {
-                        binding.editProgressbar.visibility = VISIBLE
-                    }
-                }
-            }.launchIn(viewLifecycleOwner.lifecycleScope)
-    }
 
     private fun updateVideo(uri: Uri) {
         mediaPlayer.release()
@@ -740,8 +793,7 @@ class EditFragment : BindingFragment<FragmentEditBinding>(R.layout.fragment_edit
     override fun onDestroy() {
         super.onDestroy()
         mediaPlayer.release()
+        handler.removeCallbacks(updateUiRunnable)
     }
-
-//     TODO : 혜선 1. 자동로그인 2. 자막 클릭 시, 편집 할 수 있도록 3. 내용 뿐만 아니라 폰트 및 색상 까지 4. 자막 서버 연결
 
 }

@@ -4,6 +4,7 @@ import com.graduation.vitlog_android.data.api.VideoApi
 import com.graduation.vitlog_android.model.request.RequestBlurDto
 import com.graduation.vitlog_android.model.request.RequestGetSubtitleDto
 import com.graduation.vitlog_android.model.entity.Subtitle
+import com.graduation.vitlog_android.model.request.RequestPostEditedSubtitleDto
 import com.graduation.vitlog_android.model.response.ResponseGetPresignedUrlDto
 import com.graduation.vitlog_android.model.response.ResponsePostVideoDto
 import okhttp3.MultipartBody
@@ -56,6 +57,14 @@ class VideoRepository @Inject constructor(
         fileName: String
     ): Result<List<Subtitle>> = runCatching {
         api.getSubtitle(uid = uid, fileName = fileName).convertToSubtitle()
+    }
+
+    suspend fun postEditedSubtitle(
+        uid: Int,
+        fileName: String,
+        requestPostEditedSubtitleDto : RequestPostEditedSubtitleDto
+    ): Result<ResponseBody> = runCatching {
+        api.postEditedSubtitle(uid = uid, fileName = fileName, requestPostEditedSubtitleDto = requestPostEditedSubtitleDto)
     }
 }
 
