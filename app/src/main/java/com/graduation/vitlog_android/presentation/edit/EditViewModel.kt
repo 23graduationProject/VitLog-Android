@@ -1,11 +1,14 @@
 package com.graduation.vitlog_android.presentation.edit
 
+import android.content.ContentValues
 import android.content.Context
 import android.graphics.Bitmap
 import android.media.MediaMetadataRetriever
 import android.media.MediaScannerConnection
 import android.net.Uri
 import android.os.Environment
+import android.provider.MediaStore
+import android.util.Log
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.graduation.vitlog_android.data.repository.VideoRepository
@@ -75,7 +78,7 @@ class EditViewModel @Inject constructor(
         _subtitleList = subtitle.toMutableList()
     }
 
-    private val _postManualBlurState = MutableStateFlow<UiState<ResponseBody>>(UiState.Loading)
+    val _postManualBlurState = MutableStateFlow<UiState<ResponseBody>>(UiState.Empty)
     val postManualBlurState: StateFlow<UiState<ResponseBody>> = _postManualBlurState.asStateFlow()
 
     fun loadFrames(context: Context, uri: Uri, videoLength: Long) {
@@ -152,7 +155,7 @@ class EditViewModel @Inject constructor(
 
     fun postManualBlur(
         uid: Int,
-        vid: String,
+        vid: Int,
         requestBlurDto: MutableList<RequestBlurDto>
     ) {
         viewModelScope.launch {
@@ -243,6 +246,62 @@ class EditViewModel @Inject constructor(
 
     private var videoRequestBody: ContentUriRequestBody? = null
 
+    fun updateVideoUri(context: Context, body: ResponseBody?): Uri? {
+        return try {
+            // 비디오 파일을 저장할 디렉토리
+            val videoDir =
+                File(context.getExternalFilesDir(Environment.DIRECTORY_MOVIES), "MyVideos")
+            if (!videoDir.exists()) {
+                videoDir.mkdirs()
+            }
+
+            // 저장할 파일 이름
+            val videoFile = File(videoDir, "downloaded_video.mp4")
+
+            // 파일 출력 스트림을 생성하고 responseBody를 파일에 씁니다.
+            val inputStream: InputStream? = body?.byteStream()
+            val outputStream = FileOutputStream(videoFile)
+            val buffer = ByteArray(4096)
+            var bytesRead: Int
+
+            while (inputStream?.read(buffer).also { bytesRead = it!! } != -1) {
+                outputStream.write(buffer, 0, bytesRead)
+            }
+
+            outputStream.flush()
+            inputStream?.close()
+            outputStream.close()
+
+            // 파일의 URI를 얻음
+            Uri.fromFile(videoFile)
+        } catch (e: Exception) {
+            e.printStackTrace()
+            null
+        }
+    }
+
+    fun saveVideoToGallery(context: Context, videoUri: Uri) {
+        val contentValues = ContentValues().apply {
+            put(MediaStore.MediaColumns.DISPLAY_NAME, "your_video_name") // 파일 제목
+            put(MediaStore.MediaColumns.MIME_TYPE, "video/mp4") // 파일 형식
+            put(MediaStore.MediaColumns.RELATIVE_PATH, Environment.DIRECTORY_DCIM) // 저장될 경로
+        }
+
+        val resolver = context.contentResolver
+        val uri = resolver.insert(MediaStore.Video.Media.EXTERNAL_CONTENT_URI, contentValues)
+        uri?.let {
+            resolver.openOutputStream(it).use { outputStream ->
+                // 비디오 파일의 내용을 새 위치로 복사
+                context.contentResolver.openInputStream(videoUri)?.use { inputStream ->
+                    val buffer = ByteArray(1024)
+                    var read: Int
+                    while (inputStream.read(buffer).also { read = it } != -1) {
+                        outputStream?.write(buffer, 0, read)
+                    }
+                }
+            }
+        }
+    }
 
     fun saveFile(context: Context, body: ResponseBody?) {
         var inputStream: InputStream? = null
