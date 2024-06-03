@@ -156,6 +156,7 @@ class EditFragment : BindingFragment<FragmentEditBinding>(R.layout.fragment_edit
         setGetMosaicedVideoStateObserver()
         setGetSubtitleStateObserver()
         setPostManualBlurStateObserver()
+        setSaveFileObserver()
     }
 
 
@@ -625,6 +626,8 @@ class EditFragment : BindingFragment<FragmentEditBinding>(R.layout.fragment_edit
             .onEach { state ->
                 when (state) {
                     is UiState.Success -> {
+                        Log.d("success","getMosaicedVideoState")
+                        editViewModel._getMosaicedVideoState.value = UiState.Empty
                         editViewModel.saveFile(requireContext(), state.data)
                         Timber.tag("Success").d(state.data.toString())
                     }
@@ -634,12 +637,34 @@ class EditFragment : BindingFragment<FragmentEditBinding>(R.layout.fragment_edit
                     }
 
                     is UiState.Empty -> Unit
-                    is UiState.Loading -> Unit
+                    is UiState.Loading -> {
+                        binding.editProgressbar.visibility = VISIBLE
+                    }
                 }
             }.launchIn(viewLifecycleOwner.lifecycleScope)
     }
 
+    private fun setSaveFileObserver() {
+        editViewModel.saveVideoState.flowWithLifecycle(viewLifecycleOwner.lifecycle)
+            .onEach { state ->
+                when (state) {
+                    is UiState.Success -> {
+                        Log.d("success","saveVideoState")
+                        binding.editProgressbar.visibility = INVISIBLE
+                        editViewModel._saveVideoState.value = UiState.Empty
+                        Timber.tag("Success").d(state.data.toString())
+                    }
 
+                    is UiState.Failure -> {
+                        Timber.tag("Failure").d(state.msg)
+                    }
+
+                    is UiState.Empty -> Unit
+                    is UiState.Loading -> {
+                    }
+                }
+            }.launchIn(viewLifecycleOwner.lifecycleScope)
+    }
     // 수동 블러 rectangle 드래그
     @SuppressLint("ClickableViewAccessibility")
     private fun dragBlurRectangle() {
