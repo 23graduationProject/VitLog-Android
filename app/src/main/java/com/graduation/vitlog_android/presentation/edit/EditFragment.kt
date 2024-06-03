@@ -520,6 +520,7 @@ class EditFragment : BindingFragment<FragmentEditBinding>(R.layout.fragment_edit
                         Timber.tag("Success").d(state.data.toString())
                         observeEditMode()
                     }
+
                     is UiState.Failure -> {
                         Timber.tag("Failure").e(state.msg)
                     }
@@ -603,6 +604,36 @@ class EditFragment : BindingFragment<FragmentEditBinding>(R.layout.fragment_edit
             }.launchIn(viewLifecycleOwner.lifecycleScope)
     }
 
+    private fun setGetMosaicedVideoStateObserver() {
+        editViewModel.getMosaicedVideoState.flowWithLifecycle(viewLifecycleOwner.lifecycle)
+            .onEach { state ->
+                when (state) {
+                    is UiState.Success -> {
+                        binding.editProgressbar.visibility = INVISIBLE
+                        getUri = editViewModel.updateVideoUri(requireContext(), state.data)
+                        updateVideo(getUri!!)
+                        editViewModel._getMosaicedVideoState.value = UiState.Empty
+                        editViewModel.updateBlurMode(false)
+                        Timber.tag("Success").d(state.data.toString())
+                    }
+
+                    is UiState.Failure -> {
+                        Timber.tag("Failure").d(state.msg)
+                    }
+
+                    is UiState.Empty -> Unit
+                    is UiState.Loading -> {
+                        binding.editProgressbar.visibility = VISIBLE
+                    }
+
+                    is UiState.Loading -> {
+                        binding.editProgressbar.visibility = VISIBLE
+                    }
+                }
+            }.launchIn(viewLifecycleOwner.lifecycleScope)
+    }
+
+
     private fun setPostManualBlurStateObserver() {
         editViewModel.postManualBlurState.flowWithLifecycle(viewLifecycleOwner.lifecycle)
             .onEach { state ->
@@ -616,7 +647,7 @@ class EditFragment : BindingFragment<FragmentEditBinding>(R.layout.fragment_edit
                         getUri = editViewModel.updateVideoUri(requireContext(), state.data)
                         updateVideo(getUri!!)
                         editViewModel._postManualBlurState.value = UiState.Empty
-                        editViewModel.updateManualBlurMode(true)
+                        editViewModel.updateManualBlurMode(false)
                     }
 
                     is UiState.Failure -> {
@@ -679,34 +710,6 @@ class EditFragment : BindingFragment<FragmentEditBinding>(R.layout.fragment_edit
         binding.tvEditSubtitleComplete.setOnClickListener {
             showEditToolBar()
         }
-    }
-
-    private fun setGetMosaicedVideoStateObserver() {
-        editViewModel.getMosaicedVideoState.flowWithLifecycle(viewLifecycleOwner.lifecycle)
-            .onEach { state ->
-                when (state) {
-                    is UiState.Success -> {
-                        binding.editProgressbar.visibility = INVISIBLE
-                        getUri = editViewModel.updateVideoUri(requireContext(), state.data)
-                        updateVideo(getUri!!)
-                        editViewModel._getMosaicedVideoState.value = UiState.Empty
-                        Timber.tag("Success").d(state.data.toString())
-                    }
-
-                    is UiState.Failure -> {
-                        Timber.tag("Failure").d(state.msg)
-                    }
-
-                    is UiState.Empty -> Unit
-                    is UiState.Loading -> {
-                        binding.editProgressbar.visibility = VISIBLE
-                    }
-
-                    is UiState.Loading -> {
-                        binding.editProgressbar.visibility = VISIBLE
-                    }
-                }
-            }.launchIn(viewLifecycleOwner.lifecycleScope)
     }
 
     private fun setSaveFileObserver() {
@@ -814,6 +817,7 @@ class EditFragment : BindingFragment<FragmentEditBinding>(R.layout.fragment_edit
     override fun onDestroy() {
         super.onDestroy()
         mediaPlayer.release()
+        handler.removeCallbacks(updateUiRunnable)
     }
 
 //     TODO : 혜선 1. 자동로그인 2. 자막 클릭 시, 편집 할 수 있도록 3. 내용 뿐만 아니라 폰트 및 색상 까지 4. 자막 서버 연결
