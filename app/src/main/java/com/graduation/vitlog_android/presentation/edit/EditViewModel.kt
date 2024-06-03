@@ -41,6 +41,25 @@ class EditViewModel @Inject constructor(
     private val videoRepository: VideoRepository
 ) : ViewModel() {
 
+    private val _modeStates = MutableStateFlow(EditMode())
+    val modeStates: StateFlow<EditMode> = _modeStates
+
+    fun updateBlurMode(isSelected: Boolean) {
+        _modeStates.value = _modeStates.value.copy(isBlurModeSelected = isSelected)
+    }
+
+    fun updateSubtitleMode(isSelected: Boolean) {
+        _modeStates.value = _modeStates.value.copy(isSubtitleModeSelected = isSelected)
+    }
+
+    fun updateManualBlurMode(isSelected: Boolean) {
+        _modeStates.value = _modeStates.value.copy(isManualBlurModeSelected = isSelected)
+    }
+
+    fun updateSubtitleEditMode(isSelected: Boolean) {
+        _modeStates.value = _modeStates.value.copy(isSubtitleEditModeSelected = isSelected)
+    }
+
     private val _putVideoToPresignedUrlState =
         MutableStateFlow<UiState<ResponseBody>>(UiState.Empty)
     val putVideoToPresignedUrlState: StateFlow<UiState<ResponseBody>> =
@@ -161,11 +180,18 @@ class EditViewModel @Inject constructor(
         uid: Int,
         fileName: String
     ) {
+        Log.d("subtitle", "go")
+        Log.d("subtitle",subtitleList.toString())
         viewModelScope.launch {
             _postEditedSubtitle.value = UiState.Loading
-            videoRepository.postEditedSubtitle(uid, fileName, RequestPostEditedSubtitleDto(
+            Log.d("subtitle", RequestPostEditedSubtitleDto(
                 subtitle = subtitleList,
-                font = "pretendard",
+                font = "pretended",
+                color = "yellow"
+            ).toString())
+            videoRepository.postEditedSubtitle(uid, fileName + ".mp4", RequestPostEditedSubtitleDto(
+                subtitle = subtitleList,
+                font = "pretended",
                 color = "yellow"
             ))
                 .onSuccess { response ->
