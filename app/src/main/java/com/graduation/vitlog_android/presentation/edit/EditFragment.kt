@@ -213,6 +213,10 @@ class EditFragment : BindingFragment<FragmentEditBinding>(R.layout.fragment_edit
             )
             editViewModel.updateBlurMode(true)
         }
+        binding.btnEditBlurAuto.setOnClickListener {
+            isBlurModeSelected = true
+            uriToRequestBody()
+        }
         binding.btnEditSubtitle.setOnClickListener {
             showEditSubtitleMode()
             binding.btnEditBlur.setImageDrawable(
@@ -228,11 +232,12 @@ class EditFragment : BindingFragment<FragmentEditBinding>(R.layout.fragment_edit
                 )
             )
             editViewModel.updateSubtitleMode(true)
+            uriToRequestBody()
         }
 
         binding.editSaveBtn.setOnClickListener {
             if (binding.editSaveBtn.text == "저장") {
-                observeEditMode()
+                editViewModel.saveVideoToGallery(requireContext(), getUri!!)
             } else if (binding.editSaveBtn.text == "완료") {
                 binding.editSaveBtn.text = "저장"
                 binding.editSaveBtn.setTextColor(
@@ -245,6 +250,7 @@ class EditFragment : BindingFragment<FragmentEditBinding>(R.layout.fragment_edit
                 startTime = (mediaPlayer.currentPosition / 1000).toString()
                 endTime =
                     (mediaPlayer.currentPosition / 1000 + 2).toString()   // 끝나는 시간은 일단 2초 뒤로 고정
+                getCoordinates()
 
                 // 수동블러
                 manualBlurData.add(
@@ -258,6 +264,7 @@ class EditFragment : BindingFragment<FragmentEditBinding>(R.layout.fragment_edit
                     )
                 )
                 editViewModel.updateManualBlurMode(true)
+                uriToRequestBody()
             }
         }
 
@@ -488,7 +495,7 @@ class EditFragment : BindingFragment<FragmentEditBinding>(R.layout.fragment_edit
                 when (state) {
                     is UiState.Success -> {
                         Timber.tag("Success").d(state.data.data.url)
-                        uriToRequestBody()
+//                        uriToRequestBody()
                         editViewModel.setVideoFileName(state.data.data.fileName)
                         editViewModel.setPresignedUrl(state.data.data.url)
                         SharedPrefManager.save("vid", state.data.data.vid)
@@ -511,6 +518,31 @@ class EditFragment : BindingFragment<FragmentEditBinding>(R.layout.fragment_edit
                 when (state) {
                     is UiState.Success -> {
                         Timber.tag("Success").d(state.data.toString())
+                        if (isBlurModeSelected) {
+                            editViewModel.videoFileName.value?.let {
+                                editViewModel.getMosaicedVideo(
+                                    uid,
+                                    it
+                                )
+                            }
+                        }
+                        if (isSubtitleModeSelected) {
+                            editViewModel.videoFileName.value?.let { fileName ->
+                                editViewModel.getSubtitle(
+                                    uid = uid,
+                                    fileName = fileName
+                                )
+                            }
+                        }
+                        if (isManualBlurModeSelected) {
+                            editViewModel.videoFileName.value?.let {
+                                editViewModel.postManualBlur(
+                                    uid = uid,
+                                    vid = vid,
+                                    requestBlurDto = manualBlurData
+                                )
+                            }
+                        }
                     }
 
                     is UiState.Failure -> {
@@ -601,9 +633,15 @@ class EditFragment : BindingFragment<FragmentEditBinding>(R.layout.fragment_edit
             .onEach { state ->
                 when (state) {
                     is UiState.Loading -> {
+                        binding.editProgressbar.visibility = VISIBLE
                     }
 
                     is UiState.Success -> {
+                        binding.editProgressbar.visibility = INVISIBLE
+                        getUri = editViewModel.updateVideoUri(requireContext(), state.data)
+                        updateVideo(getUri!!)
+                        editViewModel._postManualBlurState.value = UiState.Empty
+                        isManualBlurModeSelected = false
                     }
 
                     is UiState.Failure -> {
@@ -674,9 +712,10 @@ class EditFragment : BindingFragment<FragmentEditBinding>(R.layout.fragment_edit
             .onEach { state ->
                 when (state) {
                     is UiState.Success -> {
-                        Log.d("success", "getMosaicedVideoState")
+                        binding.editProgressbar.visibility = INVISIBLE
+                        getUri = editViewModel.updateVideoUri(requireContext(), state.data)
+                        updateVideo(getUri!!)
                         editViewModel._getMosaicedVideoState.value = UiState.Empty
-                        editViewModel.saveFile(requireContext(), state.data)
                         Timber.tag("Success").d(state.data.toString())
                     }
 
@@ -685,6 +724,9 @@ class EditFragment : BindingFragment<FragmentEditBinding>(R.layout.fragment_edit
                     }
 
                     is UiState.Empty -> Unit
+                    is UiState.Loading -> {
+                        binding.editProgressbar.visibility = VISIBLE
+                    }
                     is UiState.Loading -> {
                         binding.editProgressbar.visibility = VISIBLE
                     }
@@ -714,6 +756,16 @@ class EditFragment : BindingFragment<FragmentEditBinding>(R.layout.fragment_edit
             }.launchIn(viewLifecycleOwner.lifecycleScope)
     }
 
+    private fun updateVideo(uri: Uri) {
+        mediaPlayer.release()
+        mediaPlayer = MediaPlayer().apply {
+            setDataSource(requireContext(), uri)
+            setSurface(Surface(binding.tvVideo.surfaceTexture))
+            setOnPreparedListener(this@EditFragment)
+            prepareAsync()
+        }
+    }
+
     // 수동 블러 rectangle 드래그
     @SuppressLint("ClickableViewAccessibility")
     private fun dragBlurRectangle() {
@@ -740,7 +792,6 @@ class EditFragment : BindingFragment<FragmentEditBinding>(R.layout.fragment_edit
                 MotionEvent.ACTION_UP -> {
                     // 사용자가 뷰를 눌렀다가 뗐을 때 performClick() 메서드 호출
                     view.performClick()
-                    getCoordinates()
                 }
 
                 else -> return@setOnTouchListener false
@@ -771,8 +822,6 @@ class EditFragment : BindingFragment<FragmentEditBinding>(R.layout.fragment_edit
         rectangleY = binding.blurSelfLayout.y + paddingInPx
         rectangleRightX = rectangleX + binding.blurSelfRectangle.width
         rectangleRightY = rectangleX + binding.blurSelfRectangle.height
-//        Log.d("blur rectangle width", binding.blurSelfRectangle.width.toString())
-//        Log.d("blur rectangle height", binding.blurSelfRectangle.height.toString())
     }
 
     override fun onSurfaceTextureSizeChanged(surface: SurfaceTexture, width: Int, height: Int) {
