@@ -65,8 +65,8 @@ class EditFragment : BindingFragment<FragmentEditBinding>(R.layout.fragment_edit
     private var startTime: String = "00:00:00"
     private var endTime: String = "00:00:00"
 
-    private var originalVideoWidth: Int = 0
-    private var originalVideoHeight: Int = 0
+    private var originalVideoWidth: Float = 0F
+    private var originalVideoHeight: Float = 0F
     private var videoLengthInMilliseconds = 0
 
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
@@ -352,9 +352,9 @@ class EditFragment : BindingFragment<FragmentEditBinding>(R.layout.fragment_edit
         mediaMetadataRetriever.setDataSource(context, uri)
 
         originalVideoWidth =
-            mediaMetadataRetriever.extractMetadata(MediaMetadataRetriever.METADATA_KEY_VIDEO_WIDTH)?.toIntOrNull()!!
+            mediaMetadataRetriever.extractMetadata(MediaMetadataRetriever.METADATA_KEY_VIDEO_WIDTH)?.toFloatOrNull()!!
         originalVideoHeight =
-            mediaMetadataRetriever.extractMetadata(MediaMetadataRetriever.METADATA_KEY_VIDEO_HEIGHT)?.toIntOrNull()!!
+            mediaMetadataRetriever.extractMetadata(MediaMetadataRetriever.METADATA_KEY_VIDEO_HEIGHT)?.toFloatOrNull()!!
 
         val videoLength =
             mediaMetadataRetriever.extractMetadata(MediaMetadataRetriever.METADATA_KEY_DURATION)
@@ -757,11 +757,11 @@ class EditFragment : BindingFragment<FragmentEditBinding>(R.layout.fragment_edit
 
     // 영상 해상도 비율 맞춰서 수동블러 좌표 조정
     private fun checkVideoRatio(st: String, ed: String, x1: Float, y1: Float, x2: Float, y2: Float): RequestBlurDto {
-        val videoHeight = binding.tvVideo.height
+        val videoHeight = binding.tvVideo.height.toFloat()
         val videoWidth = binding.tvVideo.width
         val ratioH = originalVideoHeight / videoHeight
         val ratioW = originalVideoWidth / videoWidth
-
+        
         return RequestBlurDto(
             st,
             ed,
