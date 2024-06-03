@@ -43,6 +43,7 @@ import kotlinx.coroutines.flow.onEach
 import kotlinx.coroutines.launch
 import timber.log.Timber
 import java.io.IOException
+import kotlin.io.path.fileVisitor
 
 
 @AndroidEntryPoint
@@ -63,6 +64,9 @@ class EditFragment : BindingFragment<FragmentEditBinding>(R.layout.fragment_edit
     private var manualBlurData = mutableListOf<RequestBlurDto>()
     private var startTime: String = "00:00:00"
     private var endTime: String = "00:00:00"
+
+    private var originalVideoWidth: Int = 0
+    private var originalVideoHeight: Int = 0
 
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
         super.onViewCreated(view, savedInstanceState)
@@ -253,10 +257,10 @@ class EditFragment : BindingFragment<FragmentEditBinding>(R.layout.fragment_edit
                     RequestBlurDto(
                         startTime = startTime,
                         endTime = endTime,
-                        x1 = rectangleX,
-                        y1 = rectangleY,
-                        x2 = rectangleRightX,
-                        y2 = rectangleRightY
+                        x1 = rectangleX.toInt(),
+                        y1 = rectangleY.toInt(),
+                        x2 = rectangleRightX.toInt(),
+                        y2 = rectangleRightY.toInt()
                     )
                 )
                 isManualBlurModeSelected = true
@@ -331,6 +335,11 @@ class EditFragment : BindingFragment<FragmentEditBinding>(R.layout.fragment_edit
     private fun setupMediaRetrieverAndSeekBar(uri: Uri) {
         val mediaMetadataRetriever = MediaMetadataRetriever()
         mediaMetadataRetriever.setDataSource(context, uri)
+
+        originalVideoWidth =
+            mediaMetadataRetriever.extractMetadata(MediaMetadataRetriever.METADATA_KEY_VIDEO_WIDTH)?.toIntOrNull()!!
+        originalVideoHeight =
+            mediaMetadataRetriever.extractMetadata(MediaMetadataRetriever.METADATA_KEY_VIDEO_HEIGHT)?.toIntOrNull()!!
 
         val videoLength =
             mediaMetadataRetriever.extractMetadata(MediaMetadataRetriever.METADATA_KEY_DURATION)
@@ -492,11 +501,10 @@ class EditFragment : BindingFragment<FragmentEditBinding>(R.layout.fragment_edit
                 when (state) {
                     is UiState.Success -> {
                         Timber.tag("Success").d(state.data.data.url)
-//                        uriToRequestBody()
                         editViewModel.setVideoFileName(state.data.data.fileName)
                         editViewModel.setPresignedUrl(state.data.data.url)
                         SharedPrefManager.save("vid", state.data.data.vid)
-                        Log.d("vid", vid.toString())
+                        Log.d("uid", uid.toString())
                     }
 
                     is UiState.Failure -> {
@@ -532,10 +540,10 @@ class EditFragment : BindingFragment<FragmentEditBinding>(R.layout.fragment_edit
                             }
                         }
                         if (isManualBlurModeSelected) {
-                            editViewModel.videoFileName.value?.let {
+                            editViewModel.videoFileName.value?.let { fileName ->
                                 editViewModel.postManualBlur(
                                     uid = uid,
-                                    vid = vid,
+                                    fileName = fileName,
                                     requestBlurDto = manualBlurData
                                 )
                             }
@@ -585,14 +593,19 @@ class EditFragment : BindingFragment<FragmentEditBinding>(R.layout.fragment_edit
                 when (state) {
                     is UiState.Loading -> {
                         binding.editProgressbar.visibility = VISIBLE
+                        Log.d("manual blur", "Loading")
                     }
 
                     is UiState.Success -> {
                         binding.editProgressbar.visibility = INVISIBLE
+                        binding.blurSelfLayout.visibility = INVISIBLE
+                        binding.timelineSectionIv.visibility = INVISIBLE
+
                         getUri = editViewModel.updateVideoUri(requireContext(), state.data)
                         updateVideo(getUri!!)
                         editViewModel._postManualBlurState.value = UiState.Empty
                         isManualBlurModeSelected = false
+                        Log.d("manual blur", "Success")
                     }
 
                     is UiState.Failure -> {
@@ -707,6 +720,7 @@ class EditFragment : BindingFragment<FragmentEditBinding>(R.layout.fragment_edit
         binding.blurRectangleX.setOnClickListener {
             binding.blurSelfLayout.visibility = View.INVISIBLE
             binding.timelineSectionIv.visibility = View.GONE
+            isManualBlurModeSelected = false
         }
     }
 
@@ -722,7 +736,7 @@ class EditFragment : BindingFragment<FragmentEditBinding>(R.layout.fragment_edit
         rectangleX = binding.blurSelfLayout.x + paddingInPx
         rectangleY = binding.blurSelfLayout.y + paddingInPx
         rectangleRightX = rectangleX + binding.blurSelfRectangle.width
-        rectangleRightY = rectangleX + binding.blurSelfRectangle.height
+        rectangleRightY = rectangleY + binding.blurSelfRectangle.height
     }
 
     override fun onSurfaceTextureSizeChanged(surface: SurfaceTexture, width: Int, height: Int) {

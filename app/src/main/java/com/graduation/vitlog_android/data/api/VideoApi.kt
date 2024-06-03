@@ -43,10 +43,10 @@ interface VideoApi {
         @Path("fileName") fileName: String
     ): ResponseBody
 
-    @POST("api/coord/{uid}/{vid}")
+    @POST("api/coord/{uid}/{fileName}")
     suspend fun postManualBlur(
         @Path("uid") uid: Int,
-        @Path("vid") vid: Int,
+        @Path("fileName") fileName: String,
         @Body requestBlurDto: MutableList<RequestBlurDto>
     ): ResponseBody
 

@@ -45,10 +45,10 @@ class VideoRepository @Inject constructor(
 
     suspend fun postManualBlur(
         uid: Int,
-        vid: Int,
+        fileName: String,
         requestBlurDto: MutableList<RequestBlurDto>
     ): Result<ResponseBody> = runCatching {
-        api.postManualBlur(uid = uid, vid = vid, requestBlurDto = requestBlurDto)
+        api.postManualBlur(uid = uid, fileName = fileName, requestBlurDto = requestBlurDto)
     }
 
     suspend fun getSubtitle(
