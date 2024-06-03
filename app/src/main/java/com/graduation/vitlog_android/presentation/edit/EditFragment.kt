@@ -255,14 +255,22 @@ class EditFragment : BindingFragment<FragmentEditBinding>(R.layout.fragment_edit
 
                 // 수동블러
                 manualBlurData.add(
-                    RequestBlurDto(
-                        startTime = startTime,
-                        endTime = endTime,
-                        x1 = rectangleX.toInt(),
-                        y1 = rectangleY.toInt(),
-                        x2 = rectangleRightX.toInt(),
-                        y2 = rectangleRightY.toInt()
+                    checkVideoRatio(
+                        startTime,
+                        endTime,
+                        rectangleX,
+                        rectangleY,
+                        rectangleRightX,
+                        rectangleRightY
                     )
+//                    RequestBlurDto(
+//                        startTime = startTime,
+//                        endTime = endTime,
+//                        x1 = rectangleX.toInt(),
+//                        y1 = rectangleY.toInt(),
+//                        x2 = rectangleRightX.toInt(),
+//                        y2 = rectangleRightY.toInt()
+//                    )
                 )
                 isManualBlurModeSelected = true
                 uriToRequestBody()
@@ -745,6 +753,23 @@ class EditFragment : BindingFragment<FragmentEditBinding>(R.layout.fragment_edit
         rectangleY = binding.blurSelfLayout.y + paddingInPx
         rectangleRightX = rectangleX + binding.blurSelfRectangle.width
         rectangleRightY = rectangleY + binding.blurSelfRectangle.height
+    }
+
+    // 영상 해상도 비율 맞춰서 수동블러 좌표 조정
+    private fun checkVideoRatio(st: String, ed: String, x1: Float, y1: Float, x2: Float, y2: Float): RequestBlurDto {
+        val videoHeight = binding.tvVideo.height
+        val videoWidth = binding.tvVideo.width
+        val ratioH = originalVideoHeight / videoHeight
+        val ratioW = originalVideoWidth / videoWidth
+
+        return RequestBlurDto(
+            st,
+            ed,
+            (x1*ratioW).toInt(),
+            (y1*ratioH).toInt(),
+            (x2*ratioW).toInt(),
+            (y2*ratioH).toInt()
+        )
     }
 
     override fun onSurfaceTextureSizeChanged(surface: SurfaceTexture, width: Int, height: Int) {
