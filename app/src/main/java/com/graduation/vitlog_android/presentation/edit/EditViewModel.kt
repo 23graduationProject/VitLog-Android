@@ -11,6 +11,7 @@ import androidx.lifecycle.viewModelScope
 import com.graduation.vitlog_android.data.repository.VideoRepository
 import com.graduation.vitlog_android.model.entity.Subtitle
 import com.graduation.vitlog_android.model.request.RequestBlurDto
+import com.graduation.vitlog_android.model.request.RequestPostEditedSubtitleDto
 import com.graduation.vitlog_android.model.response.ResponseGetPresignedUrlDto
 import com.graduation.vitlog_android.util.multipart.ContentUriRequestBody
 import com.graduation.vitlog_android.util.preference.SharedPrefManager.uid
@@ -55,6 +56,9 @@ class EditViewModel @Inject constructor(
 
     var _getSubtitleState = MutableStateFlow<UiState<List<Subtitle>>>(UiState.Empty)
     val getSubtitleState: StateFlow<UiState<List<Subtitle>>> = _getSubtitleState.asStateFlow()
+
+    var _postEditedSubtitle = MutableStateFlow<UiState<ResponseBody>>(UiState.Empty)
+    val postEditedSubtitle: StateFlow<UiState<ResponseBody>> = _postEditedSubtitle.asStateFlow()
 
     val timeLineImages = mutableListOf<Bitmap>()
 
@@ -149,6 +153,31 @@ class EditViewModel @Inject constructor(
                 }
         }
     }
+
+    fun postEditedSubtitle(
+        uid: Int,
+        fileName: String
+    ) {
+        viewModelScope.launch {
+            _postEditedSubtitle.value = UiState.Loading
+            videoRepository.postEditedSubtitle(uid, fileName, RequestPostEditedSubtitleDto(
+                subtitle = subtitleList,
+                font = "pretendard",
+                color = "yellow"
+            ))
+                .onSuccess { response ->
+                    _postEditedSubtitle.value = UiState.Success(response)
+                    Timber.e("성공 $response")
+                }.onFailure { t ->
+                    if (t is HttpException) {
+                        val errorResponse = t.response()?.errorBody()?.string()
+                        Timber.e("HTTP 실패: $errorResponse")
+                    }
+                    _postEditedSubtitle.value = UiState.Failure("${t.message}")
+                }
+        }
+    }
+
 
     fun postManualBlur(
         uid: Int,

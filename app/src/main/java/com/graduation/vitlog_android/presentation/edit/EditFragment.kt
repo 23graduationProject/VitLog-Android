@@ -590,6 +590,27 @@ class EditFragment : BindingFragment<FragmentEditBinding>(R.layout.fragment_edit
             }.launchIn(viewLifecycleOwner.lifecycleScope)
     }
 
+    private fun setPostEditedSubtitleStateObserver() {
+        editViewModel.postEditedSubtitle.flowWithLifecycle(viewLifecycleOwner.lifecycle)
+            .onEach { state ->
+                when (state) {
+                    is UiState.Loading -> {
+                    }
+
+                    is UiState.Success -> {
+                        editViewModel.saveFile(requireContext(), state.data)
+                    }
+
+                    is UiState.Failure -> {
+                        Timber.tag("Failure").e(state.msg)
+                    }
+
+                    is UiState.Empty -> Unit
+                }
+            }.launchIn(viewLifecycleOwner.lifecycleScope)
+    }
+
+
     private fun showEditToolBar() {
         binding.clEditTool.visibility = VISIBLE
         binding.clEditToolSubtitle.visibility = INVISIBLE
