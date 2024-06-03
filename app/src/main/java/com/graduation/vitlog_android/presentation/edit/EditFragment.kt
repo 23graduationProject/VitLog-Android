@@ -13,7 +13,6 @@ import android.net.Uri
 import android.os.Bundle
 import android.os.Handler
 import android.os.Looper
-import android.util.Log
 import android.view.MotionEvent
 import android.view.Surface
 import android.view.TextureView
@@ -154,7 +153,6 @@ class EditFragment : BindingFragment<FragmentEditBinding>(R.layout.fragment_edit
         setGetSubtitleStateObserver()
         setPostManualBlurStateObserver()
         setPostEditedSubtitleStateObserver()
-        setSaveFileObserver()
     }
 
 
@@ -195,7 +193,6 @@ class EditFragment : BindingFragment<FragmentEditBinding>(R.layout.fragment_edit
     private fun setListener() {
         binding.tvEditSubtitleToolFont.setOnClickListener {
             editViewModel.updateSubtitleEditMode(true)
-            Log.d("MODEE", editViewModel.modeStates.value.toString())
         }
         binding.btnEditBlur.setOnClickListener {
             showEditBlurMode()
@@ -499,7 +496,6 @@ class EditFragment : BindingFragment<FragmentEditBinding>(R.layout.fragment_edit
                         editViewModel.setVideoFileName(state.data.data.fileName)
                         editViewModel.setPresignedUrl(state.data.data.url)
                         SharedPrefManager.save("vid", state.data.data.vid)
-                        Log.d("vid", vid.toString())
                     }
 
                     is UiState.Failure -> {
@@ -532,7 +528,6 @@ class EditFragment : BindingFragment<FragmentEditBinding>(R.layout.fragment_edit
     }
 
     private fun observeEditMode() {
-        Log.d("MODE", editViewModel.modeStates.value.toString())
         lifecycleScope.launch {
             editViewModel.modeStates.collect {
                 if (it.isBlurModeSelected) {
@@ -544,7 +539,6 @@ class EditFragment : BindingFragment<FragmentEditBinding>(R.layout.fragment_edit
                     }
                 }
                 if (it.isSubtitleModeSelected) {
-                    Log.d("MODE", "selected")
                     editViewModel.videoFileName.value?.let { fileName ->
                         editViewModel.getSubtitle(
                             uid = uid,
@@ -668,12 +662,15 @@ class EditFragment : BindingFragment<FragmentEditBinding>(R.layout.fragment_edit
                     }
 
                     is UiState.Success -> {
-                        Log.d("subtitle", "success")
+                        binding.editProgressbar.visibility = INVISIBLE
+                        getUri = editViewModel.updateVideoUri(requireContext(), state.data)
+                        updateVideo(getUri!!)
+                        editViewModel.updateSubtitleEditMode(false)
+                        binding.tvSubtitle.text = ""
                         editViewModel._postEditedSubtitle.value = UiState.Empty
                     }
 
                     is UiState.Failure -> {
-                        Log.d("subtitle", state.msg)
                         Timber.tag("Failure").e(state.msg)
                     }
 
@@ -712,27 +709,6 @@ class EditFragment : BindingFragment<FragmentEditBinding>(R.layout.fragment_edit
         }
     }
 
-    private fun setSaveFileObserver() {
-        editViewModel.saveVideoState.flowWithLifecycle(viewLifecycleOwner.lifecycle)
-            .onEach { state ->
-                when (state) {
-                    is UiState.Success -> {
-                        Log.d("success", "saveVideoState")
-                        binding.editProgressbar.visibility = INVISIBLE
-                        editViewModel._saveVideoState.value = UiState.Empty
-                        Timber.tag("Success").d(state.data.toString())
-                    }
-
-                    is UiState.Failure -> {
-                        Timber.tag("Failure").d(state.msg)
-                    }
-
-                    is UiState.Empty -> Unit
-                    is UiState.Loading -> {
-                    }
-                }
-            }.launchIn(viewLifecycleOwner.lifecycleScope)
-    }
 
     private fun updateVideo(uri: Uri) {
         mediaPlayer.release()
@@ -819,7 +795,5 @@ class EditFragment : BindingFragment<FragmentEditBinding>(R.layout.fragment_edit
         mediaPlayer.release()
         handler.removeCallbacks(updateUiRunnable)
     }
-
-//     TODO : 혜선 1. 자동로그인 2. 자막 클릭 시, 편집 할 수 있도록 3. 내용 뿐만 아니라 폰트 및 색상 까지 4. 자막 서버 연결
 
 }

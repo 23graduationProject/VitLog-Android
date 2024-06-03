@@ -8,7 +8,6 @@ import android.media.MediaScannerConnection
 import android.net.Uri
 import android.os.Environment
 import android.provider.MediaStore
-import android.util.Log
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.graduation.vitlog_android.data.repository.VideoRepository
@@ -180,21 +179,12 @@ class EditViewModel @Inject constructor(
         uid: Int,
         fileName: String
     ) {
-        Log.d("subtitle", "go")
-        Log.d("subtitle", subtitleList.toString())
         viewModelScope.launch {
             _postEditedSubtitle.value = UiState.Loading
-            Log.d(
-                "subtitle", RequestPostEditedSubtitleDto(
-                    subtitle = subtitleList,
-                    font = "pretended",
-                    color = "yellow"
-                ).toString()
-            )
             videoRepository.postEditedSubtitle(
                 uid, fileName + ".mp4", RequestPostEditedSubtitleDto(
                     subtitle = subtitleList,
-                    font = "pretended",
+                    font = "pretendard",
                     color = "yellow"
                 )
             )
@@ -303,11 +293,6 @@ class EditViewModel @Inject constructor(
     }
 
 
-    val _saveVideoState = MutableStateFlow<UiState<Boolean>>(UiState.Empty)
-    val saveVideoState: StateFlow<UiState<Boolean>> =
-        _saveVideoState.asStateFlow()
-    private var videoRequestBody: ContentUriRequestBody? = null
-
     fun updateVideoUri(context: Context, body: ResponseBody?): Uri? {
         return try {
             // 비디오 파일을 저장할 디렉토리
@@ -353,7 +338,6 @@ class EditViewModel @Inject constructor(
         val uri = resolver.insert(MediaStore.Video.Media.EXTERNAL_CONTENT_URI, contentValues)
         uri?.let {
             resolver.openOutputStream(it).use { outputStream ->
-                // 비디오 파일의 내용을 새 위치로 복사
                 context.contentResolver.openInputStream(videoUri)?.use { inputStream ->
                     val buffer = ByteArray(1024)
                     var read: Int
