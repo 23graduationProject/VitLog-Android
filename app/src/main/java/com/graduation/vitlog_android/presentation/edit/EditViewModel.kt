@@ -78,7 +78,7 @@ class EditViewModel @Inject constructor(
         _subtitleList = subtitle.toMutableList()
     }
 
-    private val _postManualBlurState = MutableStateFlow<UiState<ResponseBody>>(UiState.Loading)
+    val _postManualBlurState = MutableStateFlow<UiState<ResponseBody>>(UiState.Empty)
     val postManualBlurState: StateFlow<UiState<ResponseBody>> = _postManualBlurState.asStateFlow()
 
     fun loadFrames(context: Context, uri: Uri, videoLength: Long) {

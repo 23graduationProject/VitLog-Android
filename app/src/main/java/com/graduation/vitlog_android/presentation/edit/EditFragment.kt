@@ -584,10 +584,14 @@ class EditFragment : BindingFragment<FragmentEditBinding>(R.layout.fragment_edit
             .onEach { state ->
                 when (state) {
                     is UiState.Loading -> {
+                        binding.editProgressbar.visibility = VISIBLE
                     }
 
                     is UiState.Success -> {
-//                        editViewModel.saveFile(requireContext(), state.data)
+                        binding.editProgressbar.visibility = INVISIBLE
+                        getUri = editViewModel.updateVideoUri(requireContext(), state.data)
+                        updateVideo(getUri!!)
+                        editViewModel._postManualBlurState.value = UiState.Empty
                         isManualBlurModeSelected = false
                     }
 
