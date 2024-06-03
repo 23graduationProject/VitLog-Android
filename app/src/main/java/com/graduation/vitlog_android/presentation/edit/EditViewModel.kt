@@ -9,7 +9,6 @@ import android.net.Uri
 import android.os.Environment
 import android.provider.MediaStore
 import android.util.Log
-import android.util.Log
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.graduation.vitlog_android.data.repository.VideoRepository
@@ -182,19 +181,23 @@ class EditViewModel @Inject constructor(
         fileName: String
     ) {
         Log.d("subtitle", "go")
-        Log.d("subtitle",subtitleList.toString())
+        Log.d("subtitle", subtitleList.toString())
         viewModelScope.launch {
             _postEditedSubtitle.value = UiState.Loading
-            Log.d("subtitle", RequestPostEditedSubtitleDto(
-                subtitle = subtitleList,
-                font = "pretended",
-                color = "yellow"
-            ).toString())
-            videoRepository.postEditedSubtitle(uid, fileName + ".mp4", RequestPostEditedSubtitleDto(
-                subtitle = subtitleList,
-                font = "pretended",
-                color = "yellow"
-            ))
+            Log.d(
+                "subtitle", RequestPostEditedSubtitleDto(
+                    subtitle = subtitleList,
+                    font = "pretended",
+                    color = "yellow"
+                ).toString()
+            )
+            videoRepository.postEditedSubtitle(
+                uid, fileName + ".mp4", RequestPostEditedSubtitleDto(
+                    subtitle = subtitleList,
+                    font = "pretended",
+                    color = "yellow"
+                )
+            )
                 .onSuccess { response ->
                     _postEditedSubtitle.value = UiState.Success(response)
                     Timber.e("성공 $response")
@@ -362,91 +365,5 @@ class EditViewModel @Inject constructor(
         }
     }
 
-    fun saveFile(context: Context, body: ResponseBody?) {
-        var inputStream: InputStream? = null
-        var outputStream: OutputStream? = null
 
-        try {
-            val fileReader = ByteArray(4096)
-            var fileSizeDownloaded: Long = 0
-            inputStream = body?.byteStream()
-            outputStream = FileOutputStream(File("path/to/your/file"))
-
-            while (true) {
-                val read = inputStream?.read(fileReader)
-                if (read == -1) {
-                    break
-                }
-                outputStream.write(fileReader, 0, read!!)
-                fileSizeDownloaded += read.toLong()
-            }
-
-            outputStream.flush()
-
-        } catch (e: IOException) {
-        } finally {
-            inputStream?.close()
-            outputStream?.close()
-        }
-        writeResponseBodyToDisk(context, body)
-    }
-
-}
-
-
-private fun writeResponseBodyToDisk(context: Context, body: ResponseBody?): Boolean {
-    return try {
-        // 저장할 파일의 경로 지정
-        val filePath =
-            Environment.getExternalStoragePublicDirectory(Environment.DIRECTORY_DOWNLOADS)
-                .toString() + "/your_video_name.mp4"
-        val videoFile = File(filePath)
-
-        var inputStream: InputStream? = null
-        var outputStream: OutputStream? = null
-
-        try {
-            val fileReader = ByteArray(4096)
-            var fileSizeDownloaded: Long = 0
-            inputStream = body?.byteStream()
-            outputStream = FileOutputStream(videoFile)
-
-            while (true) {
-                val read = inputStream?.read(fileReader) ?: -1
-
-                if (read == -1) {
-                    break
-                }
-
-                outputStream.write(fileReader, 0, read)
-                fileSizeDownloaded += read.toLong()
-            }
-
-                outputStream.flush()
-
-                // 미디어 스캔 진행
-                MediaScannerConnection.scanFile(
-                    context,
-                    arrayOf(file.absolutePath),
-                    arrayOf("video/mp4")
-                ) { path, uri ->
-                    _saveVideoState.value = UiState.Success(true)
-                    Log.e("save", "갤러리저장완")
-                    Timber.e("갤러리 저장 성공")
-                }
-
-                true
-            } catch (e: IOException) {
-                e.printStackTrace()
-                false
-            } finally {
-                inputStream?.close()
-                outputStream?.close()
-            }
-        } catch (e: IOException) {
-            _saveVideoState.value = UiState.Failure("failure")
-            e.printStackTrace()
-            false
-        }
-    }
 }

@@ -195,7 +195,7 @@ class EditFragment : BindingFragment<FragmentEditBinding>(R.layout.fragment_edit
     private fun setListener() {
         binding.tvEditSubtitleToolFont.setOnClickListener {
             editViewModel.updateSubtitleEditMode(true)
-            Log.d("MODEE",editViewModel.modeStates.value.toString())
+            Log.d("MODEE", editViewModel.modeStates.value.toString())
         }
         binding.btnEditBlur.setOnClickListener {
             showEditBlurMode()
@@ -214,7 +214,7 @@ class EditFragment : BindingFragment<FragmentEditBinding>(R.layout.fragment_edit
             editViewModel.updateBlurMode(true)
         }
         binding.btnEditBlurAuto.setOnClickListener {
-            isBlurModeSelected = true
+            editViewModel.updateBlurMode(true)
             uriToRequestBody()
         }
         binding.btnEditSubtitle.setOnClickListener {
@@ -518,33 +518,8 @@ class EditFragment : BindingFragment<FragmentEditBinding>(R.layout.fragment_edit
                 when (state) {
                     is UiState.Success -> {
                         Timber.tag("Success").d(state.data.toString())
-                        if (isBlurModeSelected) {
-                            editViewModel.videoFileName.value?.let {
-                                editViewModel.getMosaicedVideo(
-                                    uid,
-                                    it
-                                )
-                            }
-                        }
-                        if (isSubtitleModeSelected) {
-                            editViewModel.videoFileName.value?.let { fileName ->
-                                editViewModel.getSubtitle(
-                                    uid = uid,
-                                    fileName = fileName
-                                )
-                            }
-                        }
-                        if (isManualBlurModeSelected) {
-                            editViewModel.videoFileName.value?.let {
-                                editViewModel.postManualBlur(
-                                    uid = uid,
-                                    vid = vid,
-                                    requestBlurDto = manualBlurData
-                                )
-                            }
-                        }
+                        observeEditMode()
                     }
-
                     is UiState.Failure -> {
                         Timber.tag("Failure").e(state.msg)
                     }
@@ -581,7 +556,7 @@ class EditFragment : BindingFragment<FragmentEditBinding>(R.layout.fragment_edit
                     editViewModel.videoFileName.value?.let {
                         editViewModel.postManualBlur(
                             uid = uid,
-                            vid = vid.toString(),
+                            vid = vid,
                             requestBlurDto = manualBlurData
                         )
                     }
@@ -641,7 +616,7 @@ class EditFragment : BindingFragment<FragmentEditBinding>(R.layout.fragment_edit
                         getUri = editViewModel.updateVideoUri(requireContext(), state.data)
                         updateVideo(getUri!!)
                         editViewModel._postManualBlurState.value = UiState.Empty
-                        isManualBlurModeSelected = false
+                        editViewModel.updateManualBlurMode(true)
                     }
 
                     is UiState.Failure -> {
@@ -664,7 +639,6 @@ class EditFragment : BindingFragment<FragmentEditBinding>(R.layout.fragment_edit
                     is UiState.Success -> {
                         Log.d("subtitle", "success")
                         editViewModel._postEditedSubtitle.value = UiState.Empty
-                        editViewModel.saveFile(requireContext(), state.data)
                     }
 
                     is UiState.Failure -> {
@@ -727,6 +701,7 @@ class EditFragment : BindingFragment<FragmentEditBinding>(R.layout.fragment_edit
                     is UiState.Loading -> {
                         binding.editProgressbar.visibility = VISIBLE
                     }
+
                     is UiState.Loading -> {
                         binding.editProgressbar.visibility = VISIBLE
                     }
