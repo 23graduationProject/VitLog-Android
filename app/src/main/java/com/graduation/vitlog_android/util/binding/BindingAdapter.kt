@@ -1,5 +1,6 @@
 package com.graduation.vitlog_android.util.binding
 
+import android.net.Uri
 import android.widget.ImageView
 import androidx.databinding.BindingAdapter
 import coil.load
@@ -32,4 +33,18 @@ fun ImageView.setImageUrl(imageUrl: String?) {
     }
 }
 
+
+@BindingAdapter("setUploadImageUri")
+fun ImageView.setUploadImageUri(imageUri: Uri?) {
+    if (imageUri == null) {
+        load(R.drawable.ic_addface_gallery)
+    } else {
+
+        load(imageUri) {
+            placeholder(R.drawable.ic_addface_gallery)
+            transformations(RoundedCornersTransformation(20F))
+        }
+
+    }
+}
 

@@ -6,6 +6,7 @@ import android.media.MediaMetadataRetriever
 import android.media.MediaScannerConnection
 import android.net.Uri
 import android.os.Environment
+import android.util.Log
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.graduation.vitlog_android.data.repository.VideoRepository
@@ -50,7 +51,7 @@ class EditViewModel @Inject constructor(
     val getPresignedUrlState: StateFlow<UiState<ResponseGetPresignedUrlDto>> =
         _getPresignedUrlState.asStateFlow()
 
-    private val _getMosaicedVideoState = MutableStateFlow<UiState<ResponseBody>>(UiState.Empty)
+    val _getMosaicedVideoState = MutableStateFlow<UiState<ResponseBody>>(UiState.Empty)
     val getMosaicedVideoState: StateFlow<UiState<ResponseBody>> =
         _getMosaicedVideoState.asStateFlow()
 
@@ -122,6 +123,8 @@ class EditViewModel @Inject constructor(
             videoRepository.getPresignedUrl(uid, "mp4")
                 .onSuccess { response ->
                     _getPresignedUrlState.value = UiState.Success(response)
+
+                    Log.d("presigned",response.data.url.toString())
                     Timber.e("성공 $response")
                 }.onFailure { t ->
                     if (t is HttpException) {
@@ -270,88 +273,59 @@ class EditViewModel @Inject constructor(
     }
 
 
-    private var videoRequestBody: ContentUriRequestBody? = null
+    val _saveVideoState = MutableStateFlow<UiState<Boolean>>(UiState.Empty)
+    val saveVideoState: StateFlow<UiState<Boolean>> =
+        _saveVideoState.asStateFlow()
 
+    fun saveFile(context: Context, body: ResponseBody?): Boolean {
+        return try {
+            var inputStream: InputStream? = null
+            var outputStream: OutputStream? = null
 
-    fun saveFile(context: Context, body: ResponseBody?) {
-        var inputStream: InputStream? = null
-        var outputStream: OutputStream? = null
+            // 앱 전용 디렉토리 설정
+            val file = File(context.getExternalFilesDir(Environment.DIRECTORY_DOWNLOADS), "your_video_name.mp4")
 
-        try {
-            val fileReader = ByteArray(4096)
-            var fileSizeDownloaded: Long = 0
-            inputStream = body?.byteStream()
-            outputStream = FileOutputStream(File("path/to/your/file"))
+            try {
+                _saveVideoState.value = UiState.Loading
+                val fileReader = ByteArray(4096)
+                var fileSizeDownloaded: Long = 0
+                inputStream = body?.byteStream()
+                outputStream = FileOutputStream(file)
 
-            while (true) {
-                val read = inputStream?.read(fileReader)
-                if (read == -1) {
-                    break
-                }
-                outputStream.write(fileReader, 0, read!!)
-                fileSizeDownloaded += read.toLong()
-            }
-
-            outputStream.flush()
-
-        } catch (e: IOException) {
-        } finally {
-            inputStream?.close()
-            outputStream?.close()
-        }
-        writeResponseBodyToDisk(context, body)
-    }
-
-}
-
-
-private fun writeResponseBodyToDisk(context: Context, body: ResponseBody?): Boolean {
-    return try {
-        // 저장할 파일의 경로 지정
-        val filePath =
-            Environment.getExternalStoragePublicDirectory(Environment.DIRECTORY_DOWNLOADS)
-                .toString() + "/your_video_name.mp4"
-        val videoFile = File(filePath)
-
-        var inputStream: InputStream? = null
-        var outputStream: OutputStream? = null
-
-        try {
-            val fileReader = ByteArray(4096)
-            var fileSizeDownloaded: Long = 0
-            inputStream = body?.byteStream()
-            outputStream = FileOutputStream(videoFile)
-
-            while (true) {
-                val read = inputStream?.read(fileReader) ?: -1
-
-                if (read == -1) {
-                    break
+                while (true) {
+                    val read = inputStream?.read(fileReader) ?: -1
+                    if (read == -1) {
+                        break
+                    }
+                    outputStream.write(fileReader, 0, read)
+                    fileSizeDownloaded += read.toLong()
                 }
 
-                outputStream.write(fileReader, 0, read)
-                fileSizeDownloaded += read.toLong()
+                outputStream.flush()
+
+                // 미디어 스캔 진행
+                MediaScannerConnection.scanFile(
+                    context,
+                    arrayOf(file.absolutePath),
+                    arrayOf("video/mp4")
+                ) { path, uri ->
+                    _saveVideoState.value = UiState.Success(true)
+                    Log.e("save", "갤러리저장완")
+                    Timber.e("갤러리 저장 성공")
+                }
+
+                true
+            } catch (e: IOException) {
+                e.printStackTrace()
+                false
+            } finally {
+                inputStream?.close()
+                outputStream?.close()
             }
-
-            outputStream.flush()
-
-            // 미디어 스캔 진행
-            MediaScannerConnection.scanFile(
-                context,
-                arrayOf(videoFile.absolutePath),
-                arrayOf("video/mp4")
-            ) { path, uri ->
-                Timber.e("갤러리 저장 성공")
-            }
-
-            true
         } catch (e: IOException) {
+            _saveVideoState.value = UiState.Failure("failure")
+            e.printStackTrace()
             false
-        } finally {
-            inputStream?.close()
-            outputStream?.close()
         }
-    } catch (e: IOException) {
-        false
     }
 }

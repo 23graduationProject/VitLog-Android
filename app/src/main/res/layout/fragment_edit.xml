@@ -83,8 +83,8 @@
                     android:layout_height="wrap_content"
                     android:layout_gravity="bottom|center"
                     android:padding="16dp"
-                    android:visibility="gone"
-                    android:textAlignment="center" />
+                    android:textAlignment="center"
+                    android:visibility="gone" />
 
                 <androidx.constraintlayout.widget.ConstraintLayout
                     android:id="@+id/blur_self_layout"
@@ -431,7 +431,8 @@
             android:id="@+id/cl_edit_subtitle"
             android:layout_width="match_parent"
             android:layout_height="0dp"
-            android:padding="30dp"
+            android:paddingHorizontal="30dp"
+            android:paddingTop="30dp"
             android:visibility="invisible"
             app:layout_constraintBottom_toBottomOf="parent"
             app:layout_constraintTop_toBottomOf="@id/edit_seekbar_layout">
@@ -475,7 +476,7 @@
                 android:layout_height="0dp"
                 android:layout_marginStart="30dp"
                 android:background="@color/white_opacity_80"
-                app:layout_constraintBottom_toBottomOf="parent"
+                app:layout_constraintBottom_toTopOf="@id/tv_edit_subtitle_complete"
                 app:layout_constraintStart_toEndOf="@id/tv_edit_subtitle_font"
                 app:layout_constraintTop_toTopOf="parent" />
 
@@ -574,6 +575,22 @@
                 app:layout_constraintBottom_toBottomOf="@id/tv_edit_subtitle_background"
                 app:layout_constraintStart_toEndOf="@id/iv_edit_subtitle_background_gray"
                 app:layout_constraintTop_toTopOf="@id/tv_edit_subtitle_background" />
+
+
+            <TextView
+                android:id="@+id/tv_edit_subtitle_complete"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_marginBottom="10dp"
+                android:paddingHorizontal="30dp"
+                android:paddingVertical="10dp"
+                android:text="완료"
+                android:textAppearance="@style/TextAppearance.VitLog.Content_m_15"
+                android:textColor="@color/white"
+                app:layout_constraintBottom_toBottomOf="parent"
+                app:layout_constraintEnd_toEndOf="parent"
+                app:layout_constraintStart_toStartOf="parent"
+                app:layout_constraintTop_toBottomOf="@id/v_edit_line2" />
         </androidx.constraintlayout.widget.ConstraintLayout>
 
 
