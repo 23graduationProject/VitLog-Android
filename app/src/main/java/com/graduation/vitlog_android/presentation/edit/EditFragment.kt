@@ -67,6 +67,7 @@ class EditFragment : BindingFragment<FragmentEditBinding>(R.layout.fragment_edit
 
     private var originalVideoWidth: Int = 0
     private var originalVideoHeight: Int = 0
+    private var videoLengthInMilliseconds = 0
 
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
         super.onViewCreated(view, savedInstanceState)
@@ -286,8 +287,8 @@ class EditFragment : BindingFragment<FragmentEditBinding>(R.layout.fragment_edit
     override fun onSurfaceTextureAvailable(surface: SurfaceTexture, width: Int, height: Int) {
         try {
             if (getUri != null) {
-                mediaPlayer.setDataSource(requireContext(), getUri!!)
-                mediaPlayer.apply {
+                mediaPlayer = MediaPlayer().apply {
+                    setDataSource(requireContext(), getUri!!)
                     setSurface(Surface(surface))
                     setOnPreparedListener(this@EditFragment)
                     prepareAsync()  // mediaPlayer가 준비되었음을 알림
@@ -299,8 +300,14 @@ class EditFragment : BindingFragment<FragmentEditBinding>(R.layout.fragment_edit
     }
 
     override fun onPrepared(mp: MediaPlayer?) {
+        Log.d("mediaplayer", getUri.toString() )
         mediaPlayerOnPrepared = true
-        editViewModel.getPresignedUrl()
+        videoLengthInMilliseconds = mediaPlayer.duration
+
+        if (!isManualBlurModeSelected) {
+            editViewModel.getPresignedUrl()
+        }
+        isManualBlurModeSelected = false
         mediaPlayer.seekTo(0)   // 재생 전 첫 번쨰 프레임 보여주기
 
         // 재생 버튼
@@ -352,7 +359,6 @@ class EditFragment : BindingFragment<FragmentEditBinding>(R.layout.fragment_edit
                 super.onScrolled(recyclerView, dx, dy)
                 // 타임라인(리사이클러뷰)가 스크롤됨에 따라 가로 스크롤길이를 구한다
                 val scrollY = recyclerView.computeHorizontalScrollOffset()
-                val videoLengthInMilliseconds = mediaPlayer.duration
                 // 전체 스크롤 가능한 범위 대비 스크롤한 비율을 구해서 이를 영상 전체 길이에 다시 대응하는 식으로 구현
                 val desiredPositionInMilliseconds =
                     (scrollY / recyclerView.computeHorizontalScrollRange()
@@ -385,7 +391,6 @@ class EditFragment : BindingFragment<FragmentEditBinding>(R.layout.fragment_edit
         override fun run() {
             setBlurPartOfBitmap()
             val currentPositionInMilliseconds = mediaPlayer.currentPosition
-            val videoLengthInMilliseconds = mediaPlayer.duration
             val scrollOffset =
                 (currentPositionInMilliseconds.toFloat() / videoLengthInMilliseconds * timeLineAdapter.itemCount)
             Log.d("subtitle", editViewModel.subtitleList.toString())
@@ -600,11 +605,10 @@ class EditFragment : BindingFragment<FragmentEditBinding>(R.layout.fragment_edit
                         binding.editProgressbar.visibility = INVISIBLE
                         binding.blurSelfLayout.visibility = INVISIBLE
                         binding.timelineSectionIv.visibility = INVISIBLE
-
                         getUri = editViewModel.updateVideoUri(requireContext(), state.data)
                         updateVideo(getUri!!)
                         editViewModel._postManualBlurState.value = UiState.Empty
-                        isManualBlurModeSelected = false
+//                        isManualBlurModeSelected = false
                         Log.d("manual blur", "Success")
                     }
 
@@ -673,10 +677,14 @@ class EditFragment : BindingFragment<FragmentEditBinding>(R.layout.fragment_edit
     private fun updateVideo(uri: Uri) {
         mediaPlayer.release()
         mediaPlayer = MediaPlayer().apply {
-            setDataSource(requireContext(), uri)
-            setSurface(Surface(binding.tvVideo.surfaceTexture))
-            setOnPreparedListener(this@EditFragment)
-            prepareAsync()
+            try {
+                setDataSource(requireContext(), uri)
+                setSurface(Surface(binding.tvVideo.surfaceTexture))
+                setOnPreparedListener(this@EditFragment)
+                prepareAsync()
+            } catch (e: IllegalStateException) {
+                Log.e("MediaPlayerError", "MediaPlayer setup failed: ", e)
+            }
         }
     }
 
