@@ -204,12 +204,14 @@ class EditViewModel @Inject constructor(
 
     fun postManualBlur(
         uid: Int,
-        vid: Int,
+        fileName: String,
         requestBlurDto: MutableList<RequestBlurDto>
     ) {
+        Log.d("fileName", fileName)
+        Log.d("requestBody", requestBlurDto.toString())
         viewModelScope.launch {
             _postManualBlurState.value = UiState.Loading
-            videoRepository.postManualBlur(uid, vid, requestBlurDto)
+            videoRepository.postManualBlur(uid, fileName + ".mp4", requestBlurDto)
                 .onSuccess { response ->
                     _postManualBlurState.value = UiState.Success(response)
                     Timber.e("성공 $response")

@@ -42,6 +42,7 @@ import kotlinx.coroutines.flow.onEach
 import kotlinx.coroutines.launch
 import timber.log.Timber
 import java.io.IOException
+import kotlin.io.path.fileVisitor
 
 
 @AndroidEntryPoint
@@ -59,6 +60,10 @@ class EditFragment : BindingFragment<FragmentEditBinding>(R.layout.fragment_edit
     private var manualBlurData = mutableListOf<RequestBlurDto>()
     private var startTime: String = "00:00:00"
     private var endTime: String = "00:00:00"
+
+    private var originalVideoWidth: Float = 0F
+    private var originalVideoHeight: Float = 0F
+    private var videoLengthInMilliseconds = 0
 
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
         super.onViewCreated(view, savedInstanceState)
@@ -251,14 +256,22 @@ class EditFragment : BindingFragment<FragmentEditBinding>(R.layout.fragment_edit
 
                 // 수동블러
                 manualBlurData.add(
-                    RequestBlurDto(
-                        startTime = startTime,
-                        endTime = endTime,
-                        x1 = rectangleX,
-                        y1 = rectangleY,
-                        x2 = rectangleRightX,
-                        y2 = rectangleRightY
+                    checkVideoRatio(
+                        startTime,
+                        endTime,
+                        rectangleX,
+                        rectangleY,
+                        rectangleRightX,
+                        rectangleRightY
                     )
+//                    RequestBlurDto(
+//                        startTime = startTime,
+//                        endTime = endTime,
+//                        x1 = rectangleX.toInt(),
+//                        y1 = rectangleY.toInt(),
+//                        x2 = rectangleRightX.toInt(),
+//                        y2 = rectangleRightY.toInt()
+//                    )
                 )
                 editViewModel.updateManualBlurMode(true)
                 uriToRequestBody()
@@ -283,8 +296,8 @@ class EditFragment : BindingFragment<FragmentEditBinding>(R.layout.fragment_edit
     override fun onSurfaceTextureAvailable(surface: SurfaceTexture, width: Int, height: Int) {
         try {
             if (getUri != null) {
-                mediaPlayer.setDataSource(requireContext(), getUri!!)
-                mediaPlayer.apply {
+                mediaPlayer = MediaPlayer().apply {
+                    setDataSource(requireContext(), getUri!!)
                     setSurface(Surface(surface))
                     setOnPreparedListener(this@EditFragment)
                     prepareAsync()  // mediaPlayer가 준비되었음을 알림
@@ -296,8 +309,14 @@ class EditFragment : BindingFragment<FragmentEditBinding>(R.layout.fragment_edit
     }
 
     override fun onPrepared(mp: MediaPlayer?) {
+        Log.d("mediaplayer", getUri.toString() )
         mediaPlayerOnPrepared = true
-        editViewModel.getPresignedUrl()
+        videoLengthInMilliseconds = mediaPlayer.duration
+
+        if (!isManualBlurModeSelected) {
+            editViewModel.getPresignedUrl()
+        }
+        isManualBlurModeSelected = false
         mediaPlayer.seekTo(0)   // 재생 전 첫 번쨰 프레임 보여주기
 
         // 재생 버튼
@@ -333,6 +352,11 @@ class EditFragment : BindingFragment<FragmentEditBinding>(R.layout.fragment_edit
         val mediaMetadataRetriever = MediaMetadataRetriever()
         mediaMetadataRetriever.setDataSource(context, uri)
 
+        originalVideoWidth =
+            mediaMetadataRetriever.extractMetadata(MediaMetadataRetriever.METADATA_KEY_VIDEO_WIDTH)?.toFloatOrNull()!!
+        originalVideoHeight =
+            mediaMetadataRetriever.extractMetadata(MediaMetadataRetriever.METADATA_KEY_VIDEO_HEIGHT)?.toFloatOrNull()!!
+
         val videoLength =
             mediaMetadataRetriever.extractMetadata(MediaMetadataRetriever.METADATA_KEY_DURATION)
                 ?.toLong()
@@ -344,7 +368,6 @@ class EditFragment : BindingFragment<FragmentEditBinding>(R.layout.fragment_edit
                 super.onScrolled(recyclerView, dx, dy)
                 // 타임라인(리사이클러뷰)가 스크롤됨에 따라 가로 스크롤길이를 구한다
                 val scrollY = recyclerView.computeHorizontalScrollOffset()
-                val videoLengthInMilliseconds = mediaPlayer.duration
                 // 전체 스크롤 가능한 범위 대비 스크롤한 비율을 구해서 이를 영상 전체 길이에 다시 대응하는 식으로 구현
                 val desiredPositionInMilliseconds =
                     (scrollY / recyclerView.computeHorizontalScrollRange()
@@ -377,7 +400,6 @@ class EditFragment : BindingFragment<FragmentEditBinding>(R.layout.fragment_edit
         override fun run() {
             setBlurPartOfBitmap()
             val currentPositionInMilliseconds = mediaPlayer.currentPosition
-            val videoLengthInMilliseconds = mediaPlayer.duration
             val scrollOffset =
                 (currentPositionInMilliseconds.toFloat() / videoLengthInMilliseconds * timeLineAdapter.itemCount)
             binding.editTimelineRv.smoothScrollToPosition(scrollOffset.toInt())
@@ -492,10 +514,10 @@ class EditFragment : BindingFragment<FragmentEditBinding>(R.layout.fragment_edit
                 when (state) {
                     is UiState.Success -> {
                         Timber.tag("Success").d(state.data.data.url)
-//                        uriToRequestBody()
                         editViewModel.setVideoFileName(state.data.data.fileName)
                         editViewModel.setPresignedUrl(state.data.data.url)
                         SharedPrefManager.save("vid", state.data.data.vid)
+                        Log.d("uid", uid.toString())
                     }
 
                     is UiState.Failure -> {
@@ -548,10 +570,10 @@ class EditFragment : BindingFragment<FragmentEditBinding>(R.layout.fragment_edit
                 }
 
                 if (it.isManualBlurModeSelected) {
-                    editViewModel.videoFileName.value?.let {
+                    editViewModel.videoFileName.value?.let { fileName ->
                         editViewModel.postManualBlur(
                             uid = uid,
-                            vid = vid,
+                            fileName = fileName,
                             requestBlurDto = manualBlurData
                         )
                     }
@@ -634,13 +656,18 @@ class EditFragment : BindingFragment<FragmentEditBinding>(R.layout.fragment_edit
                 when (state) {
                     is UiState.Loading -> {
                         binding.editProgressbar.visibility = VISIBLE
+                        Log.d("manual blur", "Loading")
                     }
 
                     is UiState.Success -> {
                         binding.editProgressbar.visibility = INVISIBLE
+                        binding.blurSelfLayout.visibility = INVISIBLE
+                        binding.timelineSectionIv.visibility = INVISIBLE
                         getUri = editViewModel.updateVideoUri(requireContext(), state.data)
                         updateVideo(getUri!!)
                         editViewModel._postManualBlurState.value = UiState.Empty
+//                        isManualBlurModeSelected = false
+                        Log.d("manual blur", "Success")
                         editViewModel.updateManualBlurMode(false)
                     }
 
@@ -713,10 +740,14 @@ class EditFragment : BindingFragment<FragmentEditBinding>(R.layout.fragment_edit
     private fun updateVideo(uri: Uri) {
         mediaPlayer.release()
         mediaPlayer = MediaPlayer().apply {
-            setDataSource(requireContext(), uri)
-            setSurface(Surface(binding.tvVideo.surfaceTexture))
-            setOnPreparedListener(this@EditFragment)
-            prepareAsync()
+            try {
+                setDataSource(requireContext(), uri)
+                setSurface(Surface(binding.tvVideo.surfaceTexture))
+                setOnPreparedListener(this@EditFragment)
+                prepareAsync()
+            } catch (e: IllegalStateException) {
+                Log.e("MediaPlayerError", "MediaPlayer setup failed: ", e)
+            }
         }
     }
 
@@ -760,6 +791,7 @@ class EditFragment : BindingFragment<FragmentEditBinding>(R.layout.fragment_edit
         binding.blurRectangleX.setOnClickListener {
             binding.blurSelfLayout.visibility = View.INVISIBLE
             binding.timelineSectionIv.visibility = View.GONE
+            isManualBlurModeSelected = false
         }
     }
 
@@ -775,7 +807,24 @@ class EditFragment : BindingFragment<FragmentEditBinding>(R.layout.fragment_edit
         rectangleX = binding.blurSelfLayout.x + paddingInPx
         rectangleY = binding.blurSelfLayout.y + paddingInPx
         rectangleRightX = rectangleX + binding.blurSelfRectangle.width
-        rectangleRightY = rectangleX + binding.blurSelfRectangle.height
+        rectangleRightY = rectangleY + binding.blurSelfRectangle.height
+    }
+
+    // 영상 해상도 비율 맞춰서 수동블러 좌표 조정
+    private fun checkVideoRatio(st: String, ed: String, x1: Float, y1: Float, x2: Float, y2: Float): RequestBlurDto {
+        val videoHeight = binding.tvVideo.height.toFloat()
+        val videoWidth = binding.tvVideo.width
+        val ratioH = originalVideoHeight / videoHeight
+        val ratioW = originalVideoWidth / videoWidth
+        
+        return RequestBlurDto(
+            st,
+            ed,
+            (x1*ratioW).toInt(),
+            (y1*ratioH).toInt(),
+            (x2*ratioW).toInt(),
+            (y2*ratioH).toInt()
+        )
     }
 
     override fun onSurfaceTextureSizeChanged(surface: SurfaceTexture, width: Int, height: Int) {

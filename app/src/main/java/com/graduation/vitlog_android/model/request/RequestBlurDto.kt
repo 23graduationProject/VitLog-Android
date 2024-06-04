@@ -10,11 +10,11 @@ data class RequestBlurDto(
     @SerialName("end_time")
     val endTime : String,
     @SerialName("x1")
-    val x1 : Float,
+    val x1 : Int,
     @SerialName("y1")
-    val y1 : Float,
+    val y1 : Int,
     @SerialName("x2")
-    val x2 : Float,
+    val x2 : Int,
     @SerialName("y2")
-    val y2 : Float
+    val y2 : Int
 )
