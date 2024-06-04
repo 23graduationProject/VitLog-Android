@@ -1,6 +1,8 @@
 package com.graduation.vitlog_android.data.api
 
 import com.graduation.vitlog_android.model.request.RequestBlurDto
+import com.graduation.vitlog_android.model.request.RequestLoginDto
+import com.graduation.vitlog_android.model.request.RequestPostEditedSubtitleDto
 import com.graduation.vitlog_android.model.response.ResponseGetPresignedUrlDto
 import com.graduation.vitlog_android.model.response.ResponseGetSubtitleDto
 import com.graduation.vitlog_android.model.response.ResponsePostVideoDto
@@ -56,4 +58,10 @@ interface VideoApi {
         @Path("fileName") fileName: String
     ): ResponseGetSubtitleDto
 
+    @POST("api/subtitle-edit/{uid}/{fileName}")
+    suspend fun postEditedSubtitle(
+        @Path("uid") uid: Int,
+        @Path("fileName") fileName: String,
+        @Body requestPostEditedSubtitleDto: RequestPostEditedSubtitleDto
+    ): ResponseBody
 }

@@ -8,12 +8,12 @@ import android.media.MediaScannerConnection
 import android.net.Uri
 import android.os.Environment
 import android.provider.MediaStore
-import android.util.Log
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.graduation.vitlog_android.data.repository.VideoRepository
 import com.graduation.vitlog_android.model.entity.Subtitle
 import com.graduation.vitlog_android.model.request.RequestBlurDto
+import com.graduation.vitlog_android.model.request.RequestPostEditedSubtitleDto
 import com.graduation.vitlog_android.model.response.ResponseGetPresignedUrlDto
 import com.graduation.vitlog_android.util.multipart.ContentUriRequestBody
 import com.graduation.vitlog_android.util.preference.SharedPrefManager.uid
@@ -42,6 +42,25 @@ class EditViewModel @Inject constructor(
     private val videoRepository: VideoRepository
 ) : ViewModel() {
 
+    private val _modeStates = MutableStateFlow(EditMode())
+    val modeStates: StateFlow<EditMode> = _modeStates
+
+    fun updateBlurMode(isSelected: Boolean) {
+        _modeStates.value = _modeStates.value.copy(isBlurModeSelected = isSelected)
+    }
+
+    fun updateSubtitleMode(isSelected: Boolean) {
+        _modeStates.value = _modeStates.value.copy(isSubtitleModeSelected = isSelected)
+    }
+
+    fun updateManualBlurMode(isSelected: Boolean) {
+        _modeStates.value = _modeStates.value.copy(isManualBlurModeSelected = isSelected)
+    }
+
+    fun updateSubtitleEditMode(isSelected: Boolean) {
+        _modeStates.value = _modeStates.value.copy(isSubtitleEditModeSelected = isSelected)
+    }
+
     private val _putVideoToPresignedUrlState =
         MutableStateFlow<UiState<ResponseBody>>(UiState.Empty)
     val putVideoToPresignedUrlState: StateFlow<UiState<ResponseBody>> =
@@ -52,12 +71,15 @@ class EditViewModel @Inject constructor(
     val getPresignedUrlState: StateFlow<UiState<ResponseGetPresignedUrlDto>> =
         _getPresignedUrlState.asStateFlow()
 
-    private val _getMosaicedVideoState = MutableStateFlow<UiState<ResponseBody>>(UiState.Empty)
+    val _getMosaicedVideoState = MutableStateFlow<UiState<ResponseBody>>(UiState.Empty)
     val getMosaicedVideoState: StateFlow<UiState<ResponseBody>> =
         _getMosaicedVideoState.asStateFlow()
 
     var _getSubtitleState = MutableStateFlow<UiState<List<Subtitle>>>(UiState.Empty)
     val getSubtitleState: StateFlow<UiState<List<Subtitle>>> = _getSubtitleState.asStateFlow()
+
+    var _postEditedSubtitle = MutableStateFlow<UiState<ResponseBody>>(UiState.Empty)
+    val postEditedSubtitle: StateFlow<UiState<ResponseBody>> = _postEditedSubtitle.asStateFlow()
 
     val timeLineImages = mutableListOf<Bitmap>()
 
@@ -153,6 +175,33 @@ class EditViewModel @Inject constructor(
         }
     }
 
+    fun postEditedSubtitle(
+        uid: Int,
+        fileName: String
+    ) {
+        viewModelScope.launch {
+            _postEditedSubtitle.value = UiState.Loading
+            videoRepository.postEditedSubtitle(
+                uid, fileName + ".mp4", RequestPostEditedSubtitleDto(
+                    subtitle = subtitleList,
+                    font = "pretendard",
+                    color = "yellow"
+                )
+            )
+                .onSuccess { response ->
+                    _postEditedSubtitle.value = UiState.Success(response)
+                    Timber.e("성공 $response")
+                }.onFailure { t ->
+                    if (t is HttpException) {
+                        val errorResponse = t.response()?.errorBody()?.string()
+                        Timber.e("HTTP 실패: $errorResponse")
+                    }
+                    _postEditedSubtitle.value = UiState.Failure("${t.message}")
+                }
+        }
+    }
+
+
     fun postManualBlur(
         uid: Int,
         fileName: String,
@@ -246,8 +295,6 @@ class EditViewModel @Inject constructor(
     }
 
 
-    private var videoRequestBody: ContentUriRequestBody? = null
-
     fun updateVideoUri(context: Context, body: ResponseBody?): Uri? {
         return try {
             // 비디오 파일을 저장할 디렉토리
@@ -293,7 +340,6 @@ class EditViewModel @Inject constructor(
         val uri = resolver.insert(MediaStore.Video.Media.EXTERNAL_CONTENT_URI, contentValues)
         uri?.let {
             resolver.openOutputStream(it).use { outputStream ->
-                // 비디오 파일의 내용을 새 위치로 복사
                 context.contentResolver.openInputStream(videoUri)?.use { inputStream ->
                     val buffer = ByteArray(1024)
                     var read: Int
@@ -305,85 +351,5 @@ class EditViewModel @Inject constructor(
         }
     }
 
-    fun saveFile(context: Context, body: ResponseBody?) {
-        var inputStream: InputStream? = null
-        var outputStream: OutputStream? = null
 
-        try {
-            val fileReader = ByteArray(4096)
-            var fileSizeDownloaded: Long = 0
-            inputStream = body?.byteStream()
-            outputStream = FileOutputStream(File("path/to/your/file"))
-
-            while (true) {
-                val read = inputStream?.read(fileReader)
-                if (read == -1) {
-                    break
-                }
-                outputStream.write(fileReader, 0, read!!)
-                fileSizeDownloaded += read.toLong()
-            }
-
-            outputStream.flush()
-
-        } catch (e: IOException) {
-        } finally {
-            inputStream?.close()
-            outputStream?.close()
-        }
-        writeResponseBodyToDisk(context, body)
-    }
-
-}
-
-
-private fun writeResponseBodyToDisk(context: Context, body: ResponseBody?): Boolean {
-    return try {
-        // 저장할 파일의 경로 지정
-        val filePath =
-            Environment.getExternalStoragePublicDirectory(Environment.DIRECTORY_DOWNLOADS)
-                .toString() + "/your_video_name.mp4"
-        val videoFile = File(filePath)
-
-        var inputStream: InputStream? = null
-        var outputStream: OutputStream? = null
-
-        try {
-            val fileReader = ByteArray(4096)
-            var fileSizeDownloaded: Long = 0
-            inputStream = body?.byteStream()
-            outputStream = FileOutputStream(videoFile)
-
-            while (true) {
-                val read = inputStream?.read(fileReader) ?: -1
-
-                if (read == -1) {
-                    break
-                }
-
-                outputStream.write(fileReader, 0, read)
-                fileSizeDownloaded += read.toLong()
-            }
-
-            outputStream.flush()
-
-            // 미디어 스캔 진행
-            MediaScannerConnection.scanFile(
-                context,
-                arrayOf(videoFile.absolutePath),
-                arrayOf("video/mp4")
-            ) { path, uri ->
-                Timber.e("갤러리 저장 성공")
-            }
-
-            true
-        } catch (e: IOException) {
-            false
-        } finally {
-            inputStream?.close()
-            outputStream?.close()
-        }
-    } catch (e: IOException) {
-        false
-    }
 }
